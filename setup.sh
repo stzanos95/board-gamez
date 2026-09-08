@@ -159,13 +159,45 @@ ensure_uv() {
 
 # --- python environments ---------------------------------------------------
 
+# A virtualenv is not relocatable. Its console scripts — ruff, mypy, pytest, the
+# `chess` entry point — carry the absolute path of the interpreter that created
+# them in their shebang, so renaming or moving the checkout breaks every one of
+# them. uv cannot see this: .venv/bin/python is a symlink that still resolves, so
+# the environment looks healthy and a plain `uv sync` leaves the stale scripts
+# alone. Detecting it is therefore this script's job, not uv's.
+project_venv_is_stale() {
+    local venv="$1/.venv"
+    [ -d "$venv" ] || return 1
+
+    local script interpreter
+    for script in "$venv"/bin/*; do
+        [ -f "$script" ] || continue
+        interpreter="$(sed -n '1s/^#!\([^[:space:]]*\).*/\1/p' "$script" 2>/dev/null)"
+        case "$interpreter" in
+            */python*)
+                # The first console script settles it: they are all written together.
+                [ "${interpreter#"$venv"/}" = "$interpreter" ] && return 0
+                return 1
+                ;;
+        esac
+    done
+    return 1
+}
+
 ensure_project_environment() {
     local project_dir="$1" label="$2"
-    local had_lock=0 had_venv=0
+    local had_lock=0 had_venv=0 was_stale=0
     [ -f "$project_dir/uv.lock" ] && had_lock=1
     [ -d "$project_dir/.venv" ] && had_venv=1
 
-    if ! (cd "$project_dir" && uv sync --quiet); then
+    # Reinstalling is what rewrites the shebangs; syncing alone will not.
+    local sync_arguments=(--quiet)
+    if project_venv_is_stale "$project_dir"; then
+        was_stale=1
+        sync_arguments+=(--reinstall)
+    fi
+
+    if ! (cd "$project_dir" && uv sync "${sync_arguments[@]}"); then
         fail "uv sync failed for $label"
         return 1
     fi
@@ -177,6 +209,8 @@ ensure_project_environment() {
     fi
     if [ "$had_venv" -eq 0 ]; then
         changed "$label: created .venv"
+    elif [ "$was_stale" -eq 1 ]; then
+        changed "$label: rebuilt .venv — it was built somewhere else"
     else
         already "$label: .venv"
     fi

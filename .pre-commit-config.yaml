@@ -48,11 +48,17 @@ repos:
   # `Any` — so it guards the push rather than every commit. Each project is
   # checked from its own directory in its own environment, because each stands
   # alone; `files` keeps a README-only push from paying for either.
+  #
+  # `python -m mypy`, not `mypy`, matching docker/entrypoint.sh. A venv's console
+  # scripts hard-code the absolute path of the interpreter that created them, so
+  # after the checkout is moved or renamed `mypy` fails to spawn while the venv
+  # still looks valid to uv. Reaching the module through the interpreter has no
+  # such path baked in and survives the move.
   - repo: local
     hooks:
       - id: mypy-chess
         name: mypy (packages/chess)
-        entry: uv run --directory packages/chess --quiet mypy
+        entry: uv run --directory packages/chess --quiet python -m mypy
         language: system
         types: [python]
         files: ^packages/chess/
@@ -61,7 +67,7 @@ repos:
 
       - id: mypy-chess-cli
         name: mypy (deployables/chess-cli)
-        entry: uv run --directory deployables/chess-cli --quiet mypy
+        entry: uv run --directory deployables/chess-cli --quiet python -m mypy
         language: system
         types: [python]
         files: ^deployables/chess-cli/
