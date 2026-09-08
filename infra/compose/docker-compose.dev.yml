@@ -1,0 +1,13 @@
+# Overlay: edit the source on the host and rerun without rebuilding the image.
+#
+#   ../scripts/dev.sh
+#
+# Safe because the virtualenv lives at /opt/venv, outside the mounted trees. The
+# app's settings file is mounted with everything else, so editing
+# deployables/chess-cli/config/chess_cli.yaml takes effect on the next run.
+
+services:
+  chess-cli:
+    volumes:
+      - ../../packages/chess:/app/packages/chess:ro
+      - ../../deployables/chess-cli:/app/deployables/chess-cli:ro

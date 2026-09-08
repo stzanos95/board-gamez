@@ -1,0 +1,11 @@
+# The build context is the repository root, because the deployable reaches the
+# engine through a relative path and both trees must be present.
+.git
+.claude
+infra
+**/__pycache__
+**/*.py[cod]
+**/.venv
+**/.pytest_cache
+**/.mypy_cache
+**/.ruff_cache

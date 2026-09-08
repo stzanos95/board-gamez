@@ -1,0 +1,28 @@
+# Settings for the chess terminal game.
+#
+# This file is the app's bringup: it is parsed into CliSettings, and nothing in
+# the app reads the environment. To run with different settings, copy this file
+# and pass it:  chess-cli --config /path/to/your.yaml
+players:
+  white_name: White
+  black_name: Black
+
+display:
+  # Which display to build. Each display reads its own section below.
+  display: text
+  text_config:
+    # false for plain letters on a terminal that cannot draw the figurines.
+    # Letters are unambiguous: upper case is White, lower case is Black.
+    use_unicode: true
+    # Files above and below, ranks on both sides.
+    show_coordinates: true
+    # Which figurines White gets. true draws White hollow, as Unicode intends,
+    # which reads correctly on a light background. false draws White filled,
+    # which reads correctly on a dark one.
+    transparent_white: false
+
+console:
+  # Where input and output go.
+  console: terminal
+  terminal_config:
+    prompt_suffix: "> "
