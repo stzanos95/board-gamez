@@ -1,4 +1,4 @@
-name: local-gamez
+name: board-gamez
 
 services:
   chess-cli:
@@ -6,7 +6,7 @@ services:
       # The repository root, so the engine package is inside the context.
       context: ../..
       dockerfile: deployables/chess-cli/docker/Dockerfile
-    image: local-gamez/chess-cli:latest
+    image: board-gamez/chess-cli:latest
     # Both are needed for an interactive prompt. Start it with
     # `docker compose run --rm chess-cli`, not `up`.
     stdin_open: true

@@ -1,4 +1,4 @@
-# local-gamez
+# board-gamez
 
 Games, one package per game engine and one deployable per way of playing it.
 

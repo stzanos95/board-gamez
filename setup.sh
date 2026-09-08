@@ -24,7 +24,7 @@ INFRA_DIR="$REPO_ROOT/infra"
 UV_INSTALL_URL="https://astral.sh/uv/install.sh"
 USER_BIN_DIR="$HOME/.local/bin"
 PROFILE_FILE="$HOME/.bashrc"
-PROFILE_MARKER="# >>> local-gamez setup >>>"
+PROFILE_MARKER="# >>> board-gamez setup >>>"
 MINIMUM_PYTHON_MINOR=13
 DOCKER_PACKAGES=(docker.io docker-compose-v2 docker-buildx)
 # Kept in step with default_install_hook_types in .pre-commit-config.yaml.
@@ -117,7 +117,7 @@ ensure_path_entry() {
         {
             printf '\n%s\n' "$PROFILE_MARKER"
             printf 'export PATH="$HOME/.local/bin:$PATH"\n'
-            printf '%s\n' "# <<< local-gamez setup <<<"
+            printf '%s\n' "# <<< board-gamez setup <<<"
         } >>"$PROFILE_FILE"
         changed "added $USER_BIN_DIR to PATH in $(basename "$PROFILE_FILE")"
         note "open a new shell, or run: export PATH=\"\$HOME/.local/bin:\$PATH\""
@@ -357,7 +357,7 @@ ensure_docker_image() {
     fi
     # Rebuilding is cheap and idempotent: unchanged layers come from the cache.
     if (cd "$INFRA_DIR" && docker compose -f compose/docker-compose.yml build); then
-        ok "image local-gamez/chess-cli:latest is up to date"
+        ok "image board-gamez/chess-cli:latest is up to date"
     else
         fail "the image build failed"
         return 1
@@ -386,12 +386,12 @@ run_test_suites() {
         warn "skipped — no python 3.$MINIMUM_PYTHON_MINOR or newer, and no uv"
         return 0
     fi
-    if "$APP_DIR/scripts/local-test.sh" >/tmp/local-gamez-setup-tests.log 2>&1; then
-        ok "$(grep -c '^OK' /tmp/local-gamez-setup-tests.log) suites passed"
-        grep -E '^Ran ' /tmp/local-gamez-setup-tests.log | while read -r line; do note "$line"; done
+    if "$APP_DIR/scripts/local-test.sh" >/tmp/board-gamez-setup-tests.log 2>&1; then
+        ok "$(grep -c '^OK' /tmp/board-gamez-setup-tests.log) suites passed"
+        grep -E '^Ran ' /tmp/board-gamez-setup-tests.log | while read -r line; do note "$line"; done
     else
         fail "the test suites did not pass"
-        tail -30 /tmp/local-gamez-setup-tests.log >&2
+        tail -30 /tmp/board-gamez-setup-tests.log >&2
         return 1
     fi
 }
@@ -434,7 +434,7 @@ summarise() {
 
 main() {
     parse_arguments "$@"
-    printf '%slocal-gamez setup%s\n' "$BOLD" "$RESET"
+    printf '%sboard-gamez setup%s\n' "$BOLD" "$RESET"
     report_environment
     ensure_uv || true
     ensure_project_environments || true

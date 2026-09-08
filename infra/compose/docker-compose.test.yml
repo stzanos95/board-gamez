@@ -16,14 +16,14 @@ services:
     command: ["test"]
 
   chess-lint:
-    image: local-gamez/chess-cli:latest
+    image: board-gamez/chess-cli:latest
     build:
       context: ../..
       dockerfile: deployables/chess-cli/docker/Dockerfile
     command: ["lint"]
 
   chess-typecheck:
-    image: local-gamez/chess-cli:latest
+    image: board-gamez/chess-cli:latest
     build:
       context: ../..
       dockerfile: deployables/chess-cli/docker/Dockerfile
