@@ -1,0 +1,38 @@
+// The two things every chessman is: whose it is, and what it is.
+
+syntax = "proto3";
+
+package idl.chess.model;
+
+option go_package = "boardgamez/contracts/gen/go/idl/chess/model;chessmodel";
+
+// Which side a piece belongs to.
+//
+// COLOR_UNSPECIFIED is never written by a producer. It exists because proto3
+// requires a zero value, and it is what a consumer sees when it reads a field a
+// newer schema has not set.
+enum Color {
+  COLOR_UNSPECIFIED = 0;
+  COLOR_WHITE = 1;
+  COLOR_BLACK = 2;
+}
+
+// The six types of chessman.
+enum PieceType {
+  PIECE_TYPE_UNSPECIFIED = 0;
+  PIECE_TYPE_PAWN = 1;
+  PIECE_TYPE_KNIGHT = 2;
+  PIECE_TYPE_BISHOP = 3;
+  PIECE_TYPE_ROOK = 4;
+  PIECE_TYPE_QUEEN = 5;
+  PIECE_TYPE_KING = 6;
+}
+
+// Whose piece stands on a square, and what type.
+//
+// Colour and type rather than an identity, because that is all a reader of a
+// position needs. Two knights of the same colour are interchangeable here.
+message Occupant {
+  Color color = 1;
+  PieceType piece_type = 2;
+}

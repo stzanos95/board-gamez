@@ -6,6 +6,7 @@ Games, one package per game engine and one deployable per way of playing it.
 setup.sh                       prepare this machine — idempotent, safe to re-run
 .pre-commit-config.yaml        what has to pass before a commit lands, and a push
 .claude/skills/python-style/   the house style, loaded before any .py is written
+idl/contracts/                 the schema every layer shares, and what it generates
 packages/chess/                the chess engine — rules only, no input or output
 deployables/chess-cli/         the terminal game — owns its environment and its config
 infra/                         compose files and the scripts that drive them
@@ -28,6 +29,19 @@ running it once did. It never removes or overwrites anything you already have.
 ./infra/scripts/play.sh                         # in a container
 ```
 
+## The shared vocabulary
+
+A chess position means the same thing in the engine, in a browser and in an
+OpenAPI document because all three are generated from one schema.
+
+```bash
+./idl/scripts/generate.sh   # rewrite idl/contracts/gen from idl/contracts/proto
+./idl/scripts/check.sh      # lint, format, regenerate, and refuse any drift
+```
+
+`idl/contracts/gen` is committed, so a consumer needs the schema and not the
+toolchain. See [idl/README.md](idl/README.md).
+
 ## Layout rules
 
 - **A package is a library.** No I/O, no configuration, no terminal knowledge.
@@ -39,6 +53,11 @@ running it once did. It never removes or overwrites anything you already have.
 - **Swappable collaborators go through a provider.** A display or a console is a
   `config.py` / `base_*.py` / concrete / `provider.py` package, selected by
   configuration; consumers are typed against the base class only.
+- **One schema, many languages.** Anything that crosses a process boundary is
+  described once in `idl/contracts/proto` and generated into
+  `idl/contracts/gen`. The generated types are the wire; `packages/chess` keeps
+  its own models, because those carry behaviour a generated class cannot.
+  Converting between them is an adapter.
 - **Dependencies point one way**: `deployable → package → models`.
 - **There is no workspace root.** Each `pyproject.toml` stands alone; a deployable
   reaches a package through a relative `[tool.uv.sources]` path. Python 3.13 is

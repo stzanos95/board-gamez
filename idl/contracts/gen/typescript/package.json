@@ -1,0 +1,17 @@
+{
+  "name": "@board-gamez/idl",
+  "version": "0.1.0",
+  "description": "Generated protobuf contracts: the vocabulary every layer shares.",
+  "type": "module",
+  "sideEffects": false,
+  "files": [
+    "src"
+  ],
+  "exports": {
+    "./*": "./src/idl/*",
+    "./package.json": "./package.json"
+  },
+  "dependencies": {
+    "@bufbuild/protobuf": "^2.2.2"
+  }
+}

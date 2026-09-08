@@ -1,0 +1,31 @@
+# The IDL toolchain: protoc and its plugins, plus buf.
+#
+#   ../../idl/scripts/generate.sh
+#   ../../idl/scripts/lint.sh
+#
+# Unlike the other compose files here, the build context is a directory of tools
+# rather than the repository root. The image holds no schema at all:
+# idl/contracts arrives through the bind mount below, so editing a .proto and
+# regenerating never rebuilds the image.
+#
+# The whole repository is mounted rather than idl/ alone, because `buf breaking`
+# reads its baseline out of .git.
+#
+# IDL_USER_ID and IDL_GROUP_ID are exported by idl/scripts/_shared.sh. Without
+# them the container writes contracts/gen as root, and the host cannot then edit
+# or delete what it produced. They configure the harness, not an app, which is the
+# one thing the environment is still allowed to carry.
+
+name: board-gamez
+
+services:
+  idl:
+    build:
+      context: ../../idl/docker
+      dockerfile: Dockerfile
+    image: board-gamez/idl:latest
+    user: "${IDL_USER_ID:-1000}:${IDL_GROUP_ID:-1000}"
+    volumes:
+      - ../..:/repo
+    working_dir: /repo/idl
+    command: ["generate"]

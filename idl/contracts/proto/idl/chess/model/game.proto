@@ -1,0 +1,109 @@
+// A game: who is playing, where it stands, and how it finished.
+
+syntax = "proto3";
+
+package idl.chess.model;
+
+option go_package = "boardgamez/contracts/gen/go/idl/chess/model;chessmodel";
+
+import "idl/chess/model/board.proto";
+import "idl/chess/model/move.proto";
+import "idl/chess/model/piece.proto";
+
+// Where a game stands after the move just played.
+//
+// Everything but IN_PROGRESS and CHECK is terminal. The four draws are spelled
+// out rather than collapsed into one value, because a player is owed the reason.
+enum GameStatus {
+  GAME_STATUS_UNSPECIFIED = 0;
+  GAME_STATUS_IN_PROGRESS = 1;
+  GAME_STATUS_CHECK = 2;
+  GAME_STATUS_CHECKMATE = 3;
+  GAME_STATUS_STALEMATE = 4;
+  GAME_STATUS_DRAW_BY_FIFTY_MOVE_RULE = 5;
+  GAME_STATUS_DRAW_BY_REPETITION = 6;
+  GAME_STATUS_DRAW_BY_INSUFFICIENT_MATERIAL = 7;
+}
+
+// How a finished game is scored.
+//
+// The scorelines "1-0", "0-1" and "1/2-1/2" are how these are written on a
+// scoresheet. They are not legal identifiers, so rendering them belongs to the
+// layer that displays the result.
+enum GameOutcome {
+  GAME_OUTCOME_UNSPECIFIED = 0;
+  GAME_OUTCOME_WHITE_WINS = 1;
+  GAME_OUTCOME_BLACK_WINS = 2;
+  GAME_OUTCOME_DRAW = 3;
+}
+
+// Who is playing, and which side they have.
+message ChessPlayer {
+  string name = 1;
+  Color color = 2;
+}
+
+// The two players, addressable by colour.
+//
+// Named fields rather than a pair, so the sides cannot be passed the wrong way
+// round. white.color is always COLOR_WHITE, and black.color COLOR_BLACK.
+message PlayerRoster {
+  ChessPlayer white = 1;
+  ChessPlayer black = 2;
+}
+
+// One move that was played, with its written form.
+//
+// The notation is stored because rendering it needs the position the move was
+// played from, which is unavailable when the history is read. It is standard
+// algebraic — "Nf3", "exd5", "O-O", "e8=Q#" — never coordinate text.
+message ChessTurn {
+  uint32 number = 1;
+  ChessPlayer player = 2;
+  Move move = 3;
+  string notation = 4;
+  GameStatus resulting_status = 5;
+}
+
+// The turns played, and the position after each of them.
+//
+// position_keys runs one ahead of turns: the opening position counts as visited
+// before either player has moved.
+message ChessTurnHistory {
+  repeated ChessTurn turns = 1;
+  repeated PositionKey position_keys = 2;
+}
+
+// How a game finished.
+//
+// Exactly one of status and resigning_player is set. A game decided on the board
+// carries the status that ended it; a game decided by resignation carries the
+// player who resigned. winner is absent for a draw.
+message GameResult {
+  GameOutcome outcome = 1;
+  ChessPlayer winner = 2;
+  optional GameStatus status = 3;
+  ChessPlayer resigning_player = 4;
+}
+
+// A game in progress: the players, the position, and the moves played.
+//
+// The state half of the engine. Its behaviour — generating the legal moves,
+// judging the status, applying a move — stays in the library; what travels is
+// what the library computed.
+message ChessGame {
+  PlayerRoster roster = 1;
+  BoardState state = 2;
+  ChessTurnHistory history = 3;
+
+  // Every move the side to move may legally play. Empty once the game is over.
+  repeated Move legal_moves = 4;
+
+  GameStatus status = 5;
+
+  // Set only when a player gave up rather than being mated.
+  optional Color resigning_color = 6;
+
+  // Absent while the game is still being played.
+  GameResult result = 7;
+}

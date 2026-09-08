@@ -1,0 +1,33 @@
+// Which castles a side may still play.
+
+syntax = "proto3";
+
+package idl.chess.model;
+
+option go_package = "boardgamez/contracts/gen/go/idl/chess/model;chessmodel";
+
+import "idl/chess/model/piece.proto";
+
+// Which rook a castle uses.
+enum CastlingSide {
+  CASTLING_SIDE_UNSPECIFIED = 0;
+  CASTLING_SIDE_KINGSIDE = 1;
+  CASTLING_SIDE_QUEENSIDE = 2;
+}
+
+// One side's claim to one of its two castles.
+message CastlingRight {
+  Color color = 1;
+  CastlingSide side = 2;
+}
+
+// Which castles remain available.
+//
+// A right survives until the king or the matching rook moves, or that rook is
+// captured. It does not say whether the castle is legal now: that also depends
+// on occupancy and on which squares the enemy attacks.
+//
+// The list is a set. Order carries nothing, and a right appears at most once.
+message CastlingRights {
+  repeated CastlingRight available = 1;
+}

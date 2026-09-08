@@ -13,6 +13,15 @@
 # not silently missing for anyone who installs by hand.
 default_install_hook_types: [pre-commit, pre-push]
 
+# Nothing under these two directories was written here, and neither is ours to
+# reformat. idl/contracts/gen is machine output down to its pyproject.toml and
+# package.json, which are rendered from idl/scripts/templates — ruff would reject
+# the generated modules and the whitespace hooks would rewrite them, so every
+# regeneration would fight the hooks. Their correctness is checked by
+# regenerating them, which ./idl/scripts/check.sh does. idl/third_party is
+# vendored from googleapis.
+exclude: '^idl/(contracts/gen|third_party)/'
+
 repos:
   # Held at the version both projects lock. The hook, ./infra/scripts/lint.sh
   # and your editor are then the same linter, and cannot disagree about what is

@@ -1,0 +1,58 @@
+// A move, before and after the engine has settled what it is.
+
+syntax = "proto3";
+
+package idl.chess.model;
+
+option go_package = "boardgamez/contracts/gen/go/idl/chess/model;chessmodel";
+
+import "idl/chess/model/castling.proto";
+import "idl/chess/model/piece.proto";
+import "idl/chess/model/square.proto";
+
+// What a move does beyond relocating its piece.
+//
+// Tells a board which further edits to make: removing a pawn from a square the
+// mover does not land on, moving a rook alongside the king, or replacing the
+// moved piece.
+enum MoveType {
+  MOVE_TYPE_UNSPECIFIED = 0;
+  MOVE_TYPE_QUIET = 1;
+  MOVE_TYPE_CAPTURE = 2;
+  MOVE_TYPE_DOUBLE_PAWN_PUSH = 3;
+  MOVE_TYPE_EN_PASSANT = 4;
+  MOVE_TYPE_CASTLE = 5;
+  MOVE_TYPE_PROMOTION = 6;
+  MOVE_TYPE_PROMOTION_CAPTURE = 7;
+}
+
+// A coordinate move after parsing, before it is matched against the position.
+//
+// Two squares and, for a pawn reaching the last rank, what it becomes. Named
+// fields rather than a pair: the two squares share a type, and a transposition
+// would quietly describe the move backwards.
+message ParsedCoordinateMove {
+  Square origin = 1;
+  Square destination = 2;
+  optional PieceType promotion_type = 3;
+}
+
+// One move, complete enough for a board to apply without deriving anything.
+//
+// The mover is carried as colour and type rather than as a piece.
+//
+// captured_square differs from destination for en passant. The rook fields are
+// set only for a castle. A message field is simply absent when it does not
+// apply; the two enum fields say so with explicit presence.
+message Move {
+  Square origin = 1;
+  Square destination = 2;
+  Color moving_color = 3;
+  PieceType moving_piece_type = 4;
+  MoveType move_type = 5;
+  Square captured_square = 6;
+  optional PieceType promotion_type = 7;
+  optional CastlingSide castling_side = 8;
+  Square rook_origin = 9;
+  Square rook_destination = 10;
+}

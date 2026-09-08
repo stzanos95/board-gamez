@@ -1,0 +1,239 @@
+# idl
+
+The vocabulary every layer shares, written once.
+
+```
+contracts/
+├── proto/    the schema — the only thing here written by hand
+└── gen/      what the schema compiles to, one directory per language
+third_party/  protos vendored from googleapis, so generation needs no network
+scripts/      thin wrappers over the toolchain, runnable from anywhere
+  templates/  the packaging that ships beside the generated code
+docker/       the toolchain itself: protoc, its plugins, and buf
+buf.yaml      what counts as a well-formed schema
+```
+
+`contracts/` is what other layers consume. Everything beside it exists to produce
+`contracts/gen` from `contracts/proto` and to keep the two honest, and nothing
+outside this directory should ever need to know it is here.
+
+A chess position means the same thing in the engine, in a browser and in an
+OpenAPI document because all three are generated from `contracts/proto`. When the
+two sides of a boundary each declare their own idea of a `Move`, they agree until
+the day one of them is edited.
+
+## The schema
+
+One directory per domain, and inside it one directory per job a message can have.
+
+```
+contracts/proto/idl/chess/
+├── model/     what a thing is — the library dataclass equivalent
+├── dto/       what an API hands out and takes in
+├── obj/       what a repository reads and writes
+└── service/   what can be called, and on which HTTP path
+```
+
+The `idl/` segment above `chess/` is the Python import root, and it earns its
+place for that reason alone — see below. A second domain becomes
+`contracts/proto/idl/<domain>/` beside this one.
+
+Only `model/` has anything in it. The other three are documented and empty,
+waiting for the layers that will fill them: `obj/` for the repositories, `dto/`
+and `service/` for the API.
+
+The split is what keeps one change from becoming three. A stored row gains an
+index, an API response gains a field a client asked for, and neither reaches into
+the rules. Each directory has a README saying what belongs in it.
+
+Everything in `model/` mirrors `packages/chess/src_python/chess/models`, message
+for dataclass and enum for enum.
+
+## Generating
+
+```bash
+./idl/scripts/generate.sh              # rewrite every target in contracts/gen
+./idl/scripts/generate.sh typescript   # or just one: python, typescript, openapi
+./idl/scripts/lint.sh                  # naming, enum zero values, RPC shapes
+./idl/scripts/format.sh                # rewrite the .proto files; --check to report
+./idl/scripts/breaking.sh              # refuse a change that breaks a client on main
+./idl/scripts/check.sh                 # all of the above, in the order worth knowing
+```
+
+Nothing has to be installed on this machine. The toolchain is a container, and
+every script builds it when the Dockerfile has changed under it — bumping a
+pinned version needs no one to remember to rebuild.
+
+The targets are generated in order and a failing one stops the run, so the
+targets after it write nothing. Name a single target to see its errors on their
+own; an empty output directory beside a populated one is the sign.
+
+**`contracts/gen` is committed, and never edited.** A consumer needs the schema,
+not the toolchain — a browser project pulls `contracts/gen/typescript` without
+knowing protoc exists. `check.sh` regenerates and fails if the result differs, so
+the committed output cannot quietly drift from the schema.
+
+Each output directory is emptied before it is written. A message deleted from a
+`.proto` does not leave its generated class behind, still importable and now a
+lie.
+
+## Targets
+
+| Directory                  | Produced by           | What a consumer needs                      |
+| -------------------------- | --------------------- | ------------------------------------------ |
+| `contracts/gen/python`     | `protoc --python_out` | `protobuf` — installable, see below        |
+| `contracts/gen/typescript` | `protoc-gen-es`       | `@bufbuild/protobuf`                       |
+| `contracts/gen/openapi`    | `protoc-gen-openapi`  | nothing — it is a document                 |
+
+### Python
+
+An installable distribution, packaging included:
+
+```
+contracts/gen/python/
+├── pyproject.toml        rendered from scripts/templates/
+└── src/idl/chess/model/  protoc's output
+```
+
+A consumer depends on it the way `deployables/chess-cli` depends on
+`packages/chess` — a relative path, no workspace, nothing published anywhere:
+
+```toml
+[project]
+dependencies = ["board-gamez-idl"]
+
+[tool.uv.sources]
+board-gamez-idl = { path = "../../idl/contracts/gen/python", editable = true }
+```
+
+```python
+from idl.chess.model.board_pb2 import BoardState
+from idl.chess.model.piece_pb2 import Color, PieceType
+```
+
+Editable, so regenerating the schema reaches the consumer without a reinstall.
+
+**Why the schema has an `idl/` directory in it.** protoc derives a generated
+module's import path from the `.proto` file's own path, and writes that path into
+every generated import. `idl.chess.model` is therefore only reachable if the
+protos live under an `idl/` segment — no amount of packaging can rename the root
+after the fact. That segment also keeps this tree from colliding with the
+top-level `chess` package that `packages/chess` publishes, which two regular
+packages of one name on a `sys.path` would do, the first found winning and the
+other disappearing.
+
+**The protobuf floor is read, not written down.** protoc stamps the runtime it
+targets into the header of every module it writes, and those modules refuse to
+import under anything older. The generator reads it back out and renders it into
+the dependency, so bumping `PROTOC_VERSION` in `docker/Dockerfile` moves the
+floor with it and there is no second place to remember.
+
+A `py.typed` marker is written beside the generated packages, so a consumer's
+mypy reads the `.pyi` stubs rather than treating the distribution as untyped.
+Verified under `--strict --disallow-any-explicit`.
+
+`google/api` is not generated for Python. It would put a top-level `google`
+package on `sys.path` that shadows the real one, and `import google.protobuf`
+would stop working. When a service proto needs those two modules, they come from
+the `googleapis-common-protos` wheel.
+
+### TypeScript
+
+The same shape, with `package.json` in place of `pyproject.toml`:
+
+```
+contracts/gen/typescript/
+├── package.json          rendered from scripts/templates/
+└── src/
+    ├── idl/chess/model/  protoc's output
+    └── google/api/       generated here, unlike for Python
+```
+
+The export map drops the `idl/` segment that Python needs, because the package
+name already carries it:
+
+```json
+{ "exports": { "./*": "./src/idl/*" } }
+```
+
+```ts
+import { BoardState } from "@board-gamez/idl/chess/model/board_pb";
+```
+
+**It ships TypeScript source, not compiled JavaScript.** A consumer therefore
+bundles or compiles it, which is the normal arrangement for a package inside one
+repository and the reason there is no `tsc` in the toolchain image — adding one
+would mean an `npm install` on the generate path, and generation deliberately
+touches no network. Publishing this to a registry is what would make a build step
+worth its cost.
+
+Imports between generated files carry no extension, so a consumer wants
+`"moduleResolution": "bundler"`.
+
+The `@bufbuild/protobuf` dependency is the version of `protoc-gen-es` that wrote
+the code — they are one release, and the generator renders the image's own pin
+into the package.
+
+### OpenAPI
+
+`protoc-gen-openapi` walks services, not messages. Until
+`contracts/proto/idl/chess/service` holds a service with `google.api.http`
+annotations, this target writes a valid document with no paths in it. That is
+expected, not a failure — the wiring is in place so that adding the first service
+is one file and one regeneration.
+
+### Why every file declares a Go package
+
+`option go_package` is on all six model files, and Go is not a target.
+
+`protoc-gen-openapi` is a Go program built on `protogen`, which refuses to run
+against a file that does not name a Go import path — it has no way to know the
+caller does not want Go out the other end. Declaring it in the schema fixes it
+for every Go-based plugin at once, which is why it is here rather than as a
+sheaf of `M` flags in `entrypoint.sh` that the next such plugin would need again.
+
+The path is a placeholder: `boardgamez/contracts/gen/go/...`, no host, nothing
+resolves it. Point it at a real module when Go becomes a target.
+
+### gRPC
+
+Service stubs are not generated. Adding them means pinning one more plugin in
+`docker/Dockerfile`.
+
+## Rules
+
+- **`contracts/proto` is the source of truth.** Not the Python dataclasses, not a
+  TypeScript interface someone wrote by hand. If the two disagree, the schema is
+  right.
+- **The generated types are the wire, not the domain.** `packages/chess` keeps
+  its own models, because they carry behaviour — `Color.opponent`,
+  `GameStatus.is_terminal`, `Square.shifted` — and a generated class carries
+  none. Converting between them is an adapter, named `<source>_to_<target>`.
+- **Never renumber a field, and never reuse a number.** Deleting one means
+  `reserved 4;`, so a client on the old schema cannot silently read a new field
+  as an old one. `breaking.sh` is what enforces this.
+- **A breaking change is a new directory.** `chess/model/v2` lives beside
+  `chess/model` until nothing speaks the old one any more. The version is not in
+  the package name today, and `buf.yaml` turns off the rule that asks for it;
+  turn it back on when the first v2 arrives.
+- **Enums start at `_UNSPECIFIED`.** proto3 requires a zero value, and it is what
+  a consumer sees when reading a field a newer schema has not set. No producer
+  writes it.
+
+## Adding a message
+
+1. Write it in the right file under `contracts/proto/idl/chess/model/`, or add one.
+2. `./idl/scripts/lint.sh`, then `./idl/scripts/format.sh`.
+3. `./idl/scripts/generate.sh`.
+4. Commit `contracts/proto` and `contracts/gen` together. They are one change.
+
+## Toolchain
+
+Every version is pinned in the `ARG` block at the top of `docker/Dockerfile`,
+which is the only place to bump one. An unpinned toolchain generates different
+code on different days, which is the one thing generated code must never do.
+
+Generation is driven by `protoc` rather than `buf generate`: all three targets
+are plain protoc plugins, and `docker/entrypoint.sh` says exactly what each one
+receives. buf owns linting, formatting and breaking-change detection, which it
+does better than anything else.

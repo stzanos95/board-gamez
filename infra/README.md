@@ -21,6 +21,17 @@ scripts/lint.sh     ruff and mypy
 `play.sh` uses `docker compose run`, not `up` — an interactive prompt needs stdin
 attached, which `up` does not do.
 
+`compose/docker-compose.idl.yml` is the one compose file here with no script
+beside it. The IDL toolchain is driven from where the schema lives:
+
+```bash
+../idl/scripts/generate.sh    # and lint.sh, format.sh, breaking.sh, check.sh
+```
+
+It is also the one whose build context is a directory of tools rather than the
+repository root. That image holds no schema — `idl/contracts` arrives through a
+bind mount, so editing a `.proto` never rebuilds it.
+
 `dev.sh` bind-mounts `packages/` and `deployables/` read-only. Safe because the
 virtualenv lives at `/opt/venv`, outside the mounted trees. Editing
 `deployables/chess-cli/config/chess_cli.yaml` takes effect on the next run.

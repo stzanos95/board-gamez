@@ -1,0 +1,34 @@
+# What counts as a well-formed schema here.
+#
+# buf does not generate anything in this repository — docker/entrypoint.sh drives
+# protoc for that. buf owns the three jobs it is better at than anything else:
+# linting the schema, formatting it, and refusing a change that would break a
+# client already speaking the old one.
+#
+# Two modules rather than one, so the vendored Google protos are compiled as
+# includes without being held to rules they were not written against.
+version: v2
+
+modules:
+  - path: contracts/proto
+  - path: third_party
+
+lint:
+  use:
+    - STANDARD
+  except:
+    # The version does not live in the package name here. Each domain under
+    # contracts/proto/idl is split by what a message is for — model, dto, obj,
+    # service — and that split is what the directories carry. A breaking change
+    # adds chess/model/v2 beside chess/model, and the rule comes back on then.
+    - PACKAGE_VERSION_SUFFIX
+  ignore:
+    - third_party
+
+breaking:
+  # FILE is the strictest useful setting: it also catches a message moving
+  # between files, which breaks generated imports even when the wire stays valid.
+  use:
+    - FILE
+  ignore:
+    - third_party

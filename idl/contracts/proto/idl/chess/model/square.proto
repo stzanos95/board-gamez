@@ -1,0 +1,46 @@
+// Naming a square on the board.
+
+syntax = "proto3";
+
+package idl.chess.model;
+
+option go_package = "boardgamez/contracts/gen/go/idl/chess/model;chessmodel";
+
+// A column of the board.
+//
+// The numbers run 1 through 8 rather than 0 through 7, because proto3 reserves
+// zero for "unspecified". A consumer that wants a grid index subtracts one.
+enum File {
+  FILE_UNSPECIFIED = 0;
+  FILE_A = 1;
+  FILE_B = 2;
+  FILE_C = 3;
+  FILE_D = 4;
+  FILE_E = 5;
+  FILE_F = 6;
+  FILE_G = 7;
+  FILE_H = 8;
+}
+
+// A row of the board, numbered as it is written: RANK_1 is White's back rank.
+enum Rank {
+  RANK_UNSPECIFIED = 0;
+  RANK_1 = 1;
+  RANK_2 = 2;
+  RANK_3 = 3;
+  RANK_4 = 4;
+  RANK_5 = 5;
+  RANK_6 = 6;
+  RANK_7 = 7;
+  RANK_8 = 8;
+}
+
+// One of the sixty-four squares, named by its file and rank.
+//
+// Structural rather than the two characters "e4". The algebraic spelling is a
+// rendering of this, and every layer derives it the same way; carrying both
+// would let them disagree.
+message Square {
+  File file = 1;
+  Rank rank = 2;
+}

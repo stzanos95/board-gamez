@@ -1,0 +1,17 @@
+{
+  "name": "${TYPESCRIPT_PACKAGE_NAME}",
+  "version": "${CONTRACTS_VERSION}",
+  "description": "Generated protobuf contracts: the vocabulary every layer shares.",
+  "type": "module",
+  "sideEffects": false,
+  "files": [
+    "src"
+  ],
+  "exports": {
+    "./*": "./src/${ROOT_PACKAGE}/*",
+    "./package.json": "./package.json"
+  },
+  "dependencies": {
+    "@bufbuild/protobuf": "^${PROTOC_GEN_ES_VERSION}"
+  }
+}

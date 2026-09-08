@@ -1,0 +1,6 @@
+# contracts/gen is committed so that a consumer needs the schema, not the
+# toolchain — but every file in it is machine output, packaging included.
+# Marking it keeps it out of language statistics and collapses it by default in a
+# review, where the .proto diff is what matters.
+contracts/gen/** linguist-generated=true
+third_party/** linguist-vendored=true
