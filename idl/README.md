@@ -27,16 +27,25 @@ the day one of them is edited.
 One directory per domain, and inside it one directory per job a message can have.
 
 ```
-contracts/proto/idl/chess/
-├── model/     what a thing is — the library dataclass equivalent
-├── dto/       what an API hands out and takes in
-├── obj/       what a repository reads and writes
-└── service/   what can be called, and on which HTTP path
+contracts/proto/idl/
+├── table/     a table of N players, and the game contract they play through
+│   ├── model/     seats, turn order, version
+│   ├── dto/       the WebSocket protocol
+│   └── service/   GameService — implemented once per game
+└── chess/     one game's rules
+    ├── model/     what a thing is — the library dataclass equivalent
+    ├── dto/       what an API hands out and takes in
+    ├── obj/       what a repository reads and writes
+    └── service/   what can be called
 ```
 
-The `idl/` segment above `chess/` is the Python import root, and it earns its
-place for that reason alone — see below. A second domain becomes
-`contracts/proto/idl/<domain>/` beside this one.
+`table` never imports `chess`. A game's state and actions reach the session layer
+packed into `google.protobuf.Any`, stored and relayed without being opened, which
+is what lets one server host every game. Adding a game is a `GameKind` member and
+another `GameService` implementation.
+
+The `idl/` segment above them is the Python import root, and it earns its place
+for that reason alone — see below.
 
 Only `model/` has anything in it. The other three are documented and empty,
 waiting for the layers that will fill them: `obj/` for the repositories, `dto/`

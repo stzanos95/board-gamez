@@ -2,13 +2,9 @@
 
 Empty on purpose.
 
-What a repository reads and writes: rows, documents, stored aggregates, and the
-keys they are found by. Built from `chess/model`, shaped by what the store needs.
+Live games are held in Redis as the opaque `Any` the session layer stores, so
+nothing chess-shaped is written down while a game is being played.
 
-Separate from `chess/model` because storage changes for reasons the domain does
-not share — an index, a partition key, a denormalised copy, a schema migration
-that has to be readable by both the old code and the new. A model that doubles
-as a row cannot be changed without a migration, and a row that doubles as a model
-drags storage concerns into the rules.
-
-Filled in when there is something to store.
+This fills in when finished games are archived somewhere durable and queried —
+a stored game, its moves, the keys it is found by. That is a different shape from
+the live state: it is read by ratings and history, not by the rules.

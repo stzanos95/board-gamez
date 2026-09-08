@@ -6,6 +6,7 @@ Games, one package per game engine and one deployable per way of playing it.
 setup.sh                       prepare this machine — idempotent, safe to re-run
 .pre-commit-config.yaml        what has to pass before a commit lands, and a push
 .claude/skills/python-style/   the house style, loaded before any .py is written
+.claude/skills/modeling/       how the system is modelled, loaded before any .proto
 idl/contracts/                 the schema every layer shares, and what it generates
 packages/chess/                the chess engine — rules only, no input or output
 deployables/chess-cli/         the terminal game — owns its environment and its config

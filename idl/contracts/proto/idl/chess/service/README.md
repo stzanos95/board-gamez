@@ -1,16 +1,12 @@
 # chess/service
 
-Empty on purpose.
+Empty, and likely to stay that way.
 
-The RPCs, and the HTTP method and path each one answers on. A `service` block per
-API, with `google.api.http` annotations on every method.
+Chess does not define a service of its own. It implements
+`idl.table.service.GameService`, the one contract every game implements, packing
+its position and its moves into `google.protobuf.Any` so the session layer can
+carry them without knowing what they are.
 
-Those annotations are also what produces `contracts/gen/openapi`:
-`protoc-gen-openapi` walks services, not messages, so until there is a service
-here that document has no paths in it. The vendored `google/api` protos in
-`idl/third_party` are already in place for when there is.
-
-Requests and responses live in `chess/dto`, not here. This directory says what
-can be called; `chess/dto` says what is sent.
-
-Filled in when the API exists.
+A service belongs here only if chess grows an API that is chess-shaped and not a
+game of chess — an opening explorer, an analysis endpoint, a PGN import. Playing
+is not that.

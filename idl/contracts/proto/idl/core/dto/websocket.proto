@@ -1,0 +1,47 @@
+// What a message looks like while it is on a socket.
+
+syntax = "proto3";
+
+package idl.core.dto;
+
+import "google/protobuf/any.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "boardgamez/contracts/gen/go/idl/core/dto;coredto";
+
+// Everything the socket layer may read about a frame without opening it.
+//
+// Deliberately not shared with QueueMessageHeader. The two transports do not
+// carry the same facts and will diverge further: a frame has a connection behind
+// it and often a client waiting on an answer, a queue message has a delivery
+// attempt and an ordering key. One header for both would mean every field either
+// applies to both transports or is documented as ignored by one, and a field
+// that is sometimes meaningless is worse than a second message.
+message WebsocketMessageHeader {
+  // Unique per frame. What a log line, a metric and an acknowledgement all name
+  // when they mean this one message.
+  string id = 1;
+
+  // What this frame means, and the only thing a router reads before deciding
+  // where it goes.
+  //
+  // A string rather than an enum because core cannot enumerate the message types
+  // of domains it must not import — the same reason the payload is opaque. Each
+  // domain owns the constants for its own types; nothing here validates them,
+  // and an unknown type is a runtime decision, not a compile-time one.
+  string type = 2;
+
+  // When the sender emitted it, not when it was received.
+  google.protobuf.Timestamp timestamp = 3;
+}
+
+// One frame on a socket, in either direction.
+//
+// The header is the whole of what the transport is entitled to read. The payload
+// is opaque to it: packed by the domain that produced it, unpacked only by the
+// domain that consumes it. That is what lets a socket server relay messages
+// whose types it was never compiled against.
+message WebsocketMessageEnvelope {
+  WebsocketMessageHeader header = 1;
+  google.protobuf.Any payload = 2;
+}
