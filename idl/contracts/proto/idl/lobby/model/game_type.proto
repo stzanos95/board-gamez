@@ -1,0 +1,15 @@
+// Which game's rules a table is playing by.
+
+syntax = "proto3";
+
+package idl.lobby.model;
+
+option go_package = "boardgamez/contracts/gen/go/idl/lobby/model;lobbymodel";
+
+// The games this system knows how to host.
+//
+// The session layer routes on this value and knows nothing else about a game.
+enum GameType {
+  GAME_TYPE_UNSPECIFIED = 0;
+  GAME_TYPE_CHESS = 1;
+}

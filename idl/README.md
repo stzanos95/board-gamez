@@ -53,7 +53,7 @@ and `service/` for the API.
 
 The split is what keeps one change from becoming three. A stored row gains an
 index, an API response gains a field a client asked for, and neither reaches into
-the rules. Each directory has a README saying what belongs in it.
+the rules. What belongs in each is in `.claude/skills/modeling/`.
 
 Everything in `model/` mirrors `packages/chess/src_python/chess/models`, message
 for dataclass and enum for enum.

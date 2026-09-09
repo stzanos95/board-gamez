@@ -1,0 +1,24 @@
+// What is true of anything this system stores, whatever it is.
+
+syntax = "proto3";
+
+package idl.core.obj;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "boardgamez/contracts/gen/go/idl/core/obj;coreobj";
+
+// Identity, concurrency and audit for one stored object.
+//
+// A stored type composes this with the model it stores, so a model carries none
+// of these fields itself.
+message ObjectMetadata {
+  string id = 1;       // The object's identity.
+  uint64 version = 2;  // Send back what you read; an earlier version is refused.
+  string created_by = 3;
+  google.protobuf.Timestamp created_at = 4;
+  string updated_by = 5;  // Empty until the object has been written a second time.
+  google.protobuf.Timestamp updated_at = 6;
+  string deleted_by = 7;  // Set with deleted_at, and only on a soft delete.
+  google.protobuf.Timestamp deleted_at = 8;  // Its absence is what live means.
+}

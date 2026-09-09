@@ -8,8 +8,8 @@ option go_package = "boardgamez/contracts/gen/go/idl/chess/model;chessmodel";
 
 // A column of the board.
 //
-// The numbers run 1 through 8 rather than 0 through 7, because proto3 reserves
-// zero for "unspecified". A consumer that wants a grid index subtracts one.
+// The numbers run 1 through 8. A consumer that wants a zero-based grid index
+// subtracts one.
 enum File {
   FILE_UNSPECIFIED = 0;
   FILE_A = 1;
@@ -37,9 +37,7 @@ enum Rank {
 
 // One of the sixty-four squares, named by its file and rank.
 //
-// Structural rather than the two characters "e4". The algebraic spelling is a
-// rendering of this, and every layer derives it the same way; carrying both
-// would let them disagree.
+// The algebraic spelling "e4" is derived from this, and is not carried.
 message Square {
   File file = 1;
   Rank rank = 2;

@@ -28,22 +28,19 @@ enum MoveType {
 
 // A coordinate move after parsing, before it is matched against the position.
 //
-// Two squares and, for a pawn reaching the last rank, what it becomes. Named
-// fields rather than a pair: the two squares share a type, and a transposition
-// would quietly describe the move backwards.
+// Two squares and, for a pawn reaching the last rank, what it becomes.
 message ParsedCoordinateMove {
   Square origin = 1;
   Square destination = 2;
-  optional PieceType promotion_type = 3;
+  PieceType promotion_type = 3;
 }
 
 // One move, complete enough for a board to apply without deriving anything.
 //
-// The mover is carried as colour and type rather than as a piece.
+// The mover is carried as colour and type.
 //
 // captured_square differs from destination for en passant. The rook fields are
-// set only for a castle. A message field is simply absent when it does not
-// apply; the two enum fields say so with explicit presence.
+// set only for a castle. A field that does not apply is left unset.
 message Move {
   Square origin = 1;
   Square destination = 2;
@@ -51,8 +48,8 @@ message Move {
   PieceType moving_piece_type = 4;
   MoveType move_type = 5;
   Square captured_square = 6;
-  optional PieceType promotion_type = 7;
-  optional CastlingSide castling_side = 8;
+  PieceType promotion_type = 7;
+  CastlingSide castling_side = 8;
   Square rook_origin = 9;
   Square rook_destination = 10;
 }

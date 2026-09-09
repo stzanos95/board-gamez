@@ -9,35 +9,21 @@ import "google/protobuf/timestamp.proto";
 
 option go_package = "boardgamez/contracts/gen/go/idl/core/dto;coredto";
 
-// Everything a broker and a consumer may read about a message without opening it.
+// What a broker and a consumer read about a message without opening it.
 //
-// Its own type rather than a shared one, for the reason given on
-// WebsocketMessageHeader: a queue message outlives its sender, may be delivered
-// more than once and may be replayed weeks later, and none of that is true of a
-// socket frame. The fields those facts imply belong here and nowhere else.
+// Each domain owns the values it publishes as `type`, and nothing here validates
+// them. A message read off a queue may be arbitrarily old: treating receipt as
+// occurrence orders events wrongly under any backlog.
 message QueueMessageHeader {
-  // Unique per message. Also the natural key for a consumer that has to detect a
-  // redelivery, which at-least-once brokers guarantee will happen.
-  string id = 1;
-
-  // What this message means, and what a consumer subscribes on. A string for the
-  // same reason as on a socket frame: core cannot name the types of domains it
-  // must not import.
-  string type = 2;
-
-  // When the producer emitted it.
-  //
-  // Not when it was enqueued, delivered or redelivered. A message read off a
-  // queue may be arbitrarily old, and a consumer that treats receipt as
-  // occurrence gets the order of events wrong under any backlog.
-  google.protobuf.Timestamp timestamp = 3;
+  string id = 1;    // Unique per message, and what recognises a redelivery.
+  string type = 2;  // What this message means, and what a consumer subscribes on.
+  google.protobuf.Timestamp timestamp = 3;  // Emission, not enqueue or delivery.
 }
 
 // One message on a queue.
 //
-// Same shape as the socket envelope and deliberately not the same type. They are
-// alike today because both are new; the header each carries is what will pull
-// them apart.
+// The header is all the transport reads. The payload is packed by the domain
+// that produced it and opened only by the domain that consumes it.
 message QueueMessageEnvelope {
   QueueMessageHeader header = 1;
   google.protobuf.Any payload = 2;

@@ -8,9 +8,8 @@ option go_package = "boardgamez/contracts/gen/go/idl/chess/model;chessmodel";
 
 // Which side a piece belongs to.
 //
-// COLOR_UNSPECIFIED is never written by a producer. It exists because proto3
-// requires a zero value, and it is what a consumer sees when it reads a field a
-// newer schema has not set.
+// COLOR_UNSPECIFIED is never written by a producer. A reader sees it when the
+// field was not set.
 enum Color {
   COLOR_UNSPECIFIED = 0;
   COLOR_WHITE = 1;
@@ -30,8 +29,7 @@ enum PieceType {
 
 // Whose piece stands on a square, and what type.
 //
-// Colour and type rather than an identity, because that is all a reader of a
-// position needs. Two knights of the same colour are interchangeable here.
+// Carries no identity. Two knights of the same colour are interchangeable.
 message Occupant {
   Color color = 1;
   PieceType piece_type = 2;

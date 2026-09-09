@@ -1,0 +1,42 @@
+// A table: N seats, and the game they are seated for.
+
+syntax = "proto3";
+
+package idl.lobby.model;
+
+import "idl/lobby/model/game_type.proto";
+import "idl/lobby/model/seat.proto";
+
+option go_package = "boardgamez/contracts/gen/go/idl/lobby/model;lobbymodel";
+
+// Where a table stands in its life, which is not where its game stands. A table
+// is FINISHED because its game ended, and ABANDONED because nobody is coming
+// back.
+enum TableStatus {
+  TABLE_STATUS_UNSPECIFIED = 0;
+  TABLE_STATUS_WAITING = 1;
+  TABLE_STATUS_IN_PROGRESS = 2;
+  TABLE_STATUS_FINISHED = 3;
+  TABLE_STATUS_ABANDONED = 4;
+}
+
+// A table and the seats around it.
+//
+// Holds no game state and no rules. A table names a game and who is playing it;
+// starting one hands that roster to the game, and everything after that is the
+// game's.
+message Table {
+  string id = 1;
+  GameType game_type = 2;
+  TableStatus status = 3;
+  repeated Seat seats = 4;  // Fixed in count at creation.
+  uint64 version = 5;       // Send back what you read; 0 if never stored.
+}
+
+// Many tables.
+//
+// What every listing of tables answers with. A count, a cursor or the filter a
+// listing was answered under belongs here.
+message TableCollection {
+  repeated Table table_items = 1;
+}

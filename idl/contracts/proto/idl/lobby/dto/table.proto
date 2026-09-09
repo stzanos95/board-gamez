@@ -1,0 +1,44 @@
+// Reading and writing tables.
+
+syntax = "proto3";
+
+package idl.lobby.dto;
+
+import "idl/lobby/model/table.proto";
+
+option go_package = "boardgamez/contracts/gen/go/idl/lobby/dto;lobbydto";
+
+// Write a table, creating it if it is not there.
+//
+// The table carries the version it was read at. A write built on an earlier
+// version is refused, and version 0 means the caller believes it is creating.
+message UpsertTableRequest {
+  idl.lobby.model.Table table = 1;
+}
+
+message UpsertTableResponse {
+  idl.lobby.model.Table table = 1;
+}
+
+message ReadTableRequest {
+  string table_id = 1;
+}
+
+message ReadTableResponse {
+  idl.lobby.model.Table table = 1;
+}
+
+message DeleteTableRequest {
+  string table_id = 1;
+  uint64 expected_version = 2;
+}
+
+message DeleteTableResponse {
+  string table_id = 1;
+}
+
+message ListTableRequest {}
+
+message ListTableResponse {
+  idl.lobby.model.TableCollection collection = 1;
+}

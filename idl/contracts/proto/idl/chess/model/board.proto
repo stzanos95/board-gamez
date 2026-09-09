@@ -12,8 +12,7 @@ import "idl/chess/model/square.proto";
 
 // One square and the piece standing on it.
 //
-// Lets a whole position travel as a list. proto3 cannot key a map by a message,
-// and a position is naturally keyed by Square.
+// A position travels as a list of these.
 message SquareOccupant {
   Square square = 1;
   Occupant occupant = 2;
@@ -28,22 +27,16 @@ message BoardState {
   Color side_to_move = 2;
   CastlingRights castling_rights = 3;
 
-  // The square a pawn may capture onto this move, set by a double push. Absent
-  // when the previous move was not one.
-  Square en_passant_target = 4;
-
-  // Plies since the last capture or pawn move. Reaching 100 draws the game.
-  uint32 halfmove_clock = 5;
-
-  // Starts at 1 and increases after Black moves.
-  uint32 fullmove_number = 6;
+  Square en_passant_target = 4;  // Set by a double push, and unset otherwise.
+  uint32 halfmove_clock = 5;     // Plies since the last capture or pawn move; 100 draws.
+  uint32 fullmove_number = 6;    // Starts at 1 and increases after Black moves.
 }
 
 // What makes two positions the same for the repetition rule.
 //
 // The same pieces on the same squares, the same side to move, the same castling
-// rights and the same en-passant square. The clocks are deliberately absent:
-// they differ between repetitions of one position.
+// rights and the same en-passant square. The clocks are excluded: they differ
+// between repetitions of one position.
 message PositionKey {
   repeated SquareOccupant occupancy = 1;
   Color side_to_move = 2;

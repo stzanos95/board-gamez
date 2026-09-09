@@ -1,0 +1,29 @@
+// A stored table.
+
+syntax = "proto3";
+
+package idl.lobby.obj;
+
+import "idl/core/obj/object_metadata.proto";
+import "idl/lobby/model/game_type.proto";
+import "idl/lobby/model/seat.proto";
+import "idl/lobby/model/table.proto";
+
+option go_package = "boardgamez/contracts/gen/go/idl/lobby/obj;lobbyobj";
+
+// One stored table.
+//
+// The fields are the store's own, not a model embedded in a wrapper. A writer
+// maps between the two, which is what lets storage carry fields the domain does
+// not have, omit fields it does not need, and change shape on its own schedule.
+//
+// Seats are held inside this row, so they are the model's own type. The enums
+// are shared for the same reason: a field number is local to the message that
+// declares it, but an enum value is written into the data, and a second
+// declaration that drifts in numbering reinterprets every row already stored.
+message TableObj {
+  idl.core.obj.ObjectMetadata metadata = 1;
+  idl.lobby.model.GameType game_type = 2;
+  idl.lobby.model.TableStatus status = 3;
+  repeated idl.lobby.model.Seat seats = 4;
+}

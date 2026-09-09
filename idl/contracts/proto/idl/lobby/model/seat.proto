@@ -1,0 +1,29 @@
+// A place at a table, and who is in it.
+
+syntax = "proto3";
+
+package idl.lobby.model;
+
+option go_package = "boardgamez/contracts/gen/go/idl/lobby/model;lobbymodel";
+
+// Whether a seat is available or taken.
+enum SeatStatus {
+  SEAT_STATUS_UNSPECIFIED = 0;
+  SEAT_STATUS_OPEN = 1;
+  SEAT_STATUS_OCCUPIED = 2;
+}
+
+// One place at a table.
+//
+// `number` is the seat's position and never changes once the table is created.
+// It fixes the order players are handed to a game when one starts. What a game
+// makes of that order is the game's own business. Numbered from 1, so 0 means no
+// seat wherever a seat is named.
+//
+// A seat holds a player id and no more. A name to draw is read from identity
+// when it is needed, so a renamed player is never stale here.
+message Seat {
+  uint32 number = 1;
+  SeatStatus status = 2;
+  string player_id = 3;  // Empty exactly when the seat is OPEN.
+}

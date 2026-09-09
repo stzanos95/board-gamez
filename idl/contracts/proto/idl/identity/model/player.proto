@@ -1,0 +1,16 @@
+// Who is playing.
+
+syntax = "proto3";
+
+package idl.identity.model;
+
+option go_package = "boardgamez/contracts/gen/go/idl/identity/model;identitymodel";
+
+// A person.
+//
+// Never carried in a request. Which player is acting comes from the
+// authenticated session.
+message Player {
+  string id = 1;
+  string display_name = 2;
+}

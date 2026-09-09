@@ -21,10 +21,25 @@ The reason is not ceremony. Generated output is a large diff that hides the smal
 one that matters, and a modelling session should end with the user reading six
 lines of schema, not six hundred lines of descriptor.
 
-**Always explain the abstraction.** Every message, every enum, every field that
-is not obvious comes with the reasoning. Not what it is — the schema says that —
-but why it is shaped that way. A change handed over without its reasoning cannot
-be argued with, and arguing with it is the point.
+**Always explain the abstraction — in the reply, never in the schema.** Every
+message, every enum, every field that is not obvious comes with the reasoning.
+Not what it is — the schema says that — but why it is shaped that way. A change
+handed over without its reasoning cannot be argued with, and arguing with it is
+the point.
+
+That reasoning goes in the reply to the person who asked, and nowhere else. **It
+never goes in a comment**, and there is nowhere else for it to go: see below.
+A comment is read years later by someone who did not follow the argument, cannot
+see the alternative it rejects, and does not care which directory the type lives
+in. The rules in `CLAUDE.md` hold — no conversation context, no comparison
+against code that is not there, and never the name of an implementation the
+contract does not bind to.
+
+**No README lives under `contracts/proto`.** Not per domain, not per directory.
+A schema documents itself through names, and prose beside it goes stale the first
+time a field changes and nobody remembers the file exists. A rule that outlives
+one conversation belongs in this skill, where it is loaded before the next
+change. Everything else belongs in the reply and is allowed to be forgotten.
 
 An explanation is worth reading when it says:
 
@@ -59,18 +74,174 @@ The test for each:
 - **`model/`** — would this still exist if there were no API and no database?
   Domain vocabulary, one message per dataclass and one enum per enum. It says
   nothing about how it is stored or asked for.
-- **`dto/`** — does the caller need a shape the domain does not have? A
-  projection that hides something, an aggregate assembled for one screen, a
-  request body. When the API's shape and the domain's shape are the same, send
-  the model and leave `dto/` empty. An empty `dto/` is a finding, not a gap.
-- **`obj/`** — does the store need a shape the domain does not have? An index, a
-  partition key, a denormalised copy, a row that two versions of the code must
-  both read. A model that doubles as a row cannot change without a migration.
-- **`service/`** — what can be called, and on what path. Requests and responses
-  live in `dto/`, not here.
+- **`dto/`** — transfer, and only transfer. `<Method>Request` and
+  `<Method>Response`, nothing else. A view, a summary or a projection is not a
+  dto: anything that survives being read is a model, and a response carries the
+  model. If a caller seems to need a different shape, ask whether it needs a
+  different model or whether it can derive what it wants — a client knows its own
+  identity, so nothing has to be answered per viewer.
+- **`service/`** — what can be called, and where. The requests and responses it
+  names live in `dto/`.
+- **`obj/`** — **is this a row?** A type here earns its place by being something
+  the store writes and reads as a unit. If a `Seat` is only ever held inside a
+  table's row, there is no `SeatObj`; the row uses the model's `Seat`. If seats
+  are written and read on their own, there is. Nothing else goes here: an index,
+  a partition key or a denormalised copy is a row too, and gets its own type.
 
 If a message seems to belong in two, it is probably two messages that happen to
 have the same fields today. Say so and let the user decide.
+
+## Stored types restate their fields
+
+**A row declares its own fields. It never embeds the model as a field.**
+Composing a wrapper around a model looks tidier and is wrong: it welds storage to
+the domain, so every model change is a migration, and it forbids the store from
+ever holding less than the whole thing.
+
+```
+package idl.lobby.obj;
+
+message TableObj {                       // yes
+  idl.core.obj.ObjectMetadata metadata = 1;
+  idl.lobby.model.GameType game_type = 2;
+  repeated idl.lobby.model.Seat seats = 3;
+  ...
+}
+
+message TableObj {                       // no — the model, wrapped
+  idl.core.obj.ObjectMetadata metadata = 1;
+  idl.lobby.model.Table table = 2;
+}
+```
+
+**A row's own fields are restated; what nests inside them is not.** The row is
+what evolves on the store's schedule, so its shape is the store's. A value held
+inside it — a seat in a table's row — is the model's type, because a parallel
+copy with no independent reason to exist is two things to keep in step for
+nothing.
+
+What restating buys: storage can carry a field the domain has no idea about, omit
+one it does not need, keep a denormalised copy for an index, and change shape on
+its own schedule. What it costs is a mapping to maintain and two definitions to
+keep honest. That is the trade, made deliberately, and it is the repository's
+"explicit beats DRY" rule applied to persistence.
+
+**Share the enums, duplicate the messages.** A field number is local to the
+message that declares it, so a duplicated message shape can never collide with
+the original. An enum value is written into the data, so a second declaration
+that drifts in numbering silently reinterprets every row already stored. Import
+the model's enums; restate the model's messages.
+
+**`ObjectMetadata` is the one thing every stored type shares** — identity, the
+version optimistic concurrency turns on, and the audit fields. Being written down
+is what makes concurrent writers possible, so the version belongs to the metadata
+rather than to each thing stored.
+
+## Domains, and what `core` is for
+
+**`core` holds only what every domain needs and no domain owns** — transport
+envelopes, object metadata. It is not the place for concepts that were hard to
+file. Tables, seats and players are domain vocabulary and belong to a domain of
+their own; putting them in `core` is how a shared layer becomes a layer that
+everything depends on and nobody can change.
+
+**A domain is named for what it is about, not for what it contains.**
+`identity` owns who someone is, and later how they prove it. `lobby` owns where
+people gather to play. `chess` owns one game's rules.
+
+**Domains reference each other by id, never by embedding.** A seat holds a player
+id; it does not hold a `Player`. A copy of another domain's model is a copy that
+goes stale the moment that domain changes it, and it drags one domain's shape
+into another's storage. The name to draw beside a seat is joined in when a view
+is assembled, which is one of the things `dto/` is for.
+
+## Endpoint paths
+
+Every path is built the same way:
+
+```
+/<internal or external>/<platform or product>/<domain>/<method>/<entity>
+
+/internal/platform/lobby/upsert/table
+/internal/platform/lobby/list/table
+```
+
+- **internal or external** — who may call it. `internal` is reached from inside
+  the system; `external` faces a browser or a third party. Nothing is `external`
+  yet.
+- **platform or product** — which half owns it. `platform` is what every game
+  shares; a product is one thing built on top. Nothing is a product yet.
+- **domain** — the directory the service lives in.
+- **method** — `upsert`, `read`, `delete`, `list` for storage. A domain verb
+  (`join`, `leave`) belongs to a layer above storage, never beside it.
+- **entity** — singular, and a row. Not a field of one.
+
+**An internal method exists for a row, and for nothing smaller.** The entities a
+service acts on are exactly the types in `obj/`. If a seat is not a row, there is
+no `UpsertSeat`: changing one is a read of the table, an edit, and a write of the
+table back, guarded by the version. A method that edits part of a row is a domain
+verb wearing a storage name, and it drags the store's write pattern into a
+contract that should not know it.
+
+The cost is that two callers editing different parts of one row conflict on the
+version and one retries. That is the correct outcome — neither write is lost —
+and where the contention is high enough to hurt, the answer is that the part
+should have been its own row all along.
+
+**The entity stays singular in the method name too.** `ListTable`, never
+`ListTables` — the method names what it acts on, and the plural belongs to what
+comes back. So the four are `UpsertTable`, `ReadTable`, `DeleteTable`,
+`ListTable`, and their messages follow.
+
+**A listing returns a collection model, never a repeated field.**
+
+```
+message TableCollection {                      // idl.lobby.model
+  repeated Table table_items = 1;
+}
+
+message ListTableResponse {                    // idl.lobby.dto
+  idl.lobby.model.TableCollection collection = 1;
+}
+```
+
+`<Entity>Collection` holds `repeated <Entity> <entity>_items`, and the response
+carries it as `collection`. Whatever a listing grows next — a count, a cursor,
+the filter it was answered under — lands in one place and every listing gets it,
+instead of being added to a response at a time.
+
+The method is in the path, so **every call is a POST with the request as its
+body**, a read included. A GET cannot carry one.
+
+## Naming
+
+**A name never repeats its container.** The directory, the package and the
+message are already part of every call site, so saying it again is noise that
+compounds.
+
+```
+lobby/obj/table.proto        idl.lobby.obj.Table       // yes
+lobby/obj/table_object.proto idl.lobby.obj.TableObject // no — obj, twice
+message Player { string id; }                          // player.id
+message Player { string player_id; }                   // no — player, twice
+```
+
+**Rows are the one exception: a type in `obj/` ends in `Obj`.**
+`idl.lobby.obj.TableObj`, not `idl.lobby.obj.Table`. A row and its model are
+routinely in scope together — a writer maps between them — and two types called
+`Table` in one function is exactly where a mapping goes wrong silently. The
+suffix is worth the repetition where the reader is holding both at once.
+
+**`id` when the message is the thing. `<thing>_id` when it points at one.**
+
+```
+message Player { string id = 1; }                     // player.id
+message Seat   { optional string player_id = 3; }     // seat.player_id
+message GetTableRequest { string table_id = 1; }      // names a table, is not one
+```
+
+`player.player_id` says the same word twice at every call site. `seat.id` says
+nothing about which id it is.
 
 ## Layering
 
@@ -153,6 +324,14 @@ that it is open.
 
 - **Who writes this, and is there exactly one writer?** Two producers of one
   invariant is a bug the schema can prevent.
+- **Does the writer exist yet?** A field whose only writer is a layer that has
+  not been built is not modelled, however obvious it seems. Cache a fact another
+  layer owns only when the round trip it saves has a measured cost, and never
+  before that layer exists — until then it is a second copy of a truth with
+  nobody to keep it honest.
+- **Can this field contradict another one?** Two fields that must agree are one
+  field and a derivation. If a status enum has exactly the values that a
+  nullable id already distinguishes, one of them is redundant.
 - **What happens when two writers race?** If the answer is a version field,
   model it now — retrofitting optimistic concurrency means every client changes.
 - **Who is allowed to see this?** Perfect information is an assumption, not a
@@ -177,18 +356,46 @@ that it is open.
 - **Closed sets are enums**, starting at `_UNSPECIFIED = 0`. proto3 requires a
   zero value, and it is what a reader sees when a newer schema has not set the
   field. No producer ever writes it.
-- **Explicit presence where absence means something.** `optional` on a scalar or
-  enum that is genuinely sometimes absent. Message fields already have presence;
-  do not decorate them.
+- **Never `optional`.** Absence is the zero value: `UNSPECIFIED` on an enum, the
+  empty string, zero on a number. Message fields already carry presence and need
+  no decoration.
+- **Where zero is a real value, number from one.** This is the one trap the rule
+  above sets. Seat 0 is a legitimate seat, so `seat_to_act = 0` would be
+  ambiguous between "seat zero acts" and "nobody acts" — so seats are numbered
+  from 1 and 0 means none. `File` and `Rank` already do this. Where renumbering
+  is wrong, carry a companion boolean (`is_you`, `is_seated`) instead of
+  overloading a sentinel nobody will remember.
 - **A record is a message, a collection is `repeated`.** If reading a field
   correctly depends on remembering an order or a spelling, it wants a message.
   `repeated Move` is a collection; a `repeated string` whose first element is an
   id is a record that has not been named.
 - **Name a field for what it is in the file that reads it**, not the file that
   declares it. `seat_to_act`, not `current`.
-- **Comment the why.** The field name says what. The comment says what a reader
-  would get wrong: that `captured_square` differs from `destination` for en
-  passant, that `position_keys` runs one ahead of `turns`.
+- **Comment what a reader would get wrong**, not why you chose it. That
+  `captured_square` differs from `destination` for en passant, that
+  `position_keys` runs one ahead of `turns`, that a timestamp is emission and not
+  receipt. A comment that only makes sense to someone who followed the design
+  discussion belongs in the reply instead.
+- **A message may carry a long comment. A field may not.** Everything a reader
+  needs — what the type is, the constraint they would otherwise get wrong, what a
+  caller is obliged to do — goes in the block above the message. A field comment
+  is **one short sentence, trailing the field on the same line**, and never a
+  block above it.
+
+  ```
+  message Seat {
+    uint32 number = 1;
+    SeatStatus status = 2;
+    string player_id = 3;  // Empty exactly when the seat is OPEN.
+  }
+  ```
+
+  A field that seems to need two sentences needs one of them above the message,
+  where it is read once instead of skimmed past every time. A field whose name
+  already says it needs no comment at all.
+- **A contract never names what is behind it.** No store, no framework, no
+  transport it is not itself defining. A model does not know who holds it. If a
+  type is a cache, that belongs in its name — `CachedTable` — not in a comment.
 
 ## Mechanics that will bite
 
@@ -219,9 +426,24 @@ is much cheaper to lose an argument about a field name than to migrate one.
 
 - [ ] Nothing under `idl/contracts/gen` was written, and the generator was not run
 - [ ] Every non-obvious message and field has its reasoning stated in the reply
+- [ ] Field comments are one sentence, trailing the field; long prose sits above
+      the message
+- [ ] No comment carries conversation context, a rejected alternative, or the
+      name of a store, framework or implementation
 - [ ] Each message is in the right one of `model` / `dto` / `obj` / `service`
+- [ ] `dto/` holds only `<Method>Request` and `<Method>Response`
+- [ ] Method names take a singular entity, and listings return a collection model
+- [ ] No README was added under `contracts/proto`
+- [ ] Every endpoint path follows internal/platform/domain/method/entity
+- [ ] Every internal method acts on a row, never on part of one
+- [ ] Each message is in the right domain, and `core` gained nothing a domain owns
+- [ ] Every type in `obj/` is a row, restates the row's own fields, and ends in `Obj`
+- [ ] Cross-domain references are ids, not embedded models
+- [ ] Identifiers are `id` on the owner and `<thing>_id` on a reference
+- [ ] No name repeats its directory, package or message
 - [ ] No generic domain imports a specific one
 - [ ] Every enum starts at `_UNSPECIFIED`, and no number was reused
+- [ ] No `optional` anywhere; anything numbered where 0 is real starts at 1
 - [ ] `option go_package` on every new file
 - [ ] Concurrency, visibility, recovery and participant count are answered or named as open
 - [ ] Open questions are listed, not silently decided

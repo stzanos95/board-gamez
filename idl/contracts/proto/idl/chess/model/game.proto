@@ -12,8 +12,7 @@ import "idl/chess/model/piece.proto";
 
 // Where a game stands after the move just played.
 //
-// Everything but IN_PROGRESS and CHECK is terminal. The four draws are spelled
-// out rather than collapsed into one value, because a player is owed the reason.
+// Everything but IN_PROGRESS and CHECK is terminal. Each draw names its cause.
 enum GameStatus {
   GAME_STATUS_UNSPECIFIED = 0;
   GAME_STATUS_IN_PROGRESS = 1;
@@ -27,9 +26,8 @@ enum GameStatus {
 
 // How a finished game is scored.
 //
-// The scorelines "1-0", "0-1" and "1/2-1/2" are how these are written on a
-// scoresheet. They are not legal identifiers, so rendering them belongs to the
-// layer that displays the result.
+// The scorelines "1-0", "0-1" and "1/2-1/2" are rendered by the layer that
+// displays the result.
 enum GameOutcome {
   GAME_OUTCOME_UNSPECIFIED = 0;
   GAME_OUTCOME_WHITE_WINS = 1;
@@ -45,8 +43,7 @@ message ChessPlayer {
 
 // The two players, addressable by colour.
 //
-// Named fields rather than a pair, so the sides cannot be passed the wrong way
-// round. white.color is always COLOR_WHITE, and black.color COLOR_BLACK.
+// white.color is always COLOR_WHITE, and black.color COLOR_BLACK.
 message PlayerRoster {
   ChessPlayer white = 1;
   ChessPlayer black = 2;
@@ -54,9 +51,9 @@ message PlayerRoster {
 
 // One move that was played, with its written form.
 //
-// The notation is stored because rendering it needs the position the move was
-// played from, which is unavailable when the history is read. It is standard
-// algebraic — "Nf3", "exd5", "O-O", "e8=Q#" — never coordinate text.
+// The notation is standard algebraic — "Nf3", "exd5", "O-O", "e8=Q#" — never
+// coordinate text. It is stored because rendering it needs the position the move
+// was played from, which a reader of the history no longer has.
 message ChessTurn {
   uint32 number = 1;
   ChessPlayer player = 2;
@@ -82,28 +79,18 @@ message ChessTurnHistory {
 message GameResult {
   GameOutcome outcome = 1;
   ChessPlayer winner = 2;
-  optional GameStatus status = 3;
+  GameStatus status = 3;
   ChessPlayer resigning_player = 4;
 }
 
 // A game in progress: the players, the position, and the moves played.
-//
-// The state half of the engine. Its behaviour — generating the legal moves,
-// judging the status, applying a move — stays in the library; what travels is
-// what the library computed.
 message ChessGame {
   PlayerRoster roster = 1;
   BoardState state = 2;
   ChessTurnHistory history = 3;
 
-  // Every move the side to move may legally play. Empty once the game is over.
-  repeated Move legal_moves = 4;
-
+  repeated Move legal_moves = 4;  // What the side to move may play; empty once over.
   GameStatus status = 5;
-
-  // Set only when a player gave up rather than being mated.
-  optional Color resigning_color = 6;
-
-  // Absent while the game is still being played.
-  GameResult result = 7;
+  Color resigning_color = 6;  // Set only when a player resigned.
+  GameResult result = 7;      // Unset while the game is still being played.
 }
