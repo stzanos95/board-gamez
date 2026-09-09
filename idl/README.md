@@ -62,7 +62,7 @@ for dataclass and enum for enum.
 
 ```bash
 ./idl/scripts/generate.sh              # rewrite every target in contracts/gen
-./idl/scripts/generate.sh typescript   # or just one: python, typescript, openapi
+./idl/scripts/generate.sh typescript   # or one: python, typescript, openapi, fastapi
 ./idl/scripts/lint.sh                  # naming, enum zero values, RPC shapes
 ./idl/scripts/format.sh                # rewrite the .proto files; --check to report
 ./idl/scripts/breaking.sh              # refuse a change that breaks a client on main
@@ -93,6 +93,46 @@ lie.
 | `contracts/gen/python`     | `protoc --python_out` | `protobuf` — installable, see below        |
 | `contracts/gen/typescript` | `protoc-gen-es`       | `@bufbuild/protobuf`                       |
 | `contracts/gen/openapi`    | `protoc-gen-openapi`  | nothing — it is a document                 |
+| `contracts/gen/fastapi`    | `datamodel-codegen` + `render_routers.py` | `fastapi`, `pydantic` |
+
+### FastAPI
+
+Generated from the OpenAPI document rather than from the `.proto` files, so it
+runs after the `openapi` target. An installable distribution, like the Python
+one:
+
+```
+contracts/gen/fastapi/
+├── pyproject.toml                  rendered from scripts/templates/
+└── src/idl_fastapi/
+    ├── idl/lobby/model.py          one module per proto package
+    └── services/table_service.py   one module per service
+```
+
+Each service module holds an abstract base declaring one method per operation,
+and a router class binding every path to an instance of it:
+
+```python
+class LobbyRouters:
+    @staticmethod
+    def table_service() -> APIRouter:
+        return TableServiceRouter.build(TableServiceBinding())
+```
+
+The generated modules hold no behaviour, so an implementation never lives in
+this tree: a domain package implements the base, and a deployable includes the
+router. Regenerating cannot overwrite either.
+
+Three choices in `docker/entrypoint.sh` are load-bearing. Schema names are fully
+qualified, so two domains may both declare a `Table`. Enum fields are `Literal`
+rather than `Enum` classes, because a proto enum is inlined into the field
+carrying it — the generator would name a class after that field and number the
+duplicates, so adding a message could renumber a class every consumer imports by
+name. And the formatter is `builtin` with no timestamp, so regenerating an
+unchanged schema produces an unchanged file.
+
+Its own root package: the Python target already publishes a top-level `idl`, and
+two distributions cannot both own that name.
 
 ### Python
 

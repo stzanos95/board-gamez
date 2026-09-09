@@ -4,6 +4,9 @@ version = "0.1.0"
 description = "The HTTP gateway to the board-gamez platform."
 requires-python = ">=3.13"
 dependencies = [
+    # The routers this gateway serves, ready made. A domain package owns its
+    # paths, its adapter and its binding; the gateway only includes them.
+    "lobby",
     "fastapi>=0.141.1",
     # No [standard] extra: it brings a websocket stack and an HTTP/2 client this
     # process does not use.
@@ -11,6 +14,10 @@ dependencies = [
     # Settings are a dataclass parsed from YAML; the yaml extra brings the loader.
     "mashumaro[yaml]>=3.22",
 ]
+
+# Relative path sources rather than a workspace: each project here stands alone.
+[tool.uv.sources]
+lobby = { path = "../../packages/lobby", editable = true }
 
 [project.scripts]
 fastapi-gateway = "main:main"

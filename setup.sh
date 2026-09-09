@@ -18,6 +18,7 @@ set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ENGINE_DIR="$REPO_ROOT/packages/chess"
+LOBBY_DIR="$REPO_ROOT/packages/lobby"
 APP_DIR="$REPO_ROOT/deployables/chess-cli"
 GATEWAY_DIR="$REPO_ROOT/deployables/fastapi-gateway"
 INFRA_DIR="$REPO_ROOT/infra"
@@ -224,6 +225,7 @@ ensure_project_environments() {
         return 0
     fi
     ensure_project_environment "$ENGINE_DIR" "packages/chess"
+    ensure_project_environment "$LOBBY_DIR" "packages/lobby"
     ensure_project_environment "$APP_DIR" "deployables/chess-cli"
     ensure_project_environment "$GATEWAY_DIR" "deployables/fastapi-gateway"
 }
@@ -423,7 +425,9 @@ run_test_suites() {
         return 0
     fi
     if "$APP_DIR/scripts/local-test.sh" >/tmp/board-gamez-setup-tests.log 2>&1 &&
-        "$GATEWAY_DIR/scripts/local-test.sh" >>/tmp/board-gamez-setup-tests.log 2>&1; then
+        "$GATEWAY_DIR/scripts/local-test.sh" >>/tmp/board-gamez-setup-tests.log 2>&1 &&
+        (cd "$LOBBY_DIR" && uv run --quiet python -m unittest discover -s tests_python -t .) \
+            >>/tmp/board-gamez-setup-tests.log 2>&1; then
         ok "$(grep -c '^OK' /tmp/board-gamez-setup-tests.log) suites passed"
         grep -E '^Ran ' /tmp/board-gamez-setup-tests.log | while read -r line; do note "$line"; done
     else

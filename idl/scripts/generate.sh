@@ -15,12 +15,12 @@ case "$TARGET" in
     all)
         idl_compose_run generate
         ;;
-    python | typescript | openapi)
+    python | typescript | openapi | fastapi)
         idl_compose_run "$TARGET"
         ;;
     *)
         echo "unknown target ${TARGET}" >&2
-        echo "usage: generate.sh [all|python|typescript|openapi]" >&2
+        echo "usage: generate.sh [all|python|typescript|openapi|fastapi]" >&2
         exit 2
         ;;
 esac

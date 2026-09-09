@@ -4,6 +4,7 @@ The gateway: a FastAPI application and the server that runs it.
 
 import uvicorn
 from fastapi import FastAPI
+from lobby.service.lobby_routers import LobbyRouters
 
 from fastapi_gateway.gateway_api_config import ApplicationConfig, GatewayAPIConfig, ServerConfig
 
@@ -15,8 +16,9 @@ class GatewayAPI:
     Serves plain HTTP. TLS is terminated ahead of this process, so a request
     reaching it has already left the network the certificate covers.
 
-    Bringup happens once, here: the application is built, the server is built
-    around it, and `start` begins listening.
+    Bringup happens once, here: the application is built with the routers each
+    domain publishes, the server is built around it, and `start` begins
+    listening.
     """
 
     def __init__(self, config: GatewayAPIConfig) -> None:
@@ -38,11 +40,13 @@ class GatewayAPI:
 
     @staticmethod
     def _build_application(config: ApplicationConfig) -> FastAPI:
-        return FastAPI(
+        application = FastAPI(
             title=config.title,
             version=config.version,
             root_path=config.root_path,
         )
+        application.include_router(LobbyRouters.table_service())
+        return application
 
     @staticmethod
     def _build_server(application: FastAPI, config: ServerConfig) -> uvicorn.Server:

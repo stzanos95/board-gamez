@@ -21,7 +21,7 @@ paths:
                 content:
                     application/json:
                         schema:
-                            $ref: '#/components/schemas/DeleteTableRequest'
+                            $ref: '#/components/schemas/idl.lobby.dto.DeleteTableRequest'
                 required: true
             responses:
                 "200":
@@ -29,13 +29,13 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/DeleteTableResponse'
+                                $ref: '#/components/schemas/idl.lobby.dto.DeleteTableResponse'
                 default:
                     description: Default error response
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/Status'
+                                $ref: '#/components/schemas/google.rpc.Status'
     /internal/platform/lobby/list/table:
         post:
             tags:
@@ -45,7 +45,7 @@ paths:
                 content:
                     application/json:
                         schema:
-                            $ref: '#/components/schemas/ListTableRequest'
+                            $ref: '#/components/schemas/idl.lobby.dto.ListTableRequest'
                 required: true
             responses:
                 "200":
@@ -53,13 +53,13 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/ListTableResponse'
+                                $ref: '#/components/schemas/idl.lobby.dto.ListTableResponse'
                 default:
                     description: Default error response
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/Status'
+                                $ref: '#/components/schemas/google.rpc.Status'
     /internal/platform/lobby/read/table:
         post:
             tags:
@@ -69,7 +69,7 @@ paths:
                 content:
                     application/json:
                         schema:
-                            $ref: '#/components/schemas/ReadTableRequest'
+                            $ref: '#/components/schemas/idl.lobby.dto.ReadTableRequest'
                 required: true
             responses:
                 "200":
@@ -77,13 +77,13 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/ReadTableResponse'
+                                $ref: '#/components/schemas/idl.lobby.dto.ReadTableResponse'
                 default:
                     description: Default error response
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/Status'
+                                $ref: '#/components/schemas/google.rpc.Status'
     /internal/platform/lobby/upsert/table:
         post:
             tags:
@@ -93,7 +93,7 @@ paths:
                 content:
                     application/json:
                         schema:
-                            $ref: '#/components/schemas/UpsertTableRequest'
+                            $ref: '#/components/schemas/idl.lobby.dto.UpsertTableRequest'
                 required: true
             responses:
                 "200":
@@ -101,28 +101,16 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/UpsertTableResponse'
+                                $ref: '#/components/schemas/idl.lobby.dto.UpsertTableResponse'
                 default:
                     description: Default error response
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/Status'
+                                $ref: '#/components/schemas/google.rpc.Status'
 components:
     schemas:
-        DeleteTableRequest:
-            type: object
-            properties:
-                tableId:
-                    type: string
-                expectedVersion:
-                    type: string
-        DeleteTableResponse:
-            type: object
-            properties:
-                tableId:
-                    type: string
-        GoogleProtobufAny:
+        google.protobuf.Any:
             type: object
             properties:
                 '@type':
@@ -130,25 +118,68 @@ components:
                     description: The type of the serialized message.
             additionalProperties: true
             description: Contains an arbitrary serialized message along with a @type that describes the type of the serialized message.
-        ListTableRequest:
-            type: object
-            properties: {}
-        ListTableResponse:
+        google.rpc.Status:
             type: object
             properties:
-                collection:
-                    $ref: '#/components/schemas/TableCollection'
-        ReadTableRequest:
+                code:
+                    type: integer
+                    description: The status code, which should be an enum value of [google.rpc.Code][google.rpc.Code].
+                    format: int32
+                message:
+                    type: string
+                    description: A developer-facing error message, which should be in English. Any user-facing error message should be localized and sent in the [google.rpc.Status.details][google.rpc.Status.details] field, or localized by the client.
+                details:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/google.protobuf.Any'
+                    description: A list of messages that carry the error details.  There is a common set of message types for APIs to use.
+            description: 'The `Status` type defines a logical error model that is suitable for different programming environments, including REST APIs and RPC APIs. It is used by [gRPC](https://github.com/grpc). Each `Status` message contains three pieces of data: error code, error message, and error details. You can find out more about this error model and how to work with it in the [API Design Guide](https://cloud.google.com/apis/design/errors).'
+        idl.lobby.dto.DeleteTableRequest:
             type: object
             properties:
                 tableId:
                     type: string
-        ReadTableResponse:
+                expectedVersion:
+                    type: string
+        idl.lobby.dto.DeleteTableResponse:
+            type: object
+            properties:
+                tableId:
+                    type: string
+        idl.lobby.dto.ListTableRequest:
+            type: object
+            properties: {}
+        idl.lobby.dto.ListTableResponse:
+            type: object
+            properties:
+                collection:
+                    $ref: '#/components/schemas/idl.lobby.model.TableCollection'
+        idl.lobby.dto.ReadTableRequest:
+            type: object
+            properties:
+                tableId:
+                    type: string
+        idl.lobby.dto.ReadTableResponse:
             type: object
             properties:
                 table:
-                    $ref: '#/components/schemas/Table'
-        Seat:
+                    $ref: '#/components/schemas/idl.lobby.model.Table'
+        idl.lobby.dto.UpsertTableRequest:
+            type: object
+            properties:
+                table:
+                    $ref: '#/components/schemas/idl.lobby.model.Table'
+            description: |-
+                Write a table, creating it if it is not there.
+
+                 The table carries the version it was read at. A write built on an earlier
+                 version is refused, and version 0 means the caller believes it is creating.
+        idl.lobby.dto.UpsertTableResponse:
+            type: object
+            properties:
+                table:
+                    $ref: '#/components/schemas/idl.lobby.model.Table'
+        idl.lobby.model.Seat:
             type: object
             properties:
                 number:
@@ -173,23 +204,7 @@ components:
 
                  A seat holds a player id and no more. A name to draw is read from identity
                  when it is needed, so a renamed player is never stale here.
-        Status:
-            type: object
-            properties:
-                code:
-                    type: integer
-                    description: The status code, which should be an enum value of [google.rpc.Code][google.rpc.Code].
-                    format: int32
-                message:
-                    type: string
-                    description: A developer-facing error message, which should be in English. Any user-facing error message should be localized and sent in the [google.rpc.Status.details][google.rpc.Status.details] field, or localized by the client.
-                details:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/GoogleProtobufAny'
-                    description: A list of messages that carry the error details.  There is a common set of message types for APIs to use.
-            description: 'The `Status` type defines a logical error model that is suitable for different programming environments, including REST APIs and RPC APIs. It is used by [gRPC](https://github.com/grpc). Each `Status` message contains three pieces of data: error code, error message, and error details. You can find out more about this error model and how to work with it in the [API Design Guide](https://cloud.google.com/apis/design/errors).'
-        Table:
+        idl.lobby.model.Table:
             type: object
             properties:
                 id:
@@ -212,7 +227,7 @@ components:
                 seats:
                     type: array
                     items:
-                        $ref: '#/components/schemas/Seat'
+                        $ref: '#/components/schemas/idl.lobby.model.Seat'
                 version:
                     type: string
             description: |-
@@ -221,32 +236,17 @@ components:
                  Holds no game state and no rules. A table names a game and who is playing it;
                  starting one hands that roster to the game, and everything after that is the
                  game's.
-        TableCollection:
+        idl.lobby.model.TableCollection:
             type: object
             properties:
                 tableItems:
                     type: array
                     items:
-                        $ref: '#/components/schemas/Table'
+                        $ref: '#/components/schemas/idl.lobby.model.Table'
             description: |-
                 Many tables.
 
                  What every listing of tables answers with. A count, a cursor or the filter a
                  listing was answered under belongs here.
-        UpsertTableRequest:
-            type: object
-            properties:
-                table:
-                    $ref: '#/components/schemas/Table'
-            description: |-
-                Write a table, creating it if it is not there.
-
-                 The table carries the version it was read at. A write built on an earlier
-                 version is refused, and version 0 means the caller believes it is creating.
-        UpsertTableResponse:
-            type: object
-            properties:
-                table:
-                    $ref: '#/components/schemas/Table'
 tags:
     - name: TableService

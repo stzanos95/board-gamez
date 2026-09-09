@@ -29,6 +29,14 @@ set -eu
 : "${TYPESCRIPT_PACKAGE_DIR:=$GEN_DIR/typescript}"
 : "${TYPESCRIPT_OUT_DIR:=$TYPESCRIPT_PACKAGE_DIR/src}"
 : "${OPENAPI_OUT_DIR:=$GEN_DIR/openapi}"
+# Same shape again: hand-written packaging at the root, generated code in src/.
+: "${FASTAPI_PACKAGE_DIR:=$GEN_DIR/fastapi}"
+: "${FASTAPI_OUT_DIR:=$FASTAPI_PACKAGE_DIR/src}"
+# Its own root package: the protobuf target already publishes a top-level `idl`,
+# and two distributions cannot both own that name.
+: "${FASTAPI_ROOT_PACKAGE:=idl_fastapi}"
+: "${FASTAPI_PACKAGE_NAME:=idl-fastapi}"
+: "${CODEGEN_VENV:=/opt/codegen}"
 
 : "${TYPESCRIPT_TARGET:=ts}"
 : "${OPENAPI_TITLE:=board-gamez chess API}"
@@ -37,6 +45,9 @@ set -eu
 # canonical JSON. An integer enum in a JSON body is unreadable in a log.
 : "${OPENAPI_NAMING:=json}"
 : "${OPENAPI_ENUM_TYPE:=string}"
+# Schema names carry their proto package. Two domains may both declare a Table,
+# and short names would leave one of them silently renamed.
+: "${OPENAPI_FQ_SCHEMA_NAMING:=true}"
 
 # The packaging that ships beside the generated code is rendered, not committed
 # by hand, so nothing under contracts/gen survives a regeneration unchanged by
@@ -44,6 +55,8 @@ set -eu
 : "${TEMPLATE_DIR:=$IDL_DIR/scripts/templates}"
 : "${CONTRACTS_VERSION:=0.1.0}"
 : "${PYTHON_PACKAGE_NAME:=board-gamez-idl}"
+: "${FASTAPI_MIN_VERSION:=0.141.1}"
+: "${PYDANTIC_MIN_VERSION:=2.13}"
 : "${TYPESCRIPT_PACKAGE_NAME:=@board-gamez/idl}"
 # The single top-level package the generated tree publishes, which is the first
 # path segment of every .proto under contracts/proto.
@@ -131,6 +144,14 @@ write_typescript_packaging() {
         '${TYPESCRIPT_PACKAGE_NAME} ${CONTRACTS_VERSION} ${ROOT_PACKAGE} ${PROTOC_GEN_ES_VERSION}'
 }
 
+write_fastapi_packaging() {
+    export FASTAPI_PACKAGE_NAME CONTRACTS_VERSION FASTAPI_ROOT_PACKAGE
+    export FASTAPI_MIN_VERSION PYDANTIC_MIN_VERSION
+    render_template "$TEMPLATE_DIR/fastapi-pyproject.toml.template" \
+        "$FASTAPI_PACKAGE_DIR/pyproject.toml" \
+        '${FASTAPI_PACKAGE_NAME} ${CONTRACTS_VERSION} ${FASTAPI_ROOT_PACKAGE} ${FASTAPI_MIN_VERSION} ${PYDANTIC_MIN_VERSION}'
+}
+
 generate_python() {
     reset_output_directory "$PYTHON_OUT_DIR"
     # shellcheck disable=SC2046
@@ -191,8 +212,66 @@ generate_openapi() {
         --openapi_opt="version=$OPENAPI_DOCUMENT_VERSION" \
         --openapi_opt="naming=$OPENAPI_NAMING" \
         --openapi_opt="enum_type=$OPENAPI_ENUM_TYPE" \
+        --openapi_opt="fq_schema_naming=$OPENAPI_FQ_SCHEMA_NAMING" \
         $(our_proto_files)
     echo "  openapi     -> ${OPENAPI_OUT_DIR#"$IDL_DIR"/}"
+}
+
+generate_fastapi() {
+    # Reads the OpenAPI document rather than the .proto files, so it runs after
+    # the openapi target and fails if that one has not written yet.
+    document="$OPENAPI_OUT_DIR/openapi.yaml"
+    if [ ! -f "$document" ]; then
+        echo "no OpenAPI document at $document; run the openapi target first" >&2
+        exit 1
+    fi
+    reset_output_directory "$FASTAPI_OUT_DIR"
+    package_root="$FASTAPI_OUT_DIR/$FASTAPI_ROOT_PACKAGE"
+
+    # The models first: a schema named idl.lobby.dto.Table becomes Table in the
+    # module idl/lobby/dto.py, which is what the routers import it from.
+    #
+    # Literal enum fields rather than Enum classes, because a proto enum is
+    # inlined into the field that carries it: the generator would name its class
+    # after that field and number the duplicates, so adding a message could
+    # renumber a class every consumer imports by name.
+    # Two warnings are expected on every run and say nothing a reader can act on:
+    # protoc-gen-openapi writes `format: uint32` and `format: enum`, which are not
+    # JSON Schema formats, so the generator falls back to the base type. They are
+    # dropped by name below, and anything else it says still reaches the terminal.
+    codegen_warnings="$(mktemp)"
+    if ! "$CODEGEN_VENV/bin/datamodel-codegen" \
+        --input "$document" \
+        --input-file-type openapi \
+        --output "$package_root" \
+        --output-model-type pydantic_v2.BaseModel \
+        --target-python-version 3.13 \
+        --use-standard-collections \
+        --use-union-operator \
+        --use-schema-description \
+        --snake-case-field \
+        --allow-population-by-field-name \
+        --enum-field-as-literal all \
+        --use-default-kwarg \
+        --disable-timestamp \
+        --formatters builtin 2>"$codegen_warnings"; then
+        cat "$codegen_warnings" >&2
+        rm -f "$codegen_warnings"
+        exit 1
+    fi
+    grep -v -e "UserWarning: format of" -e "return _get_type" "$codegen_warnings" >&2 || true
+    rm -f "$codegen_warnings"
+    echo "  fastapi     -> ${FASTAPI_OUT_DIR#"$IDL_DIR"/}"
+
+    "$CODEGEN_VENV/bin/python" /usr/local/bin/render_routers.py \
+        --document "$document" \
+        --output "$package_root/services" \
+        --root-package "$FASTAPI_ROOT_PACKAGE"
+
+    # PEP 561, as for the protobuf target: without it a consumer's type checker
+    # reads the whole distribution as untyped.
+    touch "$package_root/py.typed"
+    write_fastapi_packaging
 }
 
 COMMAND="${1:-generate}"
@@ -209,6 +288,7 @@ case "$COMMAND" in
         generate_python
         generate_typescript
         generate_openapi
+        generate_fastapi
         ;;
     python)
         require_proto_files
@@ -221,6 +301,9 @@ case "$COMMAND" in
     openapi)
         require_proto_files
         generate_openapi
+        ;;
+    fastapi)
+        generate_fastapi
         ;;
     lint)
         exec buf lint "$@"
@@ -242,6 +325,7 @@ case "$COMMAND" in
         reset_output_directory "$PYTHON_OUT_DIR"
         reset_output_directory "$TYPESCRIPT_OUT_DIR"
         reset_output_directory "$OPENAPI_OUT_DIR"
+        reset_output_directory "$FASTAPI_OUT_DIR"
         echo "emptied $GEN_DIR"
         ;;
     shell)

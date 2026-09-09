@@ -4,8 +4,9 @@ The packaging files that ship beside the generated code, before their values are
 filled in.
 
 ```
-pyproject.toml.template   rendered to contracts/gen/python/pyproject.toml
-package.json.template     rendered to contracts/gen/typescript/package.json
+pyproject.toml.template          rendered to contracts/gen/python/pyproject.toml
+package.json.template            rendered to contracts/gen/typescript/package.json
+fastapi-pyproject.toml.template  rendered to contracts/gen/fastapi/pyproject.toml
 ```
 
 `generate.sh` renders these on every run, so the packaging is as regenerable as

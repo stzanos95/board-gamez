@@ -9,6 +9,7 @@ setup.sh                       prepare this machine — idempotent, safe to re-r
 .claude/skills/modeling/       how the system is modelled, loaded before any .proto
 idl/contracts/                 the schema every layer shares, and what it generates
 packages/chess/                the chess engine — rules only, no input or output
+packages/lobby/                tables and seats — rules only, in the schema's own types
 deployables/chess-cli/         the terminal game — owns its environment and its config
 deployables/fastapi-gateway/   the HTTP gateway — owns its environment and its config
 infra/                         compose files and the scripts that drive them

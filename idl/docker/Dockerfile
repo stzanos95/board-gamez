@@ -14,6 +14,7 @@ ARG BUF_VERSION=1.47.2
 ARG PROTOC_VERSION=28.3
 ARG PROTOC_GEN_ES_VERSION=2.2.2
 ARG PROTOC_GEN_OPENAPI_VERSION=v0.7.0
+ARG DATAMODEL_CODEGEN_VERSION=0.78.0
 ARG GO_VERSION=1.23
 ARG NODE_VERSION=22
 
@@ -37,8 +38,18 @@ ARG PROTOC_GEN_ES_VERSION
 ARG TARGETARCH
 
 RUN apt-get update \
-    && apt-get install --no-install-recommends --yes ca-certificates curl gettext-base git unzip \
+    && apt-get install --no-install-recommends --yes \
+        ca-certificates curl gettext-base git unzip python3 python3-venv \
     && rm -rf /var/lib/apt/lists/*
+
+# The FastAPI target is written by Python tools, which Debian will not let pip
+# install system-wide. They get their own environment, off PATH, so that
+# `python3` in this image stays the interpreter and nothing else.
+ARG DATAMODEL_CODEGEN_VERSION
+ENV CODEGEN_VENV=/opt/codegen
+RUN python3 -m venv "$CODEGEN_VENV" \
+    && "$CODEGEN_VENV/bin/pip" install --no-cache-dir --quiet \
+        "datamodel-code-generator==${DATAMODEL_CODEGEN_VERSION}"
 
 # protoc and buf spell the same architectures differently, so both are mapped
 # from the one name buildkit supplies.
@@ -82,6 +93,7 @@ ENV HOME=/tmp \
     PROTOC_GEN_ES_VERSION=${PROTOC_GEN_ES_VERSION}
 
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+COPY render_routers.py /usr/local/bin/render_routers.py
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
 # Proving the toolchain works here means a broken pin fails the build, rather
@@ -90,6 +102,7 @@ RUN set -eux; \
     protoc --version; \
     buf --version; \
     test -x /usr/local/bin/protoc-gen-openapi; \
+    "$CODEGEN_VENV/bin/datamodel-codegen" --version; \
     npm ls --global --depth=0
 
 WORKDIR /repo/idl

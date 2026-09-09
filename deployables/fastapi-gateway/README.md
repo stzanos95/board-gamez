@@ -26,11 +26,18 @@ serves. Each of those is its own method, so a change to one is a change to one.
 
 ## Routes
 
-None yet. The application is built empty; the routes arrive as generated stubs
-from `idl/contracts/gen/openapi`.
+The gateway declares none of its own. A domain package publishes a ready-made
+router, generated from the schema, and bringup includes it:
 
-FastAPI still serves `/openapi.json`, `/docs` and `/redoc`, which is enough to
-see that a deployment is up and reporting the version it was configured with.
+```python
+application.include_router(LobbyRouters.table_service())
+```
+
+Adding a domain is a dependency and one more line. No path, no request model and
+no handler is written here — those belong to the schema and to the domain that
+owns them.
+
+`TableService`'s methods are not written yet, so calling one raises.
 
 ## TLS
 

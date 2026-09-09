@@ -1,0 +1,55 @@
+[project]
+name = "lobby"
+version = "0.1.0"
+description = "Tables and the seats around them: the routers a lobby answers, and what answers them."
+requires-python = ">=3.13"
+dependencies = [
+    # The router each service declares, and the models a request arrives as.
+    "idl-fastapi",
+]
+
+# Relative path sources rather than a workspace: each project here stands alone.
+[tool.uv.sources]
+idl-fastapi = { path = "../../idl/contracts/gen/fastapi", editable = true }
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src_python/lobby"]
+
+[dependency-groups]
+# The ruff floor matches the rev pinned in .pre-commit-config.yaml, so the
+# hook, this environment and ./infra/scripts/lint.sh format identically.
+dev = ["pytest>=9.1.1", "mypy>=2.3.1", "ruff>=0.16.6"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests_python"]
+pythonpath = ["src_python", "."]
+
+[tool.mypy]
+python_version = "3.13"
+strict = true
+# Rule 3 of the house style: never Any. This is what enforces it.
+disallow_any_explicit = true
+mypy_path = "src_python"
+files = ["src_python", "tests_python"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+src = ["src_python", "tests_python"]
+
+[tool.ruff.lint]
+preview = true
+explicit-preview-rules = true
+select = [
+    "E", "F", "I", "N", "UP", "B", "SIM", "RUF",
+    "TID251",
+    "PLC0415",
+    "PLR2004",
+]
+
+[tool.ruff.lint.flake8-tidy-imports.banned-api]
+"__future__.annotations" = { msg = "Annotations must stay real runtime objects — see the python-style skill, rule 1. Use a string forward ref such as -> \"HttpTableService\" instead." }
