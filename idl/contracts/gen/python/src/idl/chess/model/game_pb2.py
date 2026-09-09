@@ -27,7 +27,7 @@ from idl.chess.model import move_pb2 as idl_dot_chess_dot_model_dot_move__pb2
 from idl.chess.model import piece_pb2 as idl_dot_chess_dot_model_dot_piece__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1aidl/chess/model/game.proto\x12\x0fidl.chess.model\x1a\x1bidl/chess/model/board.proto\x1a\x1aidl/chess/model/move.proto\x1a\x1bidl/chess/model/piece.proto\"B\n\x0b\x43hessPlayer\x12\x0c\n\x04name\x18\x01 \x01(\t\x12%\n\x05\x63olor\x18\x02 \x01(\x0e\x32\x16.idl.chess.model.Color\"h\n\x0cPlayerRoster\x12+\n\x05white\x18\x01 \x01(\x0b\x32\x1c.idl.chess.model.ChessPlayer\x12+\n\x05\x62lack\x18\x02 \x01(\x0b\x32\x1c.idl.chess.model.ChessPlayer\"\xb7\x01\n\tChessTurn\x12\x0e\n\x06number\x18\x01 \x01(\r\x12,\n\x06player\x18\x02 \x01(\x0b\x32\x1c.idl.chess.model.ChessPlayer\x12#\n\x04move\x18\x03 \x01(\x0b\x32\x15.idl.chess.model.Move\x12\x10\n\x08notation\x18\x04 \x01(\t\x12\x35\n\x10resulting_status\x18\x05 \x01(\x0e\x32\x1b.idl.chess.model.GameStatus\"r\n\x10\x43hessTurnHistory\x12)\n\x05turns\x18\x01 \x03(\x0b\x32\x1a.idl.chess.model.ChessTurn\x12\x33\n\rposition_keys\x18\x02 \x03(\x0b\x32\x1c.idl.chess.model.PositionKey\"\xde\x01\n\nGameResult\x12-\n\x07outcome\x18\x01 \x01(\x0e\x32\x1c.idl.chess.model.GameOutcome\x12,\n\x06winner\x18\x02 \x01(\x0b\x32\x1c.idl.chess.model.ChessPlayer\x12\x30\n\x06status\x18\x03 \x01(\x0e\x32\x1b.idl.chess.model.GameStatusH\x00\x88\x01\x01\x12\x36\n\x10resigning_player\x18\x04 \x01(\x0b\x32\x1c.idl.chess.model.ChessPlayerB\t\n\x07_status\"\xea\x02\n\tChessGame\x12-\n\x06roster\x18\x01 \x01(\x0b\x32\x1d.idl.chess.model.PlayerRoster\x12*\n\x05state\x18\x02 \x01(\x0b\x32\x1b.idl.chess.model.BoardState\x12\x32\n\x07history\x18\x03 \x01(\x0b\x32!.idl.chess.model.ChessTurnHistory\x12*\n\x0blegal_moves\x18\x04 \x03(\x0b\x32\x15.idl.chess.model.Move\x12+\n\x06status\x18\x05 \x01(\x0e\x32\x1b.idl.chess.model.GameStatus\x12\x34\n\x0fresigning_color\x18\x06 \x01(\x0e\x32\x16.idl.chess.model.ColorH\x00\x88\x01\x01\x12+\n\x06result\x18\x07 \x01(\x0b\x32\x1b.idl.chess.model.GameResultB\x12\n\x10_resigning_color*\x8f\x02\n\nGameStatus\x12\x1b\n\x17GAME_STATUS_UNSPECIFIED\x10\x00\x12\x1b\n\x17GAME_STATUS_IN_PROGRESS\x10\x01\x12\x15\n\x11GAME_STATUS_CHECK\x10\x02\x12\x19\n\x15GAME_STATUS_CHECKMATE\x10\x03\x12\x19\n\x15GAME_STATUS_STALEMATE\x10\x04\x12\'\n#GAME_STATUS_DRAW_BY_FIFTY_MOVE_RULE\x10\x05\x12\"\n\x1eGAME_STATUS_DRAW_BY_REPETITION\x10\x06\x12-\n)GAME_STATUS_DRAW_BY_INSUFFICIENT_MATERIAL\x10\x07*|\n\x0bGameOutcome\x12\x1c\n\x18GAME_OUTCOME_UNSPECIFIED\x10\x00\x12\x1b\n\x17GAME_OUTCOME_WHITE_WINS\x10\x01\x12\x1b\n\x17GAME_OUTCOME_BLACK_WINS\x10\x02\x12\x15\n\x11GAME_OUTCOME_DRAW\x10\x03\x42\x38Z6boardgamez/contracts/gen/go/idl/chess/model;chessmodelb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1aidl/chess/model/game.proto\x12\x0fidl.chess.model\x1a\x1bidl/chess/model/board.proto\x1a\x1aidl/chess/model/move.proto\x1a\x1bidl/chess/model/piece.proto\"B\n\x0b\x43hessPlayer\x12\x0c\n\x04name\x18\x01 \x01(\t\x12%\n\x05\x63olor\x18\x02 \x01(\x0e\x32\x16.idl.chess.model.Color\"h\n\x0cPlayerRoster\x12+\n\x05white\x18\x01 \x01(\x0b\x32\x1c.idl.chess.model.ChessPlayer\x12+\n\x05\x62lack\x18\x02 \x01(\x0b\x32\x1c.idl.chess.model.ChessPlayer\"\xb7\x01\n\tChessTurn\x12\x0e\n\x06number\x18\x01 \x01(\r\x12,\n\x06player\x18\x02 \x01(\x0b\x32\x1c.idl.chess.model.ChessPlayer\x12#\n\x04move\x18\x03 \x01(\x0b\x32\x15.idl.chess.model.Move\x12\x10\n\x08notation\x18\x04 \x01(\t\x12\x35\n\x10resulting_status\x18\x05 \x01(\x0e\x32\x1b.idl.chess.model.GameStatus\"r\n\x10\x43hessTurnHistory\x12)\n\x05turns\x18\x01 \x03(\x0b\x32\x1a.idl.chess.model.ChessTurn\x12\x33\n\rposition_keys\x18\x02 \x03(\x0b\x32\x1c.idl.chess.model.PositionKey\"\xce\x01\n\nGameResult\x12-\n\x07outcome\x18\x01 \x01(\x0e\x32\x1c.idl.chess.model.GameOutcome\x12,\n\x06winner\x18\x02 \x01(\x0b\x32\x1c.idl.chess.model.ChessPlayer\x12+\n\x06status\x18\x03 \x01(\x0e\x32\x1b.idl.chess.model.GameStatus\x12\x36\n\x10resigning_player\x18\x04 \x01(\x0b\x32\x1c.idl.chess.model.ChessPlayer\"\xd1\x02\n\tChessGame\x12-\n\x06roster\x18\x01 \x01(\x0b\x32\x1d.idl.chess.model.PlayerRoster\x12*\n\x05state\x18\x02 \x01(\x0b\x32\x1b.idl.chess.model.BoardState\x12\x32\n\x07history\x18\x03 \x01(\x0b\x32!.idl.chess.model.ChessTurnHistory\x12*\n\x0blegal_moves\x18\x04 \x03(\x0b\x32\x15.idl.chess.model.Move\x12+\n\x06status\x18\x05 \x01(\x0e\x32\x1b.idl.chess.model.GameStatus\x12/\n\x0fresigning_color\x18\x06 \x01(\x0e\x32\x16.idl.chess.model.Color\x12+\n\x06result\x18\x07 \x01(\x0b\x32\x1b.idl.chess.model.GameResult*\x8f\x02\n\nGameStatus\x12\x1b\n\x17GAME_STATUS_UNSPECIFIED\x10\x00\x12\x1b\n\x17GAME_STATUS_IN_PROGRESS\x10\x01\x12\x15\n\x11GAME_STATUS_CHECK\x10\x02\x12\x19\n\x15GAME_STATUS_CHECKMATE\x10\x03\x12\x19\n\x15GAME_STATUS_STALEMATE\x10\x04\x12\'\n#GAME_STATUS_DRAW_BY_FIFTY_MOVE_RULE\x10\x05\x12\"\n\x1eGAME_STATUS_DRAW_BY_REPETITION\x10\x06\x12-\n)GAME_STATUS_DRAW_BY_INSUFFICIENT_MATERIAL\x10\x07*|\n\x0bGameOutcome\x12\x1c\n\x18GAME_OUTCOME_UNSPECIFIED\x10\x00\x12\x1b\n\x17GAME_OUTCOME_WHITE_WINS\x10\x01\x12\x1b\n\x17GAME_OUTCOME_BLACK_WINS\x10\x02\x12\x15\n\x11GAME_OUTCOME_DRAW\x10\x03\x42\x38Z6boardgamez/contracts/gen/go/idl/chess/model;chessmodelb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -35,10 +35,10 @@ _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'idl.chess.model.game_pb2', 
 if not _descriptor._USE_C_DESCRIPTORS:
   _globals['DESCRIPTOR']._loaded_options = None
   _globals['DESCRIPTOR']._serialized_options = b'Z6boardgamez/contracts/gen/go/idl/chess/model;chessmodel'
-  _globals['_GAMESTATUS']._serialized_start=1200
-  _globals['_GAMESTATUS']._serialized_end=1471
-  _globals['_GAMEOUTCOME']._serialized_start=1473
-  _globals['_GAMEOUTCOME']._serialized_end=1597
+  _globals['_GAMESTATUS']._serialized_start=1159
+  _globals['_GAMESTATUS']._serialized_end=1430
+  _globals['_GAMEOUTCOME']._serialized_start=1432
+  _globals['_GAMEOUTCOME']._serialized_end=1556
   _globals['_CHESSPLAYER']._serialized_start=133
   _globals['_CHESSPLAYER']._serialized_end=199
   _globals['_PLAYERROSTER']._serialized_start=201
@@ -48,7 +48,7 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_CHESSTURNHISTORY']._serialized_start=493
   _globals['_CHESSTURNHISTORY']._serialized_end=607
   _globals['_GAMERESULT']._serialized_start=610
-  _globals['_GAMERESULT']._serialized_end=832
-  _globals['_CHESSGAME']._serialized_start=835
-  _globals['_CHESSGAME']._serialized_end=1197
+  _globals['_GAMERESULT']._serialized_end=816
+  _globals['_CHESSGAME']._serialized_start=819
+  _globals['_CHESSGAME']._serialized_end=1156
 # @@protoc_insertion_point(module_scope)

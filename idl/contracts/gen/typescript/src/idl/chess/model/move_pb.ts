@@ -18,14 +18,12 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file idl/chess/model/move.proto.
  */
 export const file_idl_chess_model_move: GenFile = /*@__PURE__*/
-  fileDesc("ChppZGwvY2hlc3MvbW9kZWwvbW92ZS5wcm90bxIPaWRsLmNoZXNzLm1vZGVsIrkBChRQYXJzZWRDb29yZGluYXRlTW92ZRInCgZvcmlnaW4YASABKAsyFy5pZGwuY2hlc3MubW9kZWwuU3F1YXJlEiwKC2Rlc3RpbmF0aW9uGAIgASgLMhcuaWRsLmNoZXNzLm1vZGVsLlNxdWFyZRI3Cg5wcm9tb3Rpb25fdHlwZRgDIAEoDjIaLmlkbC5jaGVzcy5tb2RlbC5QaWVjZVR5cGVIAIgBAUIRCg9fcHJvbW90aW9uX3R5cGUinAQKBE1vdmUSJwoGb3JpZ2luGAEgASgLMhcuaWRsLmNoZXNzLm1vZGVsLlNxdWFyZRIsCgtkZXN0aW5hdGlvbhgCIAEoCzIXLmlkbC5jaGVzcy5tb2RlbC5TcXVhcmUSLAoMbW92aW5nX2NvbG9yGAMgASgOMhYuaWRsLmNoZXNzLm1vZGVsLkNvbG9yEjUKEW1vdmluZ19waWVjZV90eXBlGAQgASgOMhouaWRsLmNoZXNzLm1vZGVsLlBpZWNlVHlwZRIsCgltb3ZlX3R5cGUYBSABKA4yGS5pZGwuY2hlc3MubW9kZWwuTW92ZVR5cGUSMAoPY2FwdHVyZWRfc3F1YXJlGAYgASgLMhcuaWRsLmNoZXNzLm1vZGVsLlNxdWFyZRI3Cg5wcm9tb3Rpb25fdHlwZRgHIAEoDjIaLmlkbC5jaGVzcy5tb2RlbC5QaWVjZVR5cGVIAIgBARI5Cg1jYXN0bGluZ19zaWRlGAggASgOMh0uaWRsLmNoZXNzLm1vZGVsLkNhc3RsaW5nU2lkZUgBiAEBEiwKC3Jvb2tfb3JpZ2luGAkgASgLMhcuaWRsLmNoZXNzLm1vZGVsLlNxdWFyZRIxChByb29rX2Rlc3RpbmF0aW9uGAogASgLMhcuaWRsLmNoZXNzLm1vZGVsLlNxdWFyZUIRCg9fcHJvbW90aW9uX3R5cGVCEAoOX2Nhc3RsaW5nX3NpZGUq2wEKCE1vdmVUeXBlEhkKFU1PVkVfVFlQRV9VTlNQRUNJRklFRBAAEhMKD01PVkVfVFlQRV9RVUlFVBABEhUKEU1PVkVfVFlQRV9DQVBUVVJFEAISHgoaTU9WRV9UWVBFX0RPVUJMRV9QQVdOX1BVU0gQAxIYChRNT1ZFX1RZUEVfRU5fUEFTU0FOVBAEEhQKEE1PVkVfVFlQRV9DQVNUTEUQBRIXChNNT1ZFX1RZUEVfUFJPTU9USU9OEAYSHwobTU9WRV9UWVBFX1BST01PVElPTl9DQVBUVVJFEAdCOFo2Ym9hcmRnYW1lei9jb250cmFjdHMvZ2VuL2dvL2lkbC9jaGVzcy9tb2RlbDtjaGVzc21vZGVsYgZwcm90bzM", [file_idl_chess_model_castling, file_idl_chess_model_piece, file_idl_chess_model_square]);
+  fileDesc("ChppZGwvY2hlc3MvbW9kZWwvbW92ZS5wcm90bxIPaWRsLmNoZXNzLm1vZGVsIqEBChRQYXJzZWRDb29yZGluYXRlTW92ZRInCgZvcmlnaW4YASABKAsyFy5pZGwuY2hlc3MubW9kZWwuU3F1YXJlEiwKC2Rlc3RpbmF0aW9uGAIgASgLMhcuaWRsLmNoZXNzLm1vZGVsLlNxdWFyZRIyCg5wcm9tb3Rpb25fdHlwZRgDIAEoDjIaLmlkbC5jaGVzcy5tb2RlbC5QaWVjZVR5cGUi7QMKBE1vdmUSJwoGb3JpZ2luGAEgASgLMhcuaWRsLmNoZXNzLm1vZGVsLlNxdWFyZRIsCgtkZXN0aW5hdGlvbhgCIAEoCzIXLmlkbC5jaGVzcy5tb2RlbC5TcXVhcmUSLAoMbW92aW5nX2NvbG9yGAMgASgOMhYuaWRsLmNoZXNzLm1vZGVsLkNvbG9yEjUKEW1vdmluZ19waWVjZV90eXBlGAQgASgOMhouaWRsLmNoZXNzLm1vZGVsLlBpZWNlVHlwZRIsCgltb3ZlX3R5cGUYBSABKA4yGS5pZGwuY2hlc3MubW9kZWwuTW92ZVR5cGUSMAoPY2FwdHVyZWRfc3F1YXJlGAYgASgLMhcuaWRsLmNoZXNzLm1vZGVsLlNxdWFyZRIyCg5wcm9tb3Rpb25fdHlwZRgHIAEoDjIaLmlkbC5jaGVzcy5tb2RlbC5QaWVjZVR5cGUSNAoNY2FzdGxpbmdfc2lkZRgIIAEoDjIdLmlkbC5jaGVzcy5tb2RlbC5DYXN0bGluZ1NpZGUSLAoLcm9va19vcmlnaW4YCSABKAsyFy5pZGwuY2hlc3MubW9kZWwuU3F1YXJlEjEKEHJvb2tfZGVzdGluYXRpb24YCiABKAsyFy5pZGwuY2hlc3MubW9kZWwuU3F1YXJlKtsBCghNb3ZlVHlwZRIZChVNT1ZFX1RZUEVfVU5TUEVDSUZJRUQQABITCg9NT1ZFX1RZUEVfUVVJRVQQARIVChFNT1ZFX1RZUEVfQ0FQVFVSRRACEh4KGk1PVkVfVFlQRV9ET1VCTEVfUEFXTl9QVVNIEAMSGAoUTU9WRV9UWVBFX0VOX1BBU1NBTlQQBBIUChBNT1ZFX1RZUEVfQ0FTVExFEAUSFwoTTU9WRV9UWVBFX1BST01PVElPThAGEh8KG01PVkVfVFlQRV9QUk9NT1RJT05fQ0FQVFVSRRAHQjhaNmJvYXJkZ2FtZXovY29udHJhY3RzL2dlbi9nby9pZGwvY2hlc3MvbW9kZWw7Y2hlc3Ntb2RlbGIGcHJvdG8z", [file_idl_chess_model_castling, file_idl_chess_model_piece, file_idl_chess_model_square]);
 
 /**
  * A coordinate move after parsing, before it is matched against the position.
  *
- * Two squares and, for a pawn reaching the last rank, what it becomes. Named
- * fields rather than a pair: the two squares share a type, and a transposition
- * would quietly describe the move backwards.
+ * Two squares and, for a pawn reaching the last rank, what it becomes.
  *
  * @generated from message idl.chess.model.ParsedCoordinateMove
  */
@@ -41,9 +39,9 @@ export type ParsedCoordinateMove = Message<"idl.chess.model.ParsedCoordinateMove
   destination?: Square;
 
   /**
-   * @generated from field: optional idl.chess.model.PieceType promotion_type = 3;
+   * @generated from field: idl.chess.model.PieceType promotion_type = 3;
    */
-  promotionType?: PieceType;
+  promotionType: PieceType;
 };
 
 /**
@@ -56,11 +54,10 @@ export const ParsedCoordinateMoveSchema: GenMessage<ParsedCoordinateMove> = /*@_
 /**
  * One move, complete enough for a board to apply without deriving anything.
  *
- * The mover is carried as colour and type rather than as a piece.
+ * The mover is carried as colour and type.
  *
  * captured_square differs from destination for en passant. The rook fields are
- * set only for a castle. A message field is simply absent when it does not
- * apply; the two enum fields say so with explicit presence.
+ * set only for a castle. A field that does not apply is left unset.
  *
  * @generated from message idl.chess.model.Move
  */
@@ -96,14 +93,14 @@ export type Move = Message<"idl.chess.model.Move"> & {
   capturedSquare?: Square;
 
   /**
-   * @generated from field: optional idl.chess.model.PieceType promotion_type = 7;
+   * @generated from field: idl.chess.model.PieceType promotion_type = 7;
    */
-  promotionType?: PieceType;
+  promotionType: PieceType;
 
   /**
-   * @generated from field: optional idl.chess.model.CastlingSide castling_side = 8;
+   * @generated from field: idl.chess.model.CastlingSide castling_side = 8;
    */
-  castlingSide?: CastlingSide;
+  castlingSide: CastlingSide;
 
   /**
    * @generated from field: idl.chess.model.Square rook_origin = 9;

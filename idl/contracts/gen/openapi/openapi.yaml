@@ -4,7 +4,249 @@
 openapi: 3.0.3
 info:
     title: board-gamez chess API
+    description: |-
+        Storage for tables.
+
+         Four methods and no domain verbs. Joining a seat and leaving one are decided
+         above this layer and arrive here as a write of the whole table, guarded by the
+         version it was read at.
     version: 1.0.0
-paths: {}
+paths:
+    /internal/platform/lobby/delete/table:
+        post:
+            tags:
+                - TableService
+            operationId: TableService_DeleteTable
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/DeleteTableRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/DeleteTableResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /internal/platform/lobby/list/table:
+        post:
+            tags:
+                - TableService
+            operationId: TableService_ListTable
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ListTableRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListTableResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /internal/platform/lobby/read/table:
+        post:
+            tags:
+                - TableService
+            operationId: TableService_ReadTable
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ReadTableRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ReadTableResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /internal/platform/lobby/upsert/table:
+        post:
+            tags:
+                - TableService
+            operationId: TableService_UpsertTable
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/UpsertTableRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/UpsertTableResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
 components:
-    schemas: {}
+    schemas:
+        DeleteTableRequest:
+            type: object
+            properties:
+                tableId:
+                    type: string
+                expectedVersion:
+                    type: string
+        DeleteTableResponse:
+            type: object
+            properties:
+                tableId:
+                    type: string
+        GoogleProtobufAny:
+            type: object
+            properties:
+                '@type':
+                    type: string
+                    description: The type of the serialized message.
+            additionalProperties: true
+            description: Contains an arbitrary serialized message along with a @type that describes the type of the serialized message.
+        ListTableRequest:
+            type: object
+            properties: {}
+        ListTableResponse:
+            type: object
+            properties:
+                collection:
+                    $ref: '#/components/schemas/TableCollection'
+        ReadTableRequest:
+            type: object
+            properties:
+                tableId:
+                    type: string
+        ReadTableResponse:
+            type: object
+            properties:
+                table:
+                    $ref: '#/components/schemas/Table'
+        Seat:
+            type: object
+            properties:
+                number:
+                    type: integer
+                    format: uint32
+                status:
+                    enum:
+                        - SEAT_STATUS_UNSPECIFIED
+                        - SEAT_STATUS_OPEN
+                        - SEAT_STATUS_OCCUPIED
+                    type: string
+                    format: enum
+                playerId:
+                    type: string
+            description: |-
+                One place at a table.
+
+                 `number` is the seat's position and never changes once the table is created.
+                 It fixes the order players are handed to a game when one starts. What a game
+                 makes of that order is the game's own business. Numbered from 1, so 0 means no
+                 seat wherever a seat is named.
+
+                 A seat holds a player id and no more. A name to draw is read from identity
+                 when it is needed, so a renamed player is never stale here.
+        Status:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    description: The status code, which should be an enum value of [google.rpc.Code][google.rpc.Code].
+                    format: int32
+                message:
+                    type: string
+                    description: A developer-facing error message, which should be in English. Any user-facing error message should be localized and sent in the [google.rpc.Status.details][google.rpc.Status.details] field, or localized by the client.
+                details:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/GoogleProtobufAny'
+                    description: A list of messages that carry the error details.  There is a common set of message types for APIs to use.
+            description: 'The `Status` type defines a logical error model that is suitable for different programming environments, including REST APIs and RPC APIs. It is used by [gRPC](https://github.com/grpc). Each `Status` message contains three pieces of data: error code, error message, and error details. You can find out more about this error model and how to work with it in the [API Design Guide](https://cloud.google.com/apis/design/errors).'
+        Table:
+            type: object
+            properties:
+                id:
+                    type: string
+                gameType:
+                    enum:
+                        - GAME_TYPE_UNSPECIFIED
+                        - GAME_TYPE_CHESS
+                    type: string
+                    format: enum
+                status:
+                    enum:
+                        - TABLE_STATUS_UNSPECIFIED
+                        - TABLE_STATUS_WAITING
+                        - TABLE_STATUS_IN_PROGRESS
+                        - TABLE_STATUS_FINISHED
+                        - TABLE_STATUS_ABANDONED
+                    type: string
+                    format: enum
+                seats:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Seat'
+                version:
+                    type: string
+            description: |-
+                A table and the seats around it.
+
+                 Holds no game state and no rules. A table names a game and who is playing it;
+                 starting one hands that roster to the game, and everything after that is the
+                 game's.
+        TableCollection:
+            type: object
+            properties:
+                tableItems:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Table'
+            description: |-
+                Many tables.
+
+                 What every listing of tables answers with. A count, a cursor or the filter a
+                 listing was answered under belongs here.
+        UpsertTableRequest:
+            type: object
+            properties:
+                table:
+                    $ref: '#/components/schemas/Table'
+            description: |-
+                Write a table, creating it if it is not there.
+
+                 The table carries the version it was read at. A write built on an earlier
+                 version is refused, and version 0 means the caller believes it is creating.
+        UpsertTableResponse:
+            type: object
+            properties:
+                table:
+                    $ref: '#/components/schemas/Table'
+tags:
+    - name: TableService

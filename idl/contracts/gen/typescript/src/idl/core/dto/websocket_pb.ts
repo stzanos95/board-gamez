@@ -17,41 +17,30 @@ export const file_idl_core_dto_websocket: GenFile = /*@__PURE__*/
   fileDesc("ChxpZGwvY29yZS9kdG8vd2Vic29ja2V0LnByb3RvEgxpZGwuY29yZS5kdG8iYQoWV2Vic29ja2V0TWVzc2FnZUhlYWRlchIKCgJpZBgBIAEoCRIMCgR0eXBlGAIgASgJEi0KCXRpbWVzdGFtcBgDIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAidwoYV2Vic29ja2V0TWVzc2FnZUVudmVsb3BlEjQKBmhlYWRlchgBIAEoCzIkLmlkbC5jb3JlLmR0by5XZWJzb2NrZXRNZXNzYWdlSGVhZGVyEiUKB3BheWxvYWQYAiABKAsyFC5nb29nbGUucHJvdG9idWYuQW55QjJaMGJvYXJkZ2FtZXovY29udHJhY3RzL2dlbi9nby9pZGwvY29yZS9kdG87Y29yZWR0b2IGcHJvdG8z", [file_google_protobuf_any, file_google_protobuf_timestamp]);
 
 /**
- * Everything the socket layer may read about a frame without opening it.
+ * What the socket layer reads about a frame without opening it.
  *
- * Deliberately not shared with QueueMessageHeader. The two transports do not
- * carry the same facts and will diverge further: a frame has a connection behind
- * it and often a client waiting on an answer, a queue message has a delivery
- * attempt and an ordering key. One header for both would mean every field either
- * applies to both transports or is documented as ignored by one, and a field
- * that is sometimes meaningless is worse than a second message.
+ * Each domain owns the values it sends as `type`, and nothing here validates
+ * them: an unrecognised type is decided at run time.
  *
  * @generated from message idl.core.dto.WebsocketMessageHeader
  */
 export type WebsocketMessageHeader = Message<"idl.core.dto.WebsocketMessageHeader"> & {
   /**
-   * Unique per frame. What a log line, a metric and an acknowledgement all name
-   * when they mean this one message.
+   * Unique per frame.
    *
    * @generated from field: string id = 1;
    */
   id: string;
 
   /**
-   * What this frame means, and the only thing a router reads before deciding
-   * where it goes.
-   *
-   * A string rather than an enum because core cannot enumerate the message types
-   * of domains it must not import — the same reason the payload is opaque. Each
-   * domain owns the constants for its own types; nothing here validates them,
-   * and an unknown type is a runtime decision, not a compile-time one.
+   * What this frame means, and all a router reads.
    *
    * @generated from field: string type = 2;
    */
   type: string;
 
   /**
-   * When the sender emitted it, not when it was received.
+   * Emission, not receipt.
    *
    * @generated from field: google.protobuf.Timestamp timestamp = 3;
    */
@@ -68,10 +57,8 @@ export const WebsocketMessageHeaderSchema: GenMessage<WebsocketMessageHeader> = 
 /**
  * One frame on a socket, in either direction.
  *
- * The header is the whole of what the transport is entitled to read. The payload
- * is opaque to it: packed by the domain that produced it, unpacked only by the
- * domain that consumes it. That is what lets a socket server relay messages
- * whose types it was never compiled against.
+ * The header is all the transport reads. The payload is packed by the domain
+ * that produced it and opened only by the domain that consumes it.
  *
  * @generated from message idl.core.dto.WebsocketMessageEnvelope
  */

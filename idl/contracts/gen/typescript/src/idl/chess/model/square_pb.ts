@@ -17,9 +17,7 @@ export const file_idl_chess_model_square: GenFile = /*@__PURE__*/
 /**
  * One of the sixty-four squares, named by its file and rank.
  *
- * Structural rather than the two characters "e4". The algebraic spelling is a
- * rendering of this, and every layer derives it the same way; carrying both
- * would let them disagree.
+ * The algebraic spelling "e4" is derived from this, and is not carried.
  *
  * @generated from message idl.chess.model.Square
  */
@@ -45,8 +43,8 @@ export const SquareSchema: GenMessage<Square> = /*@__PURE__*/
 /**
  * A column of the board.
  *
- * The numbers run 1 through 8 rather than 0 through 7, because proto3 reserves
- * zero for "unspecified". A consumer that wants a grid index subtracts one.
+ * The numbers run 1 through 8. A consumer that wants a zero-based grid index
+ * subtracts one.
  *
  * @generated from enum idl.chess.model.File
  */

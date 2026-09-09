@@ -17,8 +17,7 @@ export const file_idl_chess_model_piece: GenFile = /*@__PURE__*/
 /**
  * Whose piece stands on a square, and what type.
  *
- * Colour and type rather than an identity, because that is all a reader of a
- * position needs. Two knights of the same colour are interchangeable here.
+ * Carries no identity. Two knights of the same colour are interchangeable.
  *
  * @generated from message idl.chess.model.Occupant
  */
@@ -44,9 +43,8 @@ export const OccupantSchema: GenMessage<Occupant> = /*@__PURE__*/
 /**
  * Which side a piece belongs to.
  *
- * COLOR_UNSPECIFIED is never written by a producer. It exists because proto3
- * requires a zero value, and it is what a consumer sees when it reads a field a
- * newer schema has not set.
+ * COLOR_UNSPECIFIED is never written by a producer. A reader sees it when the
+ * field was not set.
  *
  * @generated from enum idl.chess.model.Color
  */

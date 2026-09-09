@@ -23,8 +23,7 @@ export const file_idl_chess_model_board: GenFile = /*@__PURE__*/
 /**
  * One square and the piece standing on it.
  *
- * Lets a whole position travel as a list. proto3 cannot key a map by a message,
- * and a position is naturally keyed by Square.
+ * A position travels as a list of these.
  *
  * @generated from message idl.chess.model.SquareOccupant
  */
@@ -72,15 +71,14 @@ export type BoardState = Message<"idl.chess.model.BoardState"> & {
   castlingRights?: CastlingRights;
 
   /**
-   * The square a pawn may capture onto this move, set by a double push. Absent
-   * when the previous move was not one.
+   * Set by a double push, and unset otherwise.
    *
    * @generated from field: idl.chess.model.Square en_passant_target = 4;
    */
   enPassantTarget?: Square;
 
   /**
-   * Plies since the last capture or pawn move. Reaching 100 draws the game.
+   * Plies since the last capture or pawn move; 100 draws.
    *
    * @generated from field: uint32 halfmove_clock = 5;
    */
@@ -105,8 +103,8 @@ export const BoardStateSchema: GenMessage<BoardState> = /*@__PURE__*/
  * What makes two positions the same for the repetition rule.
  *
  * The same pieces on the same squares, the same side to move, the same castling
- * rights and the same en-passant square. The clocks are deliberately absent:
- * they differ between repetitions of one position.
+ * rights and the same en-passant square. The clocks are excluded: they differ
+ * between repetitions of one position.
  *
  * @generated from message idl.chess.model.PositionKey
  */

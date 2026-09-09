@@ -18,7 +18,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file idl/chess/model/game.proto.
  */
 export const file_idl_chess_model_game: GenFile = /*@__PURE__*/
-  fileDesc("ChppZGwvY2hlc3MvbW9kZWwvZ2FtZS5wcm90bxIPaWRsLmNoZXNzLm1vZGVsIkIKC0NoZXNzUGxheWVyEgwKBG5hbWUYASABKAkSJQoFY29sb3IYAiABKA4yFi5pZGwuY2hlc3MubW9kZWwuQ29sb3IiaAoMUGxheWVyUm9zdGVyEisKBXdoaXRlGAEgASgLMhwuaWRsLmNoZXNzLm1vZGVsLkNoZXNzUGxheWVyEisKBWJsYWNrGAIgASgLMhwuaWRsLmNoZXNzLm1vZGVsLkNoZXNzUGxheWVyIrcBCglDaGVzc1R1cm4SDgoGbnVtYmVyGAEgASgNEiwKBnBsYXllchgCIAEoCzIcLmlkbC5jaGVzcy5tb2RlbC5DaGVzc1BsYXllchIjCgRtb3ZlGAMgASgLMhUuaWRsLmNoZXNzLm1vZGVsLk1vdmUSEAoIbm90YXRpb24YBCABKAkSNQoQcmVzdWx0aW5nX3N0YXR1cxgFIAEoDjIbLmlkbC5jaGVzcy5tb2RlbC5HYW1lU3RhdHVzInIKEENoZXNzVHVybkhpc3RvcnkSKQoFdHVybnMYASADKAsyGi5pZGwuY2hlc3MubW9kZWwuQ2hlc3NUdXJuEjMKDXBvc2l0aW9uX2tleXMYAiADKAsyHC5pZGwuY2hlc3MubW9kZWwuUG9zaXRpb25LZXki3gEKCkdhbWVSZXN1bHQSLQoHb3V0Y29tZRgBIAEoDjIcLmlkbC5jaGVzcy5tb2RlbC5HYW1lT3V0Y29tZRIsCgZ3aW5uZXIYAiABKAsyHC5pZGwuY2hlc3MubW9kZWwuQ2hlc3NQbGF5ZXISMAoGc3RhdHVzGAMgASgOMhsuaWRsLmNoZXNzLm1vZGVsLkdhbWVTdGF0dXNIAIgBARI2ChByZXNpZ25pbmdfcGxheWVyGAQgASgLMhwuaWRsLmNoZXNzLm1vZGVsLkNoZXNzUGxheWVyQgkKB19zdGF0dXMi6gIKCUNoZXNzR2FtZRItCgZyb3N0ZXIYASABKAsyHS5pZGwuY2hlc3MubW9kZWwuUGxheWVyUm9zdGVyEioKBXN0YXRlGAIgASgLMhsuaWRsLmNoZXNzLm1vZGVsLkJvYXJkU3RhdGUSMgoHaGlzdG9yeRgDIAEoCzIhLmlkbC5jaGVzcy5tb2RlbC5DaGVzc1R1cm5IaXN0b3J5EioKC2xlZ2FsX21vdmVzGAQgAygLMhUuaWRsLmNoZXNzLm1vZGVsLk1vdmUSKwoGc3RhdHVzGAUgASgOMhsuaWRsLmNoZXNzLm1vZGVsLkdhbWVTdGF0dXMSNAoPcmVzaWduaW5nX2NvbG9yGAYgASgOMhYuaWRsLmNoZXNzLm1vZGVsLkNvbG9ySACIAQESKwoGcmVzdWx0GAcgASgLMhsuaWRsLmNoZXNzLm1vZGVsLkdhbWVSZXN1bHRCEgoQX3Jlc2lnbmluZ19jb2xvciqPAgoKR2FtZVN0YXR1cxIbChdHQU1FX1NUQVRVU19VTlNQRUNJRklFRBAAEhsKF0dBTUVfU1RBVFVTX0lOX1BST0dSRVNTEAESFQoRR0FNRV9TVEFUVVNfQ0hFQ0sQAhIZChVHQU1FX1NUQVRVU19DSEVDS01BVEUQAxIZChVHQU1FX1NUQVRVU19TVEFMRU1BVEUQBBInCiNHQU1FX1NUQVRVU19EUkFXX0JZX0ZJRlRZX01PVkVfUlVMRRAFEiIKHkdBTUVfU1RBVFVTX0RSQVdfQllfUkVQRVRJVElPThAGEi0KKUdBTUVfU1RBVFVTX0RSQVdfQllfSU5TVUZGSUNJRU5UX01BVEVSSUFMEAcqfAoLR2FtZU91dGNvbWUSHAoYR0FNRV9PVVRDT01FX1VOU1BFQ0lGSUVEEAASGwoXR0FNRV9PVVRDT01FX1dISVRFX1dJTlMQARIbChdHQU1FX09VVENPTUVfQkxBQ0tfV0lOUxACEhUKEUdBTUVfT1VUQ09NRV9EUkFXEANCOFo2Ym9hcmRnYW1lei9jb250cmFjdHMvZ2VuL2dvL2lkbC9jaGVzcy9tb2RlbDtjaGVzc21vZGVsYgZwcm90bzM", [file_idl_chess_model_board, file_idl_chess_model_move, file_idl_chess_model_piece]);
+  fileDesc("ChppZGwvY2hlc3MvbW9kZWwvZ2FtZS5wcm90bxIPaWRsLmNoZXNzLm1vZGVsIkIKC0NoZXNzUGxheWVyEgwKBG5hbWUYASABKAkSJQoFY29sb3IYAiABKA4yFi5pZGwuY2hlc3MubW9kZWwuQ29sb3IiaAoMUGxheWVyUm9zdGVyEisKBXdoaXRlGAEgASgLMhwuaWRsLmNoZXNzLm1vZGVsLkNoZXNzUGxheWVyEisKBWJsYWNrGAIgASgLMhwuaWRsLmNoZXNzLm1vZGVsLkNoZXNzUGxheWVyIrcBCglDaGVzc1R1cm4SDgoGbnVtYmVyGAEgASgNEiwKBnBsYXllchgCIAEoCzIcLmlkbC5jaGVzcy5tb2RlbC5DaGVzc1BsYXllchIjCgRtb3ZlGAMgASgLMhUuaWRsLmNoZXNzLm1vZGVsLk1vdmUSEAoIbm90YXRpb24YBCABKAkSNQoQcmVzdWx0aW5nX3N0YXR1cxgFIAEoDjIbLmlkbC5jaGVzcy5tb2RlbC5HYW1lU3RhdHVzInIKEENoZXNzVHVybkhpc3RvcnkSKQoFdHVybnMYASADKAsyGi5pZGwuY2hlc3MubW9kZWwuQ2hlc3NUdXJuEjMKDXBvc2l0aW9uX2tleXMYAiADKAsyHC5pZGwuY2hlc3MubW9kZWwuUG9zaXRpb25LZXkizgEKCkdhbWVSZXN1bHQSLQoHb3V0Y29tZRgBIAEoDjIcLmlkbC5jaGVzcy5tb2RlbC5HYW1lT3V0Y29tZRIsCgZ3aW5uZXIYAiABKAsyHC5pZGwuY2hlc3MubW9kZWwuQ2hlc3NQbGF5ZXISKwoGc3RhdHVzGAMgASgOMhsuaWRsLmNoZXNzLm1vZGVsLkdhbWVTdGF0dXMSNgoQcmVzaWduaW5nX3BsYXllchgEIAEoCzIcLmlkbC5jaGVzcy5tb2RlbC5DaGVzc1BsYXllciLRAgoJQ2hlc3NHYW1lEi0KBnJvc3RlchgBIAEoCzIdLmlkbC5jaGVzcy5tb2RlbC5QbGF5ZXJSb3N0ZXISKgoFc3RhdGUYAiABKAsyGy5pZGwuY2hlc3MubW9kZWwuQm9hcmRTdGF0ZRIyCgdoaXN0b3J5GAMgASgLMiEuaWRsLmNoZXNzLm1vZGVsLkNoZXNzVHVybkhpc3RvcnkSKgoLbGVnYWxfbW92ZXMYBCADKAsyFS5pZGwuY2hlc3MubW9kZWwuTW92ZRIrCgZzdGF0dXMYBSABKA4yGy5pZGwuY2hlc3MubW9kZWwuR2FtZVN0YXR1cxIvCg9yZXNpZ25pbmdfY29sb3IYBiABKA4yFi5pZGwuY2hlc3MubW9kZWwuQ29sb3ISKwoGcmVzdWx0GAcgASgLMhsuaWRsLmNoZXNzLm1vZGVsLkdhbWVSZXN1bHQqjwIKCkdhbWVTdGF0dXMSGwoXR0FNRV9TVEFUVVNfVU5TUEVDSUZJRUQQABIbChdHQU1FX1NUQVRVU19JTl9QUk9HUkVTUxABEhUKEUdBTUVfU1RBVFVTX0NIRUNLEAISGQoVR0FNRV9TVEFUVVNfQ0hFQ0tNQVRFEAMSGQoVR0FNRV9TVEFUVVNfU1RBTEVNQVRFEAQSJwojR0FNRV9TVEFUVVNfRFJBV19CWV9GSUZUWV9NT1ZFX1JVTEUQBRIiCh5HQU1FX1NUQVRVU19EUkFXX0JZX1JFUEVUSVRJT04QBhItCilHQU1FX1NUQVRVU19EUkFXX0JZX0lOU1VGRklDSUVOVF9NQVRFUklBTBAHKnwKC0dhbWVPdXRjb21lEhwKGEdBTUVfT1VUQ09NRV9VTlNQRUNJRklFRBAAEhsKF0dBTUVfT1VUQ09NRV9XSElURV9XSU5TEAESGwoXR0FNRV9PVVRDT01FX0JMQUNLX1dJTlMQAhIVChFHQU1FX09VVENPTUVfRFJBVxADQjhaNmJvYXJkZ2FtZXovY29udHJhY3RzL2dlbi9nby9pZGwvY2hlc3MvbW9kZWw7Y2hlc3Ntb2RlbGIGcHJvdG8z", [file_idl_chess_model_board, file_idl_chess_model_move, file_idl_chess_model_piece]);
 
 /**
  * Who is playing, and which side they have.
@@ -47,8 +47,7 @@ export const ChessPlayerSchema: GenMessage<ChessPlayer> = /*@__PURE__*/
 /**
  * The two players, addressable by colour.
  *
- * Named fields rather than a pair, so the sides cannot be passed the wrong way
- * round. white.color is always COLOR_WHITE, and black.color COLOR_BLACK.
+ * white.color is always COLOR_WHITE, and black.color COLOR_BLACK.
  *
  * @generated from message idl.chess.model.PlayerRoster
  */
@@ -74,9 +73,9 @@ export const PlayerRosterSchema: GenMessage<PlayerRoster> = /*@__PURE__*/
 /**
  * One move that was played, with its written form.
  *
- * The notation is stored because rendering it needs the position the move was
- * played from, which is unavailable when the history is read. It is standard
- * algebraic — "Nf3", "exd5", "O-O", "e8=Q#" — never coordinate text.
+ * The notation is standard algebraic — "Nf3", "exd5", "O-O", "e8=Q#" — never
+ * coordinate text. It is stored because rendering it needs the position the move
+ * was played from, which a reader of the history no longer has.
  *
  * @generated from message idl.chess.model.ChessTurn
  */
@@ -162,9 +161,9 @@ export type GameResult = Message<"idl.chess.model.GameResult"> & {
   winner?: ChessPlayer;
 
   /**
-   * @generated from field: optional idl.chess.model.GameStatus status = 3;
+   * @generated from field: idl.chess.model.GameStatus status = 3;
    */
-  status?: GameStatus;
+  status: GameStatus;
 
   /**
    * @generated from field: idl.chess.model.ChessPlayer resigning_player = 4;
@@ -181,10 +180,6 @@ export const GameResultSchema: GenMessage<GameResult> = /*@__PURE__*/
 
 /**
  * A game in progress: the players, the position, and the moves played.
- *
- * The state half of the engine. Its behaviour — generating the legal moves,
- * judging the status, applying a move — stays in the library; what travels is
- * what the library computed.
  *
  * @generated from message idl.chess.model.ChessGame
  */
@@ -205,7 +200,7 @@ export type ChessGame = Message<"idl.chess.model.ChessGame"> & {
   history?: ChessTurnHistory;
 
   /**
-   * Every move the side to move may legally play. Empty once the game is over.
+   * What the side to move may play; empty once over.
    *
    * @generated from field: repeated idl.chess.model.Move legal_moves = 4;
    */
@@ -217,14 +212,14 @@ export type ChessGame = Message<"idl.chess.model.ChessGame"> & {
   status: GameStatus;
 
   /**
-   * Set only when a player gave up rather than being mated.
+   * Set only when a player resigned.
    *
-   * @generated from field: optional idl.chess.model.Color resigning_color = 6;
+   * @generated from field: idl.chess.model.Color resigning_color = 6;
    */
-  resigningColor?: Color;
+  resigningColor: Color;
 
   /**
-   * Absent while the game is still being played.
+   * Unset while the game is still being played.
    *
    * @generated from field: idl.chess.model.GameResult result = 7;
    */
@@ -241,8 +236,7 @@ export const ChessGameSchema: GenMessage<ChessGame> = /*@__PURE__*/
 /**
  * Where a game stands after the move just played.
  *
- * Everything but IN_PROGRESS and CHECK is terminal. The four draws are spelled
- * out rather than collapsed into one value, because a player is owed the reason.
+ * Everything but IN_PROGRESS and CHECK is terminal. Each draw names its cause.
  *
  * @generated from enum idl.chess.model.GameStatus
  */
@@ -297,9 +291,8 @@ export const GameStatusSchema: GenEnum<GameStatus> = /*@__PURE__*/
 /**
  * How a finished game is scored.
  *
- * The scorelines "1-0", "0-1" and "1/2-1/2" are how these are written on a
- * scoresheet. They are not legal identifiers, so rendering them belongs to the
- * layer that displays the result.
+ * The scorelines "1-0", "0-1" and "1/2-1/2" are rendered by the layer that
+ * displays the result.
  *
  * @generated from enum idl.chess.model.GameOutcome
  */

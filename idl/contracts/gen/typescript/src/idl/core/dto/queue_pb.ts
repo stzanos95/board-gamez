@@ -17,39 +17,31 @@ export const file_idl_core_dto_queue: GenFile = /*@__PURE__*/
   fileDesc("ChhpZGwvY29yZS9kdG8vcXVldWUucHJvdG8SDGlkbC5jb3JlLmR0byJdChJRdWV1ZU1lc3NhZ2VIZWFkZXISCgoCaWQYASABKAkSDAoEdHlwZRgCIAEoCRItCgl0aW1lc3RhbXAYAyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIm8KFFF1ZXVlTWVzc2FnZUVudmVsb3BlEjAKBmhlYWRlchgBIAEoCzIgLmlkbC5jb3JlLmR0by5RdWV1ZU1lc3NhZ2VIZWFkZXISJQoHcGF5bG9hZBgCIAEoCzIULmdvb2dsZS5wcm90b2J1Zi5BbnlCMlowYm9hcmRnYW1lei9jb250cmFjdHMvZ2VuL2dvL2lkbC9jb3JlL2R0bztjb3JlZHRvYgZwcm90bzM", [file_google_protobuf_any, file_google_protobuf_timestamp]);
 
 /**
- * Everything a broker and a consumer may read about a message without opening it.
+ * What a broker and a consumer read about a message without opening it.
  *
- * Its own type rather than a shared one, for the reason given on
- * WebsocketMessageHeader: a queue message outlives its sender, may be delivered
- * more than once and may be replayed weeks later, and none of that is true of a
- * socket frame. The fields those facts imply belong here and nowhere else.
+ * Each domain owns the values it publishes as `type`, and nothing here validates
+ * them. A message read off a queue may be arbitrarily old: treating receipt as
+ * occurrence orders events wrongly under any backlog.
  *
  * @generated from message idl.core.dto.QueueMessageHeader
  */
 export type QueueMessageHeader = Message<"idl.core.dto.QueueMessageHeader"> & {
   /**
-   * Unique per message. Also the natural key for a consumer that has to detect a
-   * redelivery, which at-least-once brokers guarantee will happen.
+   * Unique per message, and what recognises a redelivery.
    *
    * @generated from field: string id = 1;
    */
   id: string;
 
   /**
-   * What this message means, and what a consumer subscribes on. A string for the
-   * same reason as on a socket frame: core cannot name the types of domains it
-   * must not import.
+   * What this message means, and what a consumer subscribes on.
    *
    * @generated from field: string type = 2;
    */
   type: string;
 
   /**
-   * When the producer emitted it.
-   *
-   * Not when it was enqueued, delivered or redelivered. A message read off a
-   * queue may be arbitrarily old, and a consumer that treats receipt as
-   * occurrence gets the order of events wrong under any backlog.
+   * Emission, not enqueue or delivery.
    *
    * @generated from field: google.protobuf.Timestamp timestamp = 3;
    */
@@ -66,9 +58,8 @@ export const QueueMessageHeaderSchema: GenMessage<QueueMessageHeader> = /*@__PUR
 /**
  * One message on a queue.
  *
- * Same shape as the socket envelope and deliberately not the same type. They are
- * alike today because both are new; the header each carries is what will pull
- * them apart.
+ * The header is all the transport reads. The payload is packed by the domain
+ * that produced it and opened only by the domain that consumes it.
  *
  * @generated from message idl.core.dto.QueueMessageEnvelope
  */
