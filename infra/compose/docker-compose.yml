@@ -12,3 +12,15 @@ services:
     stdin_open: true
     tty: true
     command: ["play"]
+
+  fastapi-gateway:
+    build:
+      # The repository root, so the root .dockerignore applies.
+      context: ../..
+      dockerfile: deployables/fastapi-gateway/docker/Dockerfile
+    image: board-gamez/fastapi-gateway:latest
+    # The published port matches the one in the config file the image ships
+    # with. Changing either without the other leaves nothing listening here.
+    ports:
+      - "8080:8080"
+    command: ["serve"]

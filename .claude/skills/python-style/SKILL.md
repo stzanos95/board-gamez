@@ -45,9 +45,11 @@ disappeared.
 
 A bare literal that carries meaning gets a name. In practice:
 
-- **Closed sets of values → an `Enum` in its own module.** `Color`, `PieceType`,
+- **Closed sets of values → an enum in its own module.** `Color`, `PieceType`,
   `MoveKind`, `CastlingSide` — one enum per file, never nested inside another
   class (nesting forces callers to import the container just to read the enum).
+- **An enum's base class is its value type.** `StrEnum` when the values are
+  strings, `IntEnum` when they are integers, plain `Enum` when they are neither.
 - **Tuning values → a module constant.** `BOARD_SIZE = 8`,
   `MAX_HALFMOVE_CLOCK = 100`.
 - **Values that vary by input → a lookup function, not an inline default.**
@@ -64,6 +66,35 @@ size = 8                             # no
 
 The exception is a literal whose meaning is fully local and obvious — `range(2)`,
 `text.strip()`, an index `[0]` right after the thing it indexes.
+
+### Which enum base
+
+```python
+class LogLevel(StrEnum):             # yes — the values are strings
+    INFO = "info"
+
+class File(IntEnum):                 # yes — the values are indices
+    A = 0
+
+class Direction(Enum):               # yes — a Vector is neither
+    NORTH = Vector(file_delta=0, rank_delta=1)
+
+class LogLevel(Enum):                # no  — a str value, so StrEnum
+    INFO = "info"
+```
+
+A `StrEnum` member **is** the string and an `IntEnum` member **is** the number.
+The member serialises as its value, formats as its value, and is accepted
+wherever the underlying type is: `f"{level}"` is `info`, and a library that takes
+a `str` takes the member itself. Nothing has to remember to write `.value`.
+
+Two consequences come with that, and both are the price of the value being real:
+
+- **An `IntEnum` member whose value is `0` is falsy.** Write `if file is None`,
+  never `if not file`.
+- **Members compare equal to bare values**, so `Color.WHITE == "white"` is
+  `True`. An equality test meant to catch a typo no longer catches one. Compare
+  members with `is`, and keep the enum on both sides.
 
 ## 3. Model domain vocabulary as types
 
@@ -354,8 +385,10 @@ has to go and look up.
 - **Constants stay at module level**, since they are named nouns rather than
   behaviour, but they must be explicit — see below.
 - **The one exception is a process entry point.** A console script needs a
-  module-level `main`, so `main` stays a two-line function that delegates to a
-  class.
+  module-level `main`. It parses the arguments, reads the configuration file
+  they name, and hands it to one object — and it does nothing else. Bringup
+  belongs to that object, in methods of its own; `main` stays short enough to
+  read at a glance and never computes anything.
 
 ### Names must survive being imported
 
@@ -459,6 +492,7 @@ out for this reason, say why in the docstring.
 - [ ] No `from __future__ import annotations`; every import at module top
 - [ ] Touched `__init__.py` files still empty
 - [ ] No bare literal carrying domain meaning — enum, constant, or config
+- [ ] Every enum's base is its value type — `StrEnum`, `IntEnum`, or `Enum`
 - [ ] Nothing crosses a layer as a `dict` or `tuple` that should be a dataclass
 - [ ] Every parameter and return annotated; no bare `list`/`set`/`dict`, no `Any`
 - [ ] No outside-system shape written as a bare literal — modelled in its own module with `to_dict`/`from_*`

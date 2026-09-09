@@ -10,13 +10,14 @@ setup.sh                       prepare this machine — idempotent, safe to re-r
 idl/contracts/                 the schema every layer shares, and what it generates
 packages/chess/                the chess engine — rules only, no input or output
 deployables/chess-cli/         the terminal game — owns its environment and its config
+deployables/fastapi-gateway/   the HTTP gateway — owns its environment and its config
 infra/                         compose files and the scripts that drive them
 ```
 
 ## Getting set up
 
 ```bash
-./setup.sh                  # uv, both Python environments, then verify
+./setup.sh                  # uv, the Python environments, then verify
 ./setup.sh --with-docker    # also install Docker Engine (needs sudo)
 ```
 
@@ -29,6 +30,16 @@ running it once did. It never removes or overwrites anything you already have.
 ./deployables/chess-cli/scripts/local-play.sh   # on this machine
 ./infra/scripts/play.sh                         # in a container
 ```
+
+## Serving
+
+```bash
+./deployables/fastapi-gateway/scripts/local-serve.sh   # on this machine
+./infra/scripts/serve.sh                               # in a container
+```
+
+The gateway carries no routes yet; it answers `/openapi.json` and `/docs` with
+the title and version its config file names.
 
 ## The shared vocabulary
 

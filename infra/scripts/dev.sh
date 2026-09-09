@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
-# Play with the host source bind-mounted, so edits apply without a rebuild.
+# Run a service with the host source bind-mounted, so edits apply without a
+# rebuild. Defaults to the game; name another service to run that instead.
 source "$(dirname "${BASH_SOURCE[0]}")/_shared.sh"
 require_docker
-compose -f "$BASE_COMPOSE" -f "$DEV_COMPOSE" run --rm chess-cli "$@"
+SERVICE="${1:-chess-cli}"
+if [ "$#" -gt 0 ]; then
+    shift
+fi
+compose -f "$BASE_COMPOSE" -f "$DEV_COMPOSE" run --rm "$SERVICE" "$@"

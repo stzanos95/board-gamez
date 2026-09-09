@@ -1,0 +1,23 @@
+# Settings for the HTTP gateway.
+#
+# This file is the app's bringup: it is parsed into GatewayAPIConfig, and nothing
+# in the app reads the environment. To run with different settings, copy this
+# file and pass it:  fastapi-gateway --config /path/to/your.yaml
+application:
+  title: board-gamez gateway
+  version: "0.1.0"
+  # The path prefix stripped before a request reaches this process. Empty when
+  # the gateway is served at the root.
+  root_path: ""
+
+server:
+  # Plain HTTP. TLS is terminated ahead of this process.
+  host: "0.0.0.0"
+  port: 8080
+  # critical, error, warning, info, debug or trace.
+  log_level: info
+  access_log: true
+  # The scheme and client address of the original request are read from the
+  # forwarded headers, and only from the addresses named below.
+  proxy_headers: true
+  forwarded_allow_ips: "127.0.0.1"

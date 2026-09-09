@@ -11,3 +11,7 @@ services:
     volumes:
       - ../../packages/chess:/app/packages/chess:ro
       - ../../deployables/chess-cli:/app/deployables/chess-cli:ro
+
+  fastapi-gateway:
+    volumes:
+      - ../../deployables/fastapi-gateway:/app/deployables/fastapi-gateway:ro

@@ -28,3 +28,20 @@ services:
       context: ../..
       dockerfile: deployables/chess-cli/docker/Dockerfile
     command: ["typecheck"]
+
+  fastapi-gateway:
+    command: ["test"]
+
+  gateway-lint:
+    image: board-gamez/fastapi-gateway:latest
+    build:
+      context: ../..
+      dockerfile: deployables/fastapi-gateway/docker/Dockerfile
+    command: ["lint"]
+
+  gateway-typecheck:
+    image: board-gamez/fastapi-gateway:latest
+    build:
+      context: ../..
+      dockerfile: deployables/fastapi-gateway/docker/Dockerfile
+    command: ["typecheck"]

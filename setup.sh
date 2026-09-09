@@ -8,7 +8,7 @@
 # running it after a failure part-way through resumes rather than duplicating.
 # Nothing here removes or overwrites anything you already have.
 #
-#   ./setup.sh                  install uv, build both Python environments, verify
+#   ./setup.sh                  install uv, build the Python environments, verify
 #   ./setup.sh --with-docker    also install Docker Engine if it is missing (sudo)
 #   ./setup.sh --skip-image     do not build the container image
 #   ./setup.sh --skip-tests     do not run the test suites at the end
@@ -19,6 +19,7 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ENGINE_DIR="$REPO_ROOT/packages/chess"
 APP_DIR="$REPO_ROOT/deployables/chess-cli"
+GATEWAY_DIR="$REPO_ROOT/deployables/fastapi-gateway"
 INFRA_DIR="$REPO_ROOT/infra"
 
 UV_INSTALL_URL="https://astral.sh/uv/install.sh"
@@ -224,6 +225,7 @@ ensure_project_environments() {
     fi
     ensure_project_environment "$ENGINE_DIR" "packages/chess"
     ensure_project_environment "$APP_DIR" "deployables/chess-cli"
+    ensure_project_environment "$GATEWAY_DIR" "deployables/fastapi-gateway"
 }
 
 # --- git hooks -------------------------------------------------------------
@@ -391,7 +393,7 @@ ensure_docker_image() {
     fi
     # Rebuilding is cheap and idempotent: unchanged layers come from the cache.
     if (cd "$INFRA_DIR" && docker compose -f compose/docker-compose.yml build); then
-        ok "image board-gamez/chess-cli:latest is up to date"
+        ok "the deployable images are up to date"
     else
         fail "the image build failed"
         return 1
@@ -420,7 +422,8 @@ run_test_suites() {
         warn "skipped — no python 3.$MINIMUM_PYTHON_MINOR or newer, and no uv"
         return 0
     fi
-    if "$APP_DIR/scripts/local-test.sh" >/tmp/board-gamez-setup-tests.log 2>&1; then
+    if "$APP_DIR/scripts/local-test.sh" >/tmp/board-gamez-setup-tests.log 2>&1 &&
+        "$GATEWAY_DIR/scripts/local-test.sh" >>/tmp/board-gamez-setup-tests.log 2>&1; then
         ok "$(grep -c '^OK' /tmp/board-gamez-setup-tests.log) suites passed"
         grep -E '^Ran ' /tmp/board-gamez-setup-tests.log | while read -r line; do note "$line"; done
     else
@@ -439,18 +442,24 @@ summarise() {
     echo "  Play now, with no container:"
     echo "      ./deployables/chess-cli/scripts/local-play.sh"
     echo
+    echo "  Serve the gateway, with no container:"
+    echo "      ./deployables/fastapi-gateway/scripts/local-serve.sh"
+    echo
     echo "  Run the tests:"
     echo "      ./deployables/chess-cli/scripts/local-test.sh"
+    echo "      ./deployables/fastapi-gateway/scripts/local-test.sh"
     echo
     echo "  Settings live in a file, not the environment:"
     echo "      deployables/chess-cli/config/chess_cli.yaml"
+    echo "      deployables/fastapi-gateway/config/fastapi_gateway.yaml"
     echo
     echo "  Commits are checked for you — ruff on commit, mypy on push:"
     echo "      pre-commit run --all-files"
     echo
     if [ "$DOCKER_USABLE" -eq 1 ]; then
-        echo "  Play in the container:"
+        echo "  Play in the container, or serve the gateway from one:"
         echo "      ./infra/scripts/play.sh"
+        echo "      ./infra/scripts/serve.sh"
         echo
         echo "  Check everything the way CI would:"
         echo "      ./infra/scripts/test.sh"
