@@ -8,7 +8,8 @@
     "src"
   ],
   "exports": {
-    "./*": "./src/idl/*",
+    "./google/*": "./src/google/*.ts",
+    "./*": "./src/idl/*.ts",
     "./package.json": "./package.json"
   },
   "dependencies": {

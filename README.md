@@ -20,7 +20,26 @@ curl http://127.0.0.1:8080/openapi.json          # the gateway's paths
 grpcurl -plaintext 127.0.0.1:50051 list          # the server's services
 ```
 
-The service methods are not implemented yet, so calling one returns an error.
+## Playing in a browser
+
+The interface is [`deployables/gamez-ux`](deployables/gamez-ux/). Nothing has to
+be installed: the node toolchain is a container.
+
+```bash
+./infra/scripts/web.sh                          # everything, on 8081
+```
+
+Or against a backend already running on this machine:
+
+```bash
+./deployables/gamez-ux/scripts/local-dev.sh     # on 5173
+```
+
+**Every browser tab is a different player.** There is no sign-in yet, so open a
+second tab to take the seat opposite yourself.
+
+Which gateway it calls, which theme it wears and how often it polls are in
+[`deployables/gamez-ux/config/gamez_ux.json`](deployables/gamez-ux/config/gamez_ux.json).
 
 Run the checks the same way CI does:
 

@@ -29,6 +29,23 @@ services:
       - grpc-server
     command: ["serve"]
 
+  gamez-ux:
+    build:
+      # The repository root, so packages/ux and the generated contracts are
+      # inside the context.
+      context: ../..
+      dockerfile: deployables/gamez-ux/docker/Dockerfile
+    image: board-gamez/gamez-ux:latest
+    # The published port matches the one nginx.conf listens on. Changing either
+    # without the other leaves nothing listening here.
+    ports:
+      - "8081:8081"
+    # Calls to the gateway are forwarded by nginx, so the browser makes no
+    # cross-origin request and the gateway needs no origin allowed.
+    depends_on:
+      - fastapi-gateway
+    command: ["serve"]
+
   grpc-server:
     build:
       # The repository root, so the root .dockerignore applies.

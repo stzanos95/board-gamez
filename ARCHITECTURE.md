@@ -11,7 +11,7 @@ the common case by file path.
 
 | # | Layer | Responsibility | Location here |
 | - | ----- | -------------- | ------------- |
-| 1 | **Presentation** | User interface | Not implemented. `idl/contracts/gen/typescript` is generated for it |
+| 1 | **Presentation** | User interface | `packages/ux/`, served by `deployables/gamez-ux/` |
 | 2 | **Application** | Transport, routing, coordination. No rules | `deployables/*`, and `<domain>/service/` |
 | 3 | **Business** | Rules and decisions | `<domain>/controller/` |
 | 4 | **Persistence** | Storage and retrieval | `<domain>/repository/` |
@@ -24,6 +24,9 @@ convert values so that neither adjacent layer needs to know the other's types.
 
 | Path | Layer | May contain decisions |
 | ---- | ----- | --------------------- |
+| `deployables/gamez-ux/` | Presentation (hosting) | No. Reads configuration, mounts the app, serves the bundle |
+| `packages/ux/…/components/` | Presentation | No. Receives values and callbacks, and draws them |
+| `packages/ux/…/<domain>/` | Presentation (binding) | No. Calls the gateway and shapes answers for a screen |
 | `deployables/<app>/` | Application (transport) and hosting | No. Reads configuration, builds collaborators, serves |
 | `packages/<domain>/…/service/` | Application (binding) | No. Adapts, calls, adapts |
 | `packages/<domain>/…/adapters/` | Between layers | No. One named method per conversion |
@@ -45,7 +48,10 @@ wrong layer.
 A player joins a table. The path:
 
 ```
-browser
+gamez-ux                                Presentation: a browser
+ └─ TableGateway → GatewayClient        Presentation: outbound transport
+    ─────────── network ───────────
+    nginx, forwarding /api              Presentation: hosting
  └─ POST /internal/platform/lobby/upsert/table
     fastapi-gateway                     Application: HTTP transport
      └─ LobbyRouters → HttpTableService  Application: binding
@@ -98,6 +104,19 @@ business layer, and a second transport can call the same controller.
 `TableService` is served over gRPC by `GrpcTableService` and called over HTTP by
 `HttpTableService`. Both expose the same four operations. A queue consumer would
 be a third and would require no change below the Application layer.
+
+### The browser renders, and does not decide
+
+The presentation layer draws what it is given and sends what a person asked
+for. A rule it evaluated would be a second copy of that rule, on a machine this
+project does not control, that drifts from the first.
+
+`TableService` is a store with four methods and no domain verb, and nothing
+between it and a browser decides yet, so taking a seat is currently a read, a
+change and a version-guarded write made in
+`packages/ux/src_tsx/lobby/table_intents.ts`. That is business logic above the
+Application layer. It is in one file so that a `JoinSeat` operation on the lobby
+replaces it with a call.
 
 ### The platform does not interpret games
 

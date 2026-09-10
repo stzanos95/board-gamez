@@ -1,0 +1,12 @@
+{
+  "name": "board-gamez",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Workspace root for the TypeScript side: the generated contracts, the ux package, and the browser deployable.",
+  "type": "module",
+  "workspaces": [
+    "idl/contracts/gen/typescript",
+    "packages/ux",
+    "deployables/gamez-ux"
+  ]
+}

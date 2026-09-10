@@ -164,3 +164,20 @@ The principles apply to the layers, not only to the classes inside them.
 - [ ] No package imports a deployable, and no domain imports another domain
 - [ ] Nothing reads the environment; settings come from the YAML file
 - [ ] The change touches one layer
+
+## A review comment becomes a rule
+
+When the author of this repository reviews a router, a servicer, a controller, a repository, or an adapter and leaves a comment, decide
+whether it is about the line or about the codebase.
+
+- **About the line** — a wrong name, a missed case, a typo. Fix it and move on.
+- **About the codebase** — a comment that would apply the same way to the next
+  file, and the one after that. Fix the line, then write the rule into this
+  skill, in the section it belongs to, in the same shape as the rules around it.
+
+The test is whether the reviewer would have to say it again. If they would, the
+skill is missing a rule, and leaving it unwritten means the next change makes the
+same mistake and costs the same review.
+
+Applying a comment to one file and not to the rule is the failure this section
+exists to prevent. `python-style`, `typescript-style` and `frontend-development` carry the same instruction for their own subjects.

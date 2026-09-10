@@ -507,3 +507,20 @@ out for this reason, say why in the docstring.
 - [ ] Pieces take `BoardStateView`, never `ChessBoardState`
 - [ ] The engine package stays free of I/O — no `print`, no `input`
 - [ ] Ran the suite, `ruff check` and `mypy`
+
+## A review comment becomes a rule
+
+When the author of this repository reviews any .py file and leaves a comment, decide
+whether it is about the line or about the codebase.
+
+- **About the line** — a wrong name, a missed case, a typo. Fix it and move on.
+- **About the codebase** — a comment that would apply the same way to the next
+  file, and the one after that. Fix the line, then write the rule into this
+  skill, in the section it belongs to, in the same shape as the rules around it.
+
+The test is whether the reviewer would have to say it again. If they would, the
+skill is missing a rule, and leaving it unwritten means the next change makes the
+same mistake and costs the same review.
+
+Applying a comment to one file and not to the rule is the failure this section
+exists to prevent. `backend-development`, `typescript-style` and `frontend-development` carry the same instruction for their own subjects.

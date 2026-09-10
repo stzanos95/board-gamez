@@ -199,15 +199,26 @@ contracts/gen/typescript/
 ```
 
 The export map drops the `idl/` segment that Python needs, because the package
-name already carries it:
+name already carries it, and names `google/` separately because it sits beside
+`idl/` rather than inside it:
 
 ```json
-{ "exports": { "./*": "./src/idl/*" } }
+{ "exports": { "./google/*": "./src/google/*.ts", "./*": "./src/idl/*.ts" } }
 ```
+
+The `.ts` is in the target rather than in the specifier. An export pattern
+resolves to a file and nothing adds an extension to it, so a map without one
+answers with a path that does not exist and every import of this package fails.
 
 ```ts
 import { BoardState } from "@board-gamez/idl/chess/model/board_pb";
+import { http } from "@board-gamez/idl/google/api/annotations_pb";
 ```
+
+The `http` extension is what carries a method's HTTP path. A client reads the
+path off the service descriptor rather than declaring it, so the URL an
+operation is served at is stated once, in the `.proto` that declares the
+operation.
 
 **It ships TypeScript source, not compiled JavaScript.** A consumer therefore
 bundles or compiles it, which is the normal arrangement for a package inside one

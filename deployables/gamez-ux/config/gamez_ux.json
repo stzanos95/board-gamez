@@ -1,0 +1,12 @@
+{
+  "gateway": {
+    "baseUrl": "/api",
+    "requestTimeoutMs": 8000
+  },
+  "theme": "midnight",
+  "freshness": {
+    "staleTimeMs": 2000,
+    "lobbyIntervalMs": 10000,
+    "tableIntervalMs": 3000
+  }
+}
