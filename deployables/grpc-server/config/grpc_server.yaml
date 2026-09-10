@@ -1,0 +1,27 @@
+# Settings for the internal gRPC server.
+#
+# This file is the app's bringup: it is parsed into ServiceHostConfig, and
+# nothing in the app reads the environment. To run with different settings, copy
+# this file and pass it:  grpc-server --config /path/to/your.yaml
+application:
+  name: board-gamez grpc server
+  version: "0.1.0"
+
+server:
+  # Plain HTTP/2. Transport security is terminated ahead of this process, which
+  # is reachable only from inside.
+  host: "0.0.0.0"
+  port: 50051
+  # critical, error, warning, info or debug.
+  log_level: info
+  # Calls served at once. Anything beyond this waits rather than being refused.
+  maximum_concurrent_rpcs: 256
+  # A message larger than either limit is refused rather than truncated.
+  max_receive_message_bytes: 4194304
+  max_send_message_bytes: 4194304
+  # How long a call already in flight has to finish once the process has been
+  # asked to stop.
+  graceful_shutdown_seconds: 10
+  # Answer which services are served, so a client needs no .proto files to call
+  # one. This is an internal listener; nothing outside reaches it.
+  reflection: true

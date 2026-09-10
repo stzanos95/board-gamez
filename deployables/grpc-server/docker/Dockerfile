@@ -13,9 +13,9 @@ ENV UV_PROJECT_ENVIRONMENT=/opt/venv \
     UV_PYTHON_DOWNLOADS=never
 
 WORKDIR /app
-COPY deployables/fastapi-gateway /app/deployables/fastapi-gateway
+COPY deployables/grpc-server /app/deployables/grpc-server
 
-WORKDIR /app/deployables/fastapi-gateway
+WORKDIR /app/deployables/grpc-server
 # Includes the dev group, so the same image can run the tests, the linter and the
 # type checker.
 RUN uv sync --no-install-project
@@ -26,23 +26,24 @@ FROM python:3.13-slim-bookworm AS runtime
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PATH="/opt/venv/bin:$PATH" \
-    PYTHONPATH="/app/deployables/fastapi-gateway/src_python" \
-    APP_DIR="/app/deployables/fastapi-gateway" \
-    FASTAPI_GATEWAY_CONFIG="/app/deployables/fastapi-gateway/config/fastapi_gateway.container.yaml"
+    PYTHONPATH="/app/deployables/grpc-server/src_python" \
+    APP_DIR="/app/deployables/grpc-server" \
+    GRPC_SERVER_CONFIG="/app/deployables/grpc-server/config/grpc_server.yaml"
 
-RUN useradd --create-home --uid 1000 gateway
+RUN useradd --create-home --uid 1000 server
 
-COPY --from=builder --chown=gateway:gateway /opt/venv /opt/venv
-COPY --chown=gateway:gateway deployables/fastapi-gateway /app/deployables/fastapi-gateway
-COPY deployables/fastapi-gateway/docker/entrypoint.sh /usr/local/bin/entrypoint.sh
+COPY --from=builder --chown=server:server /opt/venv /opt/venv
+COPY --chown=server:server deployables/grpc-server /app/deployables/grpc-server
+COPY deployables/grpc-server/docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
-USER gateway
+USER server
 WORKDIR /app
 
 # Documentation only, and it must match the port in the config file the image
-# ships with. The listener speaks plain HTTP; TLS is terminated ahead of it.
-EXPOSE 8080
+# ships with. The listener speaks plain HTTP/2; transport security is terminated
+# ahead of it.
+EXPOSE 50051
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 CMD ["serve"]

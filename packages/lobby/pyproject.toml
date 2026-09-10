@@ -6,11 +6,18 @@ requires-python = ">=3.13"
 dependencies = [
     # The router each service declares, and the models a request arrives as.
     "idl-fastapi",
+    # The servicer each service declares, and the messages a call arrives as.
+    "board-gamez-idl",
+    "grpcio>=1.68.1",
+    # Converting one shape of a message into the other.
+    "core",
 ]
 
 # Relative path sources rather than a workspace: each project here stands alone.
 [tool.uv.sources]
 idl-fastapi = { path = "../../idl/contracts/gen/fastapi", editable = true }
+board-gamez-idl = { path = "../../idl/contracts/gen/python", editable = true }
+core = { path = "../core", editable = true }
 
 [build-system]
 requires = ["hatchling"]
@@ -22,7 +29,9 @@ packages = ["src_python/lobby"]
 [dependency-groups]
 # The ruff floor matches the rev pinned in .pre-commit-config.yaml, so the
 # hook, this environment and ./infra/scripts/lint.sh format identically.
-dev = ["pytest>=9.1.1", "mypy>=2.3.1", "ruff>=0.16.6"]
+# protobuf ships no type information of its own, so the stubs are what keeps
+# every message here from being Any to a type checker.
+dev = ["pytest>=9.1.1", "mypy>=2.3.1", "ruff>=0.16.6", "types-protobuf>=5.28"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests_python"]
@@ -35,6 +44,13 @@ strict = true
 disallow_any_explicit = true
 mypy_path = "src_python"
 files = ["src_python", "tests_python"]
+
+# grpcio ships no type information and no stub package this repository trusts, so
+# the modules it publishes are the one place mypy is told to stop looking. The
+# ban on explicit Any still holds for everything written here.
+[[tool.mypy.overrides]]
+module = ["grpc.*", "grpc_reflection.*"]
+ignore_missing_imports = true
 
 [tool.ruff]
 line-length = 100
@@ -50,6 +66,11 @@ select = [
     "PLC0415",
     "PLR2004",
 ]
+
+[tool.ruff.lint.per-file-ignores]
+# gRPC dispatches on the method names the schema declares, so a servicer keeps
+# protobuf's casing. This is the only file where that is true.
+"src_python/lobby/service/grpc_table_service.py" = ["N802"]
 
 [tool.ruff.lint.flake8-tidy-imports.banned-api]
 "__future__.annotations" = { msg = "Annotations must stay real runtime objects — see the python-style skill, rule 1. Use a string forward ref such as -> \"HttpTableService\" instead." }

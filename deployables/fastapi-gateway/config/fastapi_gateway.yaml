@@ -21,3 +21,14 @@ server:
   # forwarded headers, and only from the addresses named below.
   proxy_headers: true
   forwarded_allow_ips: "127.0.0.1"
+
+upstreams:
+  # The internal gRPC services this gateway calls. Plain HTTP/2 without TLS:
+  # these are reachable only from inside.
+  lobby:
+    hostname: "127.0.0.1"
+    port: 50051
+    # Set together with the limits grpc-server is configured with: a pair that
+    # disagree fail on whichever side is smaller.
+    max_receive_message_bytes: 4194304
+    max_send_message_bytes: 4194304

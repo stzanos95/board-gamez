@@ -18,6 +18,12 @@ server:
   access_log: false
   proxy_headers: true
   forwarded_allow_ips: "10.0.0.1"
+upstreams:
+  lobby:
+    hostname: "127.0.0.1"
+    port: 50051
+    max_receive_message_bytes: 1024
+    max_send_message_bytes: 2048
 """
 
 
@@ -39,3 +45,5 @@ class ReadingSettingsTest(unittest.TestCase):
         self.assertIs(config.server.log_level, LogLevel.WARNING)
         self.assertFalse(config.server.access_log)
         self.assertEqual(config.server.forwarded_allow_ips, "10.0.0.1")
+        self.assertEqual(config.upstreams.lobby.address, "127.0.0.1:50051")
+        self.assertEqual(config.upstreams.lobby.max_receive_message_bytes, 1024)

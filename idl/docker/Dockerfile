@@ -15,6 +15,8 @@ ARG PROTOC_VERSION=28.3
 ARG PROTOC_GEN_ES_VERSION=2.2.2
 ARG PROTOC_GEN_OPENAPI_VERSION=v0.7.0
 ARG DATAMODEL_CODEGEN_VERSION=0.78.0
+ARG GRPCIO_TOOLS_VERSION=1.68.1
+ARG MYPY_PROTOBUF_VERSION=3.6.0
 ARG GO_VERSION=1.23
 ARG NODE_VERSION=22
 
@@ -42,14 +44,23 @@ RUN apt-get update \
         ca-certificates curl gettext-base git unzip python3 python3-venv \
     && rm -rf /var/lib/apt/lists/*
 
-# The FastAPI target is written by Python tools, which Debian will not let pip
-# install system-wide. They get their own environment, off PATH, so that
+# The FastAPI and gRPC targets are written by Python tools, which Debian will not
+# let pip install system-wide. They get their own environment, off PATH, so that
 # `python3` in this image stays the interpreter and nothing else.
+#
+# grpcio-tools carries its own protoc, and it is the only way to reach the gRPC
+# Python plugin: unlike the others that plugin ships inside protoc rather than
+# beside it. mypy-protobuf writes the .pyi for what it produces, without which
+# every servicer would be untyped to a consumer running mypy strict.
 ARG DATAMODEL_CODEGEN_VERSION
+ARG GRPCIO_TOOLS_VERSION
+ARG MYPY_PROTOBUF_VERSION
 ENV CODEGEN_VENV=/opt/codegen
 RUN python3 -m venv "$CODEGEN_VENV" \
     && "$CODEGEN_VENV/bin/pip" install --no-cache-dir --quiet \
-        "datamodel-code-generator==${DATAMODEL_CODEGEN_VERSION}"
+        "datamodel-code-generator==${DATAMODEL_CODEGEN_VERSION}" \
+        "grpcio-tools==${GRPCIO_TOOLS_VERSION}" \
+        "mypy-protobuf==${MYPY_PROTOBUF_VERSION}"
 
 # protoc and buf spell the same architectures differently, so both are mapped
 # from the one name buildkit supplies.
@@ -90,7 +101,8 @@ COPY --from=openapi-plugin /out/protoc-gen-openapi /usr/local/bin/protoc-gen-ope
 ENV HOME=/tmp \
     REPO_ROOT=/repo \
     IDL_DIR=/repo/idl \
-    PROTOC_GEN_ES_VERSION=${PROTOC_GEN_ES_VERSION}
+    PROTOC_GEN_ES_VERSION=${PROTOC_GEN_ES_VERSION} \
+    GRPCIO_TOOLS_VERSION=${GRPCIO_TOOLS_VERSION}
 
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 COPY render_routers.py /usr/local/bin/render_routers.py
@@ -103,6 +115,8 @@ RUN set -eux; \
     buf --version; \
     test -x /usr/local/bin/protoc-gen-openapi; \
     "$CODEGEN_VENV/bin/datamodel-codegen" --version; \
+    "$CODEGEN_VENV/bin/python" -m grpc_tools.protoc --version; \
+    test -x "$CODEGEN_VENV/bin/protoc-gen-mypy_grpc"; \
     npm ls --global --depth=0
 
 WORKDIR /repo/idl

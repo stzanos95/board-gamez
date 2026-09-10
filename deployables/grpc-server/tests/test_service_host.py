@@ -1,0 +1,40 @@
+import unittest
+
+from grpc_server.log_level import LogLevel
+from grpc_server.service_host import ServiceHost
+from grpc_server.service_host_config import ApplicationConfig, ServerConfig, ServiceHostConfig
+
+CONFIGURED_PORT = 50999
+RECEIVE_LIMIT = 1024
+SEND_LIMIT = 2048
+
+
+def server_config() -> ServerConfig:
+    return ServerConfig(
+        host="127.0.0.1",
+        port=CONFIGURED_PORT,
+        log_level=LogLevel.WARNING,
+        maximum_concurrent_rpcs=8,
+        max_receive_message_bytes=RECEIVE_LIMIT,
+        max_send_message_bytes=SEND_LIMIT,
+        graceful_shutdown_seconds=3,
+        reflection=False,
+    )
+
+
+def config_for() -> ServiceHostConfig:
+    return ServiceHostConfig(
+        application=ApplicationConfig(name="test server", version="9.9.9"),
+        server=server_config(),
+    )
+
+
+class BringupTest(unittest.TestCase):
+    """
+    Bringup reads the configuration and nothing else. No socket is bound and no
+    event loop is started until `start` is called.
+    """
+
+    def test_a_host_is_built_without_touching_the_network(self) -> None:
+        host = ServiceHost(config=config_for())
+        self.assertIsInstance(host, ServiceHost)

@@ -23,4 +23,20 @@ services:
     # with. Changing either without the other leaves nothing listening here.
     ports:
       - "8080:8080"
+    # The gateway calls the server. Compose starts the server first; the channel
+    # connects lazily, so a server that is not answering yet is not an error.
+    depends_on:
+      - grpc-server
+    command: ["serve"]
+
+  grpc-server:
+    build:
+      # The repository root, so the root .dockerignore applies.
+      context: ../..
+      dockerfile: deployables/grpc-server/docker/Dockerfile
+    image: board-gamez/grpc-server:latest
+    # The published port matches the one in the config file the image ships
+    # with. Changing either without the other leaves nothing listening here.
+    ports:
+      - "50051:50051"
     command: ["serve"]

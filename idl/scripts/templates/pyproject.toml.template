@@ -7,7 +7,11 @@ version = "${CONTRACTS_VERSION}"
 description = "Generated protobuf contracts: the vocabulary every layer shares."
 requires-python = ">=3.13"
 # Matches the protoc that wrote src/; generated modules refuse an older runtime.
-dependencies = ["protobuf>=${PYTHON_PROTOBUF_VERSION},<${PYTHON_PROTOBUF_MAJOR_BOUND}"]
+# grpcio is here because the generated servicers import it.
+dependencies = [
+    "protobuf>=${PYTHON_PROTOBUF_VERSION},<${PYTHON_PROTOBUF_MAJOR_BOUND}",
+    "grpcio>=${GRPCIO_VERSION}",
+]
 
 [build-system]
 requires = ["hatchling"]

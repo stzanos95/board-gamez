@@ -1,10 +1,26 @@
 # board-gamez
 
-Two skills carry the standards here, and both are loaded before the work they
-govern, not after:
+`ARCHITECTURE.md` defines the layers and maps every path to one. Read it before
+adding code.
 
+Skills are loaded before the work they govern, not after:
+
+- `.claude/skills/backend-development/` — before adding or changing any component
 - `.claude/skills/python-style/` — before writing or editing any `.py`
 - `.claude/skills/modeling/` — before writing or changing any `.proto`
+
+## Write in plain language
+
+This applies to code comments, documentation, commit messages and replies.
+
+- State facts in declarative sentences. Do not build to a conclusion.
+- Use few adjectives, and none that only add emphasis.
+- Do not use rhetorical constructions: no "not X, but Y", no repetition for
+  effect, no sentence whose purpose is to sound conclusive.
+- Prefer the precise term to the vivid one. "Refuses a write built on an earlier
+  version" rather than "guards against stale writes".
+- A sentence that would be weaker as a plain statement of fact is doing something
+  other than informing. Remove it.
 
 ## Comments are a source of truth, never a conversation
 

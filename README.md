@@ -1,12 +1,54 @@
 # board-gamez
 
-Games, one package per game engine and one deployable per way of playing it.
+An online multiplayer board-game platform. People sit at tables, take seats, and
+play a game the platform hosts without interpreting its rules.
+
+## Running the backend locally
+
+Needs Docker. Builds any missing image, then starts both services.
+
+```bash
+./infra/scripts/up.sh              # gateway on 8080, gRPC server on 50051
+./infra/scripts/up.sh --detach     # same, in the background
+./infra/scripts/down.sh            # stop and remove the containers
+```
+
+Check that both answer:
+
+```bash
+curl http://127.0.0.1:8080/openapi.json          # the gateway's paths
+grpcurl -plaintext 127.0.0.1:50051 list          # the server's services
+```
+
+The service methods are not implemented yet, so calling one returns an error.
+
+Run the checks the same way CI does:
+
+```bash
+./infra/scripts/test.sh
+./infra/scripts/lint.sh
+```
+
+## Architecture
+
+The layers, and which one a given file belongs to, are in
+[ARCHITECTURE.md](ARCHITECTURE.md). Read it before adding code.
+
+```
+Presentation → Application → Business → Persistence → Database
+               deployables/   controller/  repository/   Redis
+               service/                                  infra/
+```
+
+Adapters sit between layers, in `<domain>/adapters/`.
 
 ```
 setup.sh                       prepare this machine — idempotent, safe to re-run
+ARCHITECTURE.md                the layers, and which one a file belongs to
 .pre-commit-config.yaml        what has to pass before a commit lands, and a push
 .claude/skills/python-style/   the house style, loaded before any .py is written
 .claude/skills/modeling/       how the system is modelled, loaded before any .proto
+.claude/skills/backend-development/  the layers, loaded before adding a component
 idl/contracts/                 the schema every layer shares, and what it generates
 packages/chess/                the chess engine — rules only, no input or output
 packages/lobby/                tables and seats — rules only, in the schema's own types

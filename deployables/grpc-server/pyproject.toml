@@ -1,18 +1,17 @@
 [project]
-name = "fastapi-gateway"
+name = "grpc-server"
 version = "0.1.0"
-description = "The HTTP gateway to the board-gamez platform."
+description = "The internal gRPC services of the board-gamez platform."
 requires-python = ">=3.13"
 dependencies = [
-    # The routers this gateway serves, ready made. A domain package owns its
-    # paths, its adapter and its binding; the gateway only includes them.
+    # The servicers this process serves, ready made. A domain package owns its
+    # implementation and its registration; the server only registers them.
     "lobby",
-    # The channel arguments an upstream call is tuned with.
+    # The channel arguments both ends of a call are tuned with.
     "core",
-    "fastapi>=0.141.1",
-    # No [standard] extra: it brings a websocket stack and an HTTP/2 client this
-    # process does not use.
-    "uvicorn>=0.52.4",
+    "grpcio>=1.68.1",
+    # Answers which services are served, so a client needs no .proto files.
+    "grpcio-reflection>=1.68.1",
     # Settings are a dataclass parsed from YAML; the yaml extra brings the loader.
     "mashumaro[yaml]>=3.22",
 ]
@@ -23,7 +22,7 @@ lobby = { path = "../../packages/lobby", editable = true }
 core = { path = "../../packages/core", editable = true }
 
 [project.scripts]
-fastapi-gateway = "main:main"
+grpc-server = "main:main"
 
 [build-system]
 requires = ["hatchling"]
@@ -36,7 +35,9 @@ sources = ["src_python"]
 [dependency-groups]
 # The ruff floor matches the rev pinned in .pre-commit-config.yaml, so the
 # hook, this environment and ./infra/scripts/lint.sh format identically.
-dev = ["pytest>=9.1.1", "mypy>=2.3.1", "ruff>=0.16.6"]
+# protobuf ships no type information of its own, so the stubs are what keeps
+# every message here from being Any to a type checker.
+dev = ["pytest>=9.1.1", "mypy>=2.3.1", "ruff>=0.16.6", "types-protobuf>=5.28"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -48,6 +49,13 @@ strict = true
 disallow_any_explicit = true
 mypy_path = "src_python"
 files = ["src_python", "tests"]
+
+# grpcio ships no type information and no stub package this repository trusts, so
+# the modules it publishes are the one place mypy is told to stop looking. The
+# ban on explicit Any still holds for everything written here.
+[[tool.mypy.overrides]]
+module = ["grpc.*", "grpc_reflection.*"]
+ignore_missing_imports = true
 
 [tool.ruff]
 line-length = 100
@@ -65,4 +73,4 @@ select = [
 ]
 
 [tool.ruff.lint.flake8-tidy-imports.banned-api]
-"__future__.annotations" = { msg = "Annotations must stay real runtime objects — see the python-style skill, rule 1. Use a string forward ref such as -> \"GatewayAPIConfig\" instead." }
+"__future__.annotations" = { msg = "Annotations must stay real runtime objects — see the python-style skill, rule 1. Use a string forward ref such as -> \"ServiceHostConfig\" instead." }

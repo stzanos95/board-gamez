@@ -1,0 +1,25 @@
+# Settings for the HTTP gateway when it runs in a container.
+#
+# Identical to fastapi_gateway.yaml except for the upstream hostname: inside a
+# compose network the gRPC server answers by service name, and 127.0.0.1 is the
+# gateway's own container. docker/Dockerfile names this file; scripts/local-serve.sh
+# names the other.
+application:
+  title: board-gamez gateway
+  version: "0.1.0"
+  root_path: ""
+
+server:
+  host: "0.0.0.0"
+  port: 8080
+  log_level: info
+  access_log: true
+  proxy_headers: true
+  forwarded_allow_ips: "127.0.0.1"
+
+upstreams:
+  lobby:
+    hostname: "grpc-server"
+    port: 50051
+    max_receive_message_bytes: 4194304
+    max_send_message_bytes: 4194304

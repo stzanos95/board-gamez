@@ -87,6 +87,12 @@ require_proto_files() {
     fi
 }
 
+# Only files that declare a service produce gRPC stubs. Handing protoc the rest
+# would write an empty _pb2_grpc.py beside every message file.
+our_service_proto_files() {
+    grep -rl '^service ' "$PROTO_DIR" --include='*.proto' | sort
+}
+
 vendored_proto_files() {
     find "$THIRD_PARTY_DIR" -name '*.proto' -type f | sort
 }
@@ -128,11 +134,14 @@ write_python_packaging() {
     fi
     protobuf_major="${PYTHON_PROTOBUF_VERSION%%.*}"
     PYTHON_PROTOBUF_MAJOR_BOUND="$((protobuf_major + 1))"
+    # The generated servicers import grpc, so the distribution that ships them
+    # asks for the runtime that matches the tools which wrote them.
+    GRPCIO_VERSION="${GRPCIO_TOOLS_VERSION:-1.68.1}"
     export PYTHON_PACKAGE_NAME CONTRACTS_VERSION ROOT_PACKAGE
-    export PYTHON_PROTOBUF_VERSION PYTHON_PROTOBUF_MAJOR_BOUND
+    export PYTHON_PROTOBUF_VERSION PYTHON_PROTOBUF_MAJOR_BOUND GRPCIO_VERSION
     render_template "$TEMPLATE_DIR/pyproject.toml.template" \
         "$PYTHON_PACKAGE_DIR/pyproject.toml" \
-        '${PYTHON_PACKAGE_NAME} ${CONTRACTS_VERSION} ${ROOT_PACKAGE} ${PYTHON_PROTOBUF_VERSION} ${PYTHON_PROTOBUF_MAJOR_BOUND}'
+        '${PYTHON_PACKAGE_NAME} ${CONTRACTS_VERSION} ${ROOT_PACKAGE} ${PYTHON_PROTOBUF_VERSION} ${PYTHON_PROTOBUF_MAJOR_BOUND} ${GRPCIO_VERSION}'
 }
 
 write_typescript_packaging() {
@@ -152,6 +161,29 @@ write_fastapi_packaging() {
         '${FASTAPI_PACKAGE_NAME} ${CONTRACTS_VERSION} ${FASTAPI_ROOT_PACKAGE} ${FASTAPI_MIN_VERSION} ${PYDANTIC_MIN_VERSION}'
 }
 
+# The servicer and the client stub for every service, written beside the message
+# modules they import.
+#
+# grpc_tools carries its own protoc because the gRPC Python plugin lives inside
+# protoc rather than beside it, so this is the one target the pinned protoc
+# cannot drive.
+generate_grpc() {
+    services="$(our_service_proto_files)"
+    if [ -z "$services" ]; then
+        echo "  grpc        -> no service declared"
+        return 0
+    fi
+    # shellcheck disable=SC2046,SC2086
+    "$CODEGEN_VENV/bin/python" -m grpc_tools.protoc \
+        --proto_path="$PROTO_DIR" \
+        --proto_path="$THIRD_PARTY_DIR" \
+        --plugin=protoc-gen-mypy_grpc="$CODEGEN_VENV/bin/protoc-gen-mypy_grpc" \
+        --grpc_python_out="$PYTHON_OUT_DIR" \
+        --mypy_grpc_out="$PYTHON_OUT_DIR" \
+        $services
+    echo "  grpc        -> $(echo "$services" | wc -l) service files"
+}
+
 generate_python() {
     reset_output_directory "$PYTHON_OUT_DIR"
     # shellcheck disable=SC2046
@@ -161,6 +193,8 @@ generate_python() {
         --python_out="$PYTHON_OUT_DIR" \
         --pyi_out="$PYTHON_OUT_DIR" \
         $(our_proto_files)
+
+    generate_grpc
 
     # protoc writes the package directories but no __init__.py, so nothing it
     # produced is importable until these exist. They stay empty, which is what
