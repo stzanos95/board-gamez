@@ -9,8 +9,14 @@
 # every package and deployable keeps its own [tool.ruff] — including the banned
 # `__future__.annotations` — and nothing is repeated below.
 
-# Every hook below runs on the commit. The push is wired too and currently has
-# nothing on it, so that adding a pre-push hook needs no one to reinstall.
+# A hook that names no stage runs at every stage, so this pins the default to the
+# commit rather than leaving each one to say so. A hook that has to guard the
+# push instead names `stages: [pre-push]` itself.
+default_stages: [pre-commit]
+
+# The push is wired because four of the pre-commit-hooks below name pre-push in
+# their own manifest, which a default here does not override, and so that adding
+# a hook that guards the push later needs no one to reinstall.
 default_install_hook_types: [pre-commit, pre-push]
 
 # Nothing under these two directories was written here, and neither is ours to
