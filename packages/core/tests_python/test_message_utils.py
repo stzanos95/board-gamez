@@ -51,3 +51,39 @@ class ConvertingTest(unittest.TestCase):
             ProtobufMessageUtils.message_to_pydantic_model(message, FieldModel).type_name,
             ".idl.lobby.model.Seat",
         )
+
+
+class BinaryFormTest(unittest.TestCase):
+    def test_a_message_survives_a_round_trip_through_its_bytes(self) -> None:
+        message = FieldDescriptorProto(name="seats", number=FIELD_NUMBER)
+
+        data = ProtobufMessageUtils.message_to_bytes(message)
+        decoded = ProtobufMessageUtils.message_from_bytes(data, FieldDescriptorProto)
+
+        self.assertEqual(decoded, message)
+
+    def test_the_wire_form_is_bytes_and_not_text(self) -> None:
+        data = ProtobufMessageUtils.message_to_bytes(FieldDescriptorProto(name="seats"))
+        self.assertIsInstance(data, bytes)
+
+    def test_an_empty_message_round_trips(self) -> None:
+        data = ProtobufMessageUtils.message_to_bytes(FieldDescriptorProto())
+        self.assertEqual(
+            ProtobufMessageUtils.message_from_bytes(data, FieldDescriptorProto),
+            FieldDescriptorProto(),
+        )
+
+
+class CopyingTest(unittest.TestCase):
+    def test_a_copy_holds_the_same_values(self) -> None:
+        message = FieldDescriptorProto(name="seats", number=FIELD_NUMBER)
+        self.assertEqual(ProtobufMessageUtils.copy_of_message(message), message)
+
+    def test_changing_a_copy_leaves_the_original_alone(self) -> None:
+        message = FieldDescriptorProto(name="seats", number=FIELD_NUMBER)
+
+        copied = ProtobufMessageUtils.copy_of_message(message)
+        copied.name = "tables"
+
+        self.assertEqual(message.name, "seats")
+        self.assertEqual(copied.name, "tables")

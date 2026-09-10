@@ -6,10 +6,11 @@ from idl.lobby.dto.table_pb2 import (
     ReadTableRequest,
     UpsertTableRequest,
 )
-from idl.lobby.model.table_pb2 import Table
+from idl.lobby.model.table_pb2 import Table, TableCollection
 
 from lobby.controller.table_controller import TableController
 from lobby.service.grpc_table_service import GrpcTableService
+from tests_python.in_memory_table_repository import InMemoryTableRepository
 
 TABLE_ID = "t-1"
 OTHER_TABLE_ID = "t-2"
@@ -23,7 +24,7 @@ class RecordingController(TableController):
     """
 
     def __init__(self) -> None:
-        super().__init__()
+        super().__init__(repository=InMemoryTableRepository())
         self.upserted: list[Table] = []
         self.read_ids: list[str] = []
         self.deleted: list[tuple[str, int]] = []
@@ -40,8 +41,8 @@ class RecordingController(TableController):
     async def delete_table(self, table_id: str, expected_version: int) -> None:
         self.deleted.append((table_id, expected_version))
 
-    async def list_table(self) -> tuple[Table, ...]:
-        return (Table(id=TABLE_ID), Table(id=OTHER_TABLE_ID))
+    async def list_table(self) -> TableCollection:
+        return TableCollection(table_items=[Table(id=TABLE_ID), Table(id=OTHER_TABLE_ID)])
 
 
 class UnpackingTest(unittest.IsolatedAsyncioTestCase):
@@ -109,9 +110,3 @@ class UnpackingTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(
             [table.id for table in response.collection.table_items], [TABLE_ID, OTHER_TABLE_ID]
         )
-
-
-class UnimplementedTest(unittest.IsolatedAsyncioTestCase):
-    async def test_reading_is_not_written_yet(self) -> None:
-        with self.assertRaises(NotImplementedError):
-            await TableController().read_table(TABLE_ID)

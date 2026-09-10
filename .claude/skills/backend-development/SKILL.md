@@ -88,6 +88,27 @@ Storage and retrieval. It answers what is stored and where, never what it means.
 - Contains no rule. "Refuse a write built on an old version" is enforced here as
   a compare-and-set, but the decision that it must be refused is the controller's.
 
+## No domain error handling yet
+
+**No package declares an exception of its own.** There is no `errors.py`, no
+domain base class, and nothing above a layer catches what it raised. An
+error-handling library is coming, and it will decide how a refusal travels; until
+it lands, code written against a hand-rolled hierarchy has to be unpicked.
+
+Until then, a component reports an outcome through the type it already answers
+with:
+
+- A read that found nothing answers `None`.
+- A write that was refused answers `None`, and the response leaves the field
+  unset. The schema already has a way to say a table is not there.
+- An operation with nothing to report answers `None` and reports nothing.
+
+Two things still raise, and neither is a domain error:
+
+- **Bad configuration**, at bringup, with a builtin — a selected option whose
+  settings section is missing stops the process before it serves.
+- **A library**, on its own terms. Nothing catches it yet.
+
 ## Dependency direction
 
 ```
@@ -139,6 +160,7 @@ The principles apply to the layers, not only to the classes inside them.
 - [ ] The controller takes arguments, not a request, and speaks `model` only
 - [ ] Collaborators arrive in `__init__` and are constructed at the entry point
 - [ ] The controller names no concrete store
+- [ ] No package declares an exception; an outcome travels as the answer's own type
 - [ ] No package imports a deployable, and no domain imports another domain
 - [ ] Nothing reads the environment; settings come from the YAML file
 - [ ] The change touches one layer

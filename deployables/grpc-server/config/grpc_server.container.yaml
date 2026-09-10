@@ -1,8 +1,9 @@
-# Settings for the internal gRPC server.
+# Settings for the internal gRPC server when it runs in a container.
 #
-# This file is the app's bringup: it is parsed into ServiceHostConfig, and
-# nothing in the app reads the environment. To run with different settings, copy
-# this file and pass it:  grpc-server --config /path/to/your.yaml
+# Identical to grpc_server.yaml except for the table store hostname: inside a
+# compose network Redis answers by service name, and 127.0.0.1 is the server's
+# own container. docker/Dockerfile names this file; scripts/local-serve.sh names
+# the other.
 application:
   name: board-gamez grpc server
   version: "0.1.0"
@@ -32,7 +33,7 @@ lobby:
   table_repository:
     repository: redis
     redis_config:
-      host: "127.0.0.1"
+      host: "redis"
       port: 6379
       database: 0
       # Begins every key this repository writes, so one instance can hold more

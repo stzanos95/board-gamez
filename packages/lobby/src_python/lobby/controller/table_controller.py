@@ -6,7 +6,10 @@ router, whatever arrives next — converts and forwards, so a rule lives here or
 lives nowhere.
 """
 
-from idl.lobby.model.table_pb2 import Table
+from idl.lobby.model.table_pb2 import Table, TableCollection
+
+from lobby.adapters.table_adapters import TableAdapters
+from lobby.repository.base_table_repository import BaseTableRepository
 
 
 class TableController:
@@ -22,36 +25,37 @@ class TableController:
     reached for part-way down a call.
     """
 
-    def __init__(self) -> None:
-        """
-        Nothing is needed yet.
+    def __init__(self, repository: BaseTableRepository) -> None:
+        self._repository = repository
 
-        The store a table is read from and written to arrives here as an
-        argument, along with anything else this comes to depend on.
-        """
-
-    async def upsert_table(self, table: Table) -> Table:
+    async def upsert_table(self, table: Table) -> Table | None:
         """
         Write a table, creating it if it is not there, and answer it as stored.
 
-        Refuses a table whose version is earlier than the stored one.
+        None comes back when the version the table carries is not the stored one,
+        and nothing is written.
         """
-        raise NotImplementedError
+        stored = await self._repository.upsert(TableAdapters.table_to_table_obj(table))
+        return None if stored is None else TableAdapters.table_obj_to_table(stored)
 
     async def read_table(self, table_id: str) -> Table | None:
         """
         One table, or None when no table has that id.
         """
-        raise NotImplementedError
+        stored = await self._repository.read(table_id)
+        return None if stored is None else TableAdapters.table_obj_to_table(stored)
 
     async def delete_table(self, table_id: str, expected_version: int) -> None:
         """
-        Retire a table, refusing a version earlier than the stored one.
-        """
-        raise NotImplementedError
+        Retire the table stored under this id at this version.
 
-    async def list_table(self) -> tuple[Table, ...]:
+        Nothing is retired when no table has that id, or when its version is a
+        different one.
+        """
+        await self._repository.delete(table_id, expected_version)
+
+    async def list_table(self) -> TableCollection:
         """
         Every table.
         """
-        raise NotImplementedError
+        return TableAdapters.table_objs_to_table_collection(await self._repository.list_all())

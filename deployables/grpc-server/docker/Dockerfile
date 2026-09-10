@@ -28,7 +28,7 @@ ENV PYTHONUNBUFFERED=1 \
     PATH="/opt/venv/bin:$PATH" \
     PYTHONPATH="/app/deployables/grpc-server/src_python" \
     APP_DIR="/app/deployables/grpc-server" \
-    GRPC_SERVER_CONFIG="/app/deployables/grpc-server/config/grpc_server.yaml"
+    GRPC_SERVER_CONFIG="/app/deployables/grpc-server/config/grpc_server.container.yaml"
 
 RUN useradd --create-home --uid 1000 server
 

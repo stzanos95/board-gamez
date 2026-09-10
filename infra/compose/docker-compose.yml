@@ -39,4 +39,15 @@ services:
     # with. Changing either without the other leaves nothing listening here.
     ports:
       - "50051:50051"
+    # Tables are kept in Redis. The hostname is the service name, which is what
+    # grpc_server.container.yaml names.
+    depends_on:
+      - redis
     command: ["serve"]
+
+  redis:
+    image: redis:7-alpine
+    # Published so the same store answers a server run outside a container, which
+    # is what grpc_server.yaml names.
+    ports:
+      - "6379:6379"

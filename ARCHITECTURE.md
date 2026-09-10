@@ -14,7 +14,7 @@ the common case by file path.
 | 1 | **Presentation** | User interface | Not implemented. `idl/contracts/gen/typescript` is generated for it |
 | 2 | **Application** | Transport, routing, coordination. No rules | `deployables/*`, and `<domain>/service/` |
 | 3 | **Business** | Rules and decisions | `<domain>/controller/` |
-| 4 | **Persistence** | Storage and retrieval | `<domain>/repository/` — not implemented |
+| 4 | **Persistence** | Storage and retrieval | `<domain>/repository/` |
 | 5 | **Database and hosting** | State and execution environment | Redis, `infra/`, each deployable's `docker/` |
 
 Adapters sit between layers, in `<domain>/adapters/`. They are not a layer. They
@@ -56,7 +56,7 @@ browser
                └─ LobbyServicers → GrpcTableService   Application: binding
                   └─ TableAdapters       adapter: dto to model
                      └─ TableController  Business: the decision
-                        └─ TableRepository   Persistence (not implemented)
+                        └─ TableRepository   Persistence
                            └─ Redis      Database
 ```
 
@@ -151,19 +151,24 @@ boundaries between layers.
 
 ## The repository layer
 
-Not implemented. When added, it follows the swappable-collaborator structure used
-elsewhere in this repository:
+A swappable collaborator, with the structure used elsewhere in this repository:
 
 ```
 repository/
 ├── config.py                  the selecting enum and one config per option
 ├── base_table_repository.py   the operations any store must answer
 ├── redis_table_repository.py  one implementation per file
+├── redis_table_row.py         the keys and fields that implementation writes
 └── provider.py                a registry and a static factory
 ```
 
 The controller is typed against the base class, so it cannot reference a concrete
 store. The provider is called once, at the entry point.
+
+A repository reads and writes the schema's `obj/` types, and the conversion to
+`model` runs in the domain's adapters. A table is stored as a hash carrying its
+version alongside the encoded table, and every write compares that version inside
+Redis, so a write built on a version that has since moved on changes nothing.
 
 ## Reading order
 

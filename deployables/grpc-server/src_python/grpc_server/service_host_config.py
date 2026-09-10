@@ -10,6 +10,7 @@ mashumaro reads these annotations at runtime to build the parser, so
 
 from dataclasses import dataclass
 
+from lobby.repository.config import TableRepositoryConfig
 from mashumaro.mixins.yaml import DataClassYAMLMixin
 
 from grpc_server.log_level import LogLevel
@@ -49,10 +50,23 @@ class ServerConfig(DataClassYAMLMixin):
 
 
 @dataclass(frozen=True, slots=True)
+class LobbyConfig(DataClassYAMLMixin):
+    """
+    What the lobby domain needs, which is somewhere to keep its tables.
+    """
+
+    table_repository: TableRepositoryConfig
+
+
+@dataclass(frozen=True, slots=True)
 class ServiceHostConfig(DataClassYAMLMixin):
     """
     Everything the server needs to start.
+
+    One section per domain served. Adding a domain adds a field here and a line
+    where the servicers are registered.
     """
 
     application: ApplicationConfig
     server: ServerConfig
+    lobby: LobbyConfig

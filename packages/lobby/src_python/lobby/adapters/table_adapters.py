@@ -10,13 +10,18 @@ delegates here, so no layer above the controller reads a field off a request.
 A contract also produces two families of type — protobuf messages for gRPC and
 pydantic models for HTTP — and a caller crossing between them converts here too.
 
+A table is stored under a shape of its own, which carries identity and version in
+metadata. That conversion runs at the repository's boundary and is here as well.
+
 One method per direction, named for it. A caller reaches for the one it needs and
 sees the types on both sides; nothing here is chosen at run time.
 """
 
 from core.protobuf.message_utils import ProtobufMessageUtils
+from idl.core.obj.object_metadata_pb2 import ObjectMetadata
 from idl.lobby.dto import table_pb2
 from idl.lobby.model.table_pb2 import Table, TableCollection
+from idl.lobby.obj.table_pb2 import TableObj
 from idl_fastapi.idl.lobby.dto import (
     DeleteTableRequest,
     DeleteTableResponse,
@@ -55,7 +60,10 @@ class TableAdapters:
     # --- what an operation answers, to a response ----------------------------
 
     @staticmethod
-    def table_to_upsert_response(table: Table) -> table_pb2.UpsertTableResponse:
+    def table_to_upsert_response(table: Table | None) -> table_pb2.UpsertTableResponse:
+        """
+        An unset table is how the schema says the write was refused.
+        """
         return table_pb2.UpsertTableResponse(table=table)
 
     @staticmethod
@@ -70,8 +78,10 @@ class TableAdapters:
         return table_pb2.DeleteTableResponse(table_id=table_id)
 
     @staticmethod
-    def tables_to_list_response(tables: tuple[Table, ...]) -> table_pb2.ListTableResponse:
-        return table_pb2.ListTableResponse(collection=TableCollection(table_items=tables))
+    def table_collection_to_list_response(
+        collection: TableCollection,
+    ) -> table_pb2.ListTableResponse:
+        return table_pb2.ListTableResponse(collection=collection)
 
     # --- a pydantic model, to the message of the same contract ---------------
 
@@ -114,3 +124,35 @@ class TableAdapters:
         message: table_pb2.ListTableResponse,
     ) -> ListTableResponse:
         return ProtobufMessageUtils.message_to_pydantic_model(message, ListTableResponse)
+
+    # --- a table, to what a store holds, and back ----------------------------
+
+    @staticmethod
+    def table_to_table_obj(table: Table) -> TableObj:
+        """
+        The table to hand a store.
+
+        The timestamps stay unset: a write time is known to whatever writes.
+        """
+        return TableObj(
+            metadata=ObjectMetadata(id=table.id, version=table.version),
+            game_type=table.game_type,
+            status=table.status,
+            seats=table.seats,
+        )
+
+    @staticmethod
+    def table_obj_to_table(stored: TableObj) -> Table:
+        return Table(
+            id=stored.metadata.id,
+            game_type=stored.game_type,
+            status=stored.status,
+            seats=stored.seats,
+            version=stored.metadata.version,
+        )
+
+    @staticmethod
+    def table_objs_to_table_collection(stored: tuple[TableObj, ...]) -> TableCollection:
+        return TableCollection(
+            table_items=[TableAdapters.table_obj_to_table(one) for one in stored]
+        )

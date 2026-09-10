@@ -9,8 +9,13 @@ dependencies = [
     # The servicer each service declares, and the messages a call arrives as.
     "board-gamez-idl",
     "grpcio>=1.68.1",
-    # Converting one shape of a message into the other.
+    # Every reach for the protobuf runtime: one shape of a message to another,
+    # and a message to the bytes a store holds.
     "core",
+    # The store tables are kept in, spoken to from the event loop that serves.
+    "redis>=5.2",
+    # A repository's settings are a dataclass parsed from the app's YAML file.
+    "mashumaro[yaml]>=3.22",
 ]
 
 # Relative path sources rather than a workspace: each project here stands alone.

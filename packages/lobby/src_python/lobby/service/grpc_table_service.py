@@ -67,4 +67,4 @@ class GrpcTableService(TableServiceServicer):
         request: ListTableRequest,
         context: grpc.aio.ServicerContext[ListTableRequest, ListTableResponse],
     ) -> ListTableResponse:
-        return TableAdapters.tables_to_list_response(await self._controller.list_table())
+        return TableAdapters.table_collection_to_list_response(await self._controller.list_table())

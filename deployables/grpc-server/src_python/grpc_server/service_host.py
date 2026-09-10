@@ -10,9 +10,10 @@ import grpc
 from core.grpc.channel_options import ChannelOptions
 from grpc_reflection.v1alpha import reflection
 from lobby.controller.table_controller import TableController
+from lobby.repository.provider import TableRepositoryProvider
 from lobby.service.lobby_servicers import LobbyServicers
 
-from grpc_server.service_host_config import ServerConfig, ServiceHostConfig
+from grpc_server.service_host_config import LobbyConfig, ServerConfig, ServiceHostConfig
 
 SHUTDOWN_SIGNALS = (signal.SIGINT, signal.SIGTERM)
 LOG_FORMAT = "%(asctime)s %(levelname)s %(name)s %(message)s"
@@ -33,6 +34,7 @@ class ServiceHost:
     def __init__(self, config: ServiceHostConfig) -> None:
         self._application = config.application
         self._server = config.server
+        self._lobby = config.lobby
 
     def start(self) -> None:
         """
@@ -50,7 +52,7 @@ class ServiceHost:
         started one.
         """
         server = ServiceHost._build_server(self._server)
-        service_names = ServiceHost._register_services(server)
+        service_names = ServiceHost._register_services(server, self._lobby)
         if self._server.reflection:
             reflection.enable_server_reflection([*service_names, reflection.SERVICE_NAME], server)
         address = ServiceHost._address(self._server)
@@ -75,15 +77,17 @@ class ServiceHost:
         )
 
     @staticmethod
-    def _register_services(server: grpc.aio.Server) -> tuple[str, ...]:
+    def _register_services(server: grpc.aio.Server, lobby: LobbyConfig) -> tuple[str, ...]:
         """
         Every servicer this process serves, and the names it serves them under.
 
-        Each controller is built here, which is where anything it depends on will
-        be built from the configuration. Adding a domain is a dependency and one
-        more line.
+        Each controller and everything it depends on is built here, from the
+        configuration. Adding a domain is a dependency and one more line.
         """
-        return (LobbyServicers.add_table_service(server, TableController()),)
+        table_repository = TableRepositoryProvider.get_table_repository(lobby.table_repository)
+        return (
+            LobbyServicers.add_table_service(server, TableController(repository=table_repository)),
+        )
 
     @staticmethod
     def _address(config: ServerConfig) -> str:

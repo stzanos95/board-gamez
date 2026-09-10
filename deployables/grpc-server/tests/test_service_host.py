@@ -1,10 +1,23 @@
 import unittest
 
+from lobby.repository.config import (
+    RedisTableRepositoryConfig,
+    TableRepositoryConfig,
+    TableRepositoryType,
+)
+
 from grpc_server.log_level import LogLevel
 from grpc_server.service_host import ServiceHost
-from grpc_server.service_host_config import ApplicationConfig, ServerConfig, ServiceHostConfig
+from grpc_server.service_host_config import (
+    ApplicationConfig,
+    LobbyConfig,
+    ServerConfig,
+    ServiceHostConfig,
+)
 
 CONFIGURED_PORT = 50999
+REDIS_PORT = 6379
+REDIS_DATABASE = 0
 RECEIVE_LIMIT = 1024
 SEND_LIMIT = 2048
 
@@ -22,10 +35,25 @@ def server_config() -> ServerConfig:
     )
 
 
+def lobby_config() -> LobbyConfig:
+    return LobbyConfig(
+        table_repository=TableRepositoryConfig(
+            repository=TableRepositoryType.REDIS,
+            redis_config=RedisTableRepositoryConfig(
+                host="127.0.0.1",
+                port=REDIS_PORT,
+                database=REDIS_DATABASE,
+                key_prefix="board-gamez-test",
+            ),
+        )
+    )
+
+
 def config_for() -> ServiceHostConfig:
     return ServiceHostConfig(
         application=ApplicationConfig(name="test server", version="9.9.9"),
         server=server_config(),
+        lobby=lobby_config(),
     )
 
 
