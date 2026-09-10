@@ -9,6 +9,8 @@ The method names the stub dispatches on are the schema's, so they keep protobuf'
 casing. Nothing outside this file sees them.
 """
 
+from typing import cast
+
 import grpc
 from core.grpc.channel_options import ChannelOptions
 from idl.lobby.dto.table_pb2 import (
@@ -21,7 +23,7 @@ from idl.lobby.dto.table_pb2 import (
     UpsertTableRequest,
     UpsertTableResponse,
 )
-from idl.lobby.service.table_pb2_grpc import TableServiceStub
+from idl.lobby.service.table_pb2_grpc import TableServiceAsyncStub, TableServiceStub
 
 
 class GrpcTableClient:
@@ -35,7 +37,7 @@ class GrpcTableClient:
 
     def __init__(self) -> None:
         self._channel: grpc.aio.Channel | None = None
-        self._stub: TableServiceStub | None = None
+        self._stub: TableServiceAsyncStub | None = None
 
     async def connect(self, address: str, options: ChannelOptions) -> None:
         """
@@ -43,7 +45,9 @@ class GrpcTableClient:
         """
         channel = grpc.aio.insecure_channel(address, options=options.to_options())
         self._channel = channel
-        self._stub = TableServiceStub(channel)
+        # One generated class constructs a stub for either channel type. The async
+        # stub names the awaitable call types an aio channel answers with.
+        self._stub = cast(TableServiceAsyncStub, TableServiceStub(channel))
 
     async def close(self) -> None:
         """
@@ -66,7 +70,7 @@ class GrpcTableClient:
     async def list_table(self, request: ListTableRequest) -> ListTableResponse:
         return await self._connected_stub().ListTable(request)
 
-    def _connected_stub(self) -> TableServiceStub:
+    def _connected_stub(self) -> TableServiceAsyncStub:
         if self._stub is None:
             raise RuntimeError("the table client was called before connect() opened its channel")
         return self._stub

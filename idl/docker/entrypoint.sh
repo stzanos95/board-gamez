@@ -55,6 +55,9 @@ set -eu
 : "${TEMPLATE_DIR:=$IDL_DIR/scripts/templates}"
 : "${CONTRACTS_VERSION:=0.1.0}"
 : "${PYTHON_PACKAGE_NAME:=board-gamez-idl}"
+# The wheel that publishes google/api, which is compiled here but never generated
+# into src/.
+: "${GOOGLEAPIS_COMMON_PROTOS_VERSION:=1.65.0}"
 : "${FASTAPI_MIN_VERSION:=0.141.1}"
 : "${PYDANTIC_MIN_VERSION:=2.13}"
 : "${TYPESCRIPT_PACKAGE_NAME:=@board-gamez/idl}"
@@ -139,9 +142,10 @@ write_python_packaging() {
     GRPCIO_VERSION="${GRPCIO_TOOLS_VERSION:-1.68.1}"
     export PYTHON_PACKAGE_NAME CONTRACTS_VERSION ROOT_PACKAGE
     export PYTHON_PROTOBUF_VERSION PYTHON_PROTOBUF_MAJOR_BOUND GRPCIO_VERSION
+    export GOOGLEAPIS_COMMON_PROTOS_VERSION
     render_template "$TEMPLATE_DIR/pyproject.toml.template" \
         "$PYTHON_PACKAGE_DIR/pyproject.toml" \
-        '${PYTHON_PACKAGE_NAME} ${CONTRACTS_VERSION} ${ROOT_PACKAGE} ${PYTHON_PROTOBUF_VERSION} ${PYTHON_PROTOBUF_MAJOR_BOUND} ${GRPCIO_VERSION}'
+        '${PYTHON_PACKAGE_NAME} ${CONTRACTS_VERSION} ${ROOT_PACKAGE} ${PYTHON_PROTOBUF_VERSION} ${PYTHON_PROTOBUF_MAJOR_BOUND} ${GRPCIO_VERSION} ${GOOGLEAPIS_COMMON_PROTOS_VERSION}'
 }
 
 write_typescript_packaging() {
@@ -159,6 +163,25 @@ write_fastapi_packaging() {
     render_template "$TEMPLATE_DIR/fastapi-pyproject.toml.template" \
         "$FASTAPI_PACKAGE_DIR/pyproject.toml" \
         '${FASTAPI_PACKAGE_NAME} ${CONTRACTS_VERSION} ${FASTAPI_ROOT_PACKAGE} ${FASTAPI_MIN_VERSION} ${PYDANTIC_MIN_VERSION}'
+}
+
+# mypy-protobuf declares a <Service>AsyncStub beside every <Service>Stub, holding
+# the awaitable call types a grpc.aio channel answers with, and writes it into the
+# .pyi only. A caller on an aio channel needs that name to resolve at run time,
+# and <Service>Stub is the single class both channel types are constructed
+# through, so the name is bound to it here.
+bind_async_stub_names() {
+    find "$PYTHON_OUT_DIR" -name '*_pb2_grpc.pyi' -type f | sort | while read -r declarations; do
+        module="${declarations%.pyi}.py"
+        if [ ! -f "$module" ]; then
+            echo "no module beside $declarations to bind its async stub names into" >&2
+            exit 1
+        fi
+        sed -n 's/^class \([A-Za-z0-9_]*\)AsyncStub:.*/\1/p' "$declarations" |
+            while read -r service; do
+                printf '\n\n%sAsyncStub = %sStub\n' "$service" "$service" >>"$module"
+            done
+    done
 }
 
 # The servicer and the client stub for every service, written beside the message
@@ -181,6 +204,7 @@ generate_grpc() {
         --grpc_python_out="$PYTHON_OUT_DIR" \
         --mypy_grpc_out="$PYTHON_OUT_DIR" \
         $services
+    bind_async_stub_names
     echo "  grpc        -> $(echo "$services" | wc -l) service files"
 }
 

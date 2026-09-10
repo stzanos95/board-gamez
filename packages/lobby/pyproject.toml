@@ -29,9 +29,15 @@ packages = ["src_python/lobby"]
 [dependency-groups]
 # The ruff floor matches the rev pinned in .pre-commit-config.yaml, so the
 # hook, this environment and ./infra/scripts/lint.sh format identically.
-# protobuf ships no type information of its own, so the stubs are what keeps
-# every message here from being Any to a type checker.
-dev = ["pytest>=9.1.1", "mypy>=2.3.1", "ruff>=0.16.6", "types-protobuf>=5.28"]
+# Neither protobuf nor grpcio ships type information of its own, so the stubs are
+# what keeps every message and every call here from being Any to a type checker.
+dev = [
+    "pytest>=9.1.1",
+    "mypy>=2.3.1",
+    "ruff>=0.16.6",
+    "types-protobuf>=5.28",
+    "types-grpcio>=1.83",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests_python"]
@@ -44,13 +50,6 @@ strict = true
 disallow_any_explicit = true
 mypy_path = "src_python"
 files = ["src_python", "tests_python"]
-
-# grpcio ships no type information and no stub package this repository trusts, so
-# the modules it publishes are the one place mypy is told to stop looking. The
-# ban on explicit Any still holds for everything written here.
-[[tool.mypy.overrides]]
-module = ["grpc.*", "grpc_reflection.*"]
-ignore_missing_imports = true
 
 [tool.ruff]
 line-length = 100

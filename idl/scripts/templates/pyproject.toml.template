@@ -7,10 +7,13 @@ version = "${CONTRACTS_VERSION}"
 description = "Generated protobuf contracts: the vocabulary every layer shares."
 requires-python = ">=3.13"
 # Matches the protoc that wrote src/; generated modules refuse an older runtime.
-# grpcio is here because the generated servicers import it.
+# grpcio is here because the generated servicers import it. google/api is not
+# generated into src/, so the modules that import its annotations read them from
+# googleapis-common-protos.
 dependencies = [
     "protobuf>=${PYTHON_PROTOBUF_VERSION},<${PYTHON_PROTOBUF_MAJOR_BOUND}",
     "grpcio>=${GRPCIO_VERSION}",
+    "googleapis-common-protos>=${GOOGLEAPIS_COMMON_PROTOS_VERSION}",
 ]
 
 [build-system]

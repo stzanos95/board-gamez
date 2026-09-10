@@ -36,19 +36,25 @@ class GrpcTableService(TableServiceServicer):
         self._controller = controller
 
     async def UpsertTable(
-        self, request: UpsertTableRequest, context: grpc.aio.ServicerContext
+        self,
+        request: UpsertTableRequest,
+        context: grpc.aio.ServicerContext[UpsertTableRequest, UpsertTableResponse],
     ) -> UpsertTableResponse:
         table = await self._controller.upsert_table(TableAdapters.upsert_request_to_table(request))
         return TableAdapters.table_to_upsert_response(table)
 
     async def ReadTable(
-        self, request: ReadTableRequest, context: grpc.aio.ServicerContext
+        self,
+        request: ReadTableRequest,
+        context: grpc.aio.ServicerContext[ReadTableRequest, ReadTableResponse],
     ) -> ReadTableResponse:
         table = await self._controller.read_table(TableAdapters.read_request_to_table_id(request))
         return TableAdapters.table_to_read_response(table)
 
     async def DeleteTable(
-        self, request: DeleteTableRequest, context: grpc.aio.ServicerContext
+        self,
+        request: DeleteTableRequest,
+        context: grpc.aio.ServicerContext[DeleteTableRequest, DeleteTableResponse],
     ) -> DeleteTableResponse:
         table_id = TableAdapters.delete_request_to_table_id(request)
         await self._controller.delete_table(
@@ -57,6 +63,8 @@ class GrpcTableService(TableServiceServicer):
         return TableAdapters.table_id_to_delete_response(table_id)
 
     async def ListTable(
-        self, request: ListTableRequest, context: grpc.aio.ServicerContext
+        self,
+        request: ListTableRequest,
+        context: grpc.aio.ServicerContext[ListTableRequest, ListTableResponse],
     ) -> ListTableResponse:
         return TableAdapters.tables_to_list_response(await self._controller.list_table())

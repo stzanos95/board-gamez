@@ -127,14 +127,13 @@ function-level imports, no magic values, no `Any` — are enforced by the ruff a
 mypy settings in each `pyproject.toml`, not by good intentions.
 
 `setup.sh` wires those checks into git, so they run without being remembered:
-ruff lints and formats what you commit, and mypy type-checks both projects before
-a push leaves the machine. Ruff finds its settings by walking up from each file,
-so a commit spanning both projects is judged by each project's own rules — there
-is still no workspace root.
+ruff lints and formats what you commit, and mypy type-checks every project the
+commit touches. Ruff finds its settings by walking up from each file, so a commit
+spanning two projects is judged by each project's own rules — there is still no
+workspace root.
 
 ```bash
 pre-commit run --all-files              # check the whole tree now
-pre-commit run --all-files --hook-stage pre-push   # ...including the type checks
 git commit --no-verify                  # land it anyway, just this once
 ```
 

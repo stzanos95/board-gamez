@@ -1,4 +1,4 @@
-# What has to be true before a commit lands, and before a push leaves.
+# What has to be true before a commit lands.
 #
 #   ./setup.sh                  install pre-commit and wire both hook types
 #   pre-commit run --all-files  check the whole tree now, without committing
@@ -9,8 +9,8 @@
 # every package and deployable keeps its own [tool.ruff] — including the banned
 # `__future__.annotations` — and nothing is repeated below.
 
-# `pre-commit install` with no arguments wires both, so the pre-push hooks are
-# not silently missing for anyone who installs by hand.
+# Every hook below runs on the commit. The push is wired too and currently has
+# nothing on it, so that adding a pre-push hook needs no one to reinstall.
 default_install_hook_types: [pre-commit, pre-push]
 
 # Nothing under these two directories was written here, and neither is ours to
@@ -53,10 +53,14 @@ repos:
       # run, so they correctly have no shebang.
       - id: check-shebang-scripts-are-executable
 
-  # Type checking is the slow half of the house style — and the half that catches
-  # `Any` — so it guards the push rather than every commit. Each project is
-  # checked from its own directory in its own environment, because each stands
-  # alone; `files` keeps a README-only push from paying for either.
+  # Type checking runs on the commit that introduces the code, so a type error is
+  # reported against the change that caused it rather than against a push
+  # carrying several. Each project is checked from its own directory in its own
+  # environment, because each stands alone; `files` keeps a README-only commit
+  # from paying for any of them.
+  #
+  # Every project with Python in it has a hook here. One that is missing is not
+  # checked anywhere, and nothing else reports that it is missing.
   #
   # `python -m mypy`, not `mypy`, matching docker/entrypoint.sh. A venv's console
   # scripts hard-code the absolute path of the interpreter that created them, so
@@ -65,6 +69,14 @@ repos:
   # such path baked in and survives the move.
   - repo: local
     hooks:
+      - id: mypy-core
+        name: mypy (packages/core)
+        entry: uv run --directory packages/core --quiet python -m mypy
+        language: system
+        types: [python]
+        files: ^packages/core/
+        pass_filenames: false
+
       - id: mypy-chess
         name: mypy (packages/chess)
         entry: uv run --directory packages/chess --quiet python -m mypy
@@ -72,7 +84,6 @@ repos:
         types: [python]
         files: ^packages/chess/
         pass_filenames: false
-        stages: [pre-push]
 
       - id: mypy-lobby
         name: mypy (packages/lobby)
@@ -81,7 +92,6 @@ repos:
         types: [python]
         files: ^packages/lobby/
         pass_filenames: false
-        stages: [pre-push]
 
       - id: mypy-chess-cli
         name: mypy (deployables/chess-cli)
@@ -90,7 +100,6 @@ repos:
         types: [python]
         files: ^deployables/chess-cli/
         pass_filenames: false
-        stages: [pre-push]
 
       - id: mypy-fastapi-gateway
         name: mypy (deployables/fastapi-gateway)
@@ -99,4 +108,11 @@ repos:
         types: [python]
         files: ^deployables/fastapi-gateway/
         pass_filenames: false
-        stages: [pre-push]
+
+      - id: mypy-grpc-server
+        name: mypy (deployables/grpc-server)
+        entry: uv run --directory deployables/grpc-server --quiet python -m mypy
+        language: system
+        types: [python]
+        files: ^deployables/grpc-server/
+        pass_filenames: false

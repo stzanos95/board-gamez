@@ -1,6 +1,5 @@
 import unittest
 
-from fastapi.routing import APIRoute
 from lobby.service.grpc_table_client import GrpcTableClient
 
 from fastapi_gateway.gateway_api import GatewayAPI
@@ -61,9 +60,12 @@ class BringupTest(unittest.TestCase):
         self.assertEqual(application.root_path, "/api")
 
     def test_the_application_serves_the_routers_a_domain_publishes(self) -> None:
+        """
+        The document is what the application publishes. An included router is
+        held unexpanded in `routes` until a request is matched against it.
+        """
         application = GatewayAPI.build_application(application_config(), GrpcTableClient())
-        paths = {route.path for route in application.routes if isinstance(route, APIRoute)}
-        self.assertIn(A_LOBBY_PATH, paths)
+        self.assertIn(A_LOBBY_PATH, application.openapi()["paths"])
 
 
 class UpstreamTest(unittest.TestCase):
