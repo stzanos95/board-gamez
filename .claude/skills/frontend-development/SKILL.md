@@ -58,6 +58,7 @@ transport/    how a request reaches the gateway, and how a response is cached
 identity/     who is playing
 routing/      which screen is on
 lobby/        one domain: its gateway calls, its intents, its hooks, its labels
+chess/        one game: its gateway calls, its hooks, its views, its labels
 components/   rendering only
 ```
 
@@ -78,6 +79,21 @@ theme; `sx={{ color: "#8a8a8a" }}` is a bug that a redesign has to hunt for.
 
 A theme is a token file. Changing how the whole product looks is changing which
 token file the config names, and nothing else.
+
+A game's board has a seam of its own, in the same shape, because how a board
+looks is the player's choice and not the deployment's: `components/chess/skins/`
+is an enum, a contract, one file per skin, and a registry. A skin owns a
+palette and the parts the board is composed from — a shape per piece, the
+ground of a square, the frame. **Those parts are the one place under
+`components/` that may write a colour**, and a shade a texture needs
+(`rgba(0, 0, 0, 0.07)` for wood grain) stays in the part that draws the
+texture. The board, the squares and the pieces read everything from the skin
+in reach through `useBoardSkin()`, and a component outside the skin directory
+still writes no colour.
+
+The configured skin is the default. The player's pick is the one piece of
+presentation state kept in `localStorage`, read and written by one module,
+and a stored value this build does not know is treated as no choice.
 
 ### transport
 
@@ -165,7 +181,10 @@ Stop and ask before writing any of these in a browser:
 
 Real-time game state is already decided: it arrives over the WebSocket server,
 not by polling. `idl/core/dto/websocket.proto` is the envelope it travels in.
-Lobby operations go over the gateway.
+Lobby operations go over the gateway. Until the socket exists, a game session
+is polled on `freshness.gameIntervalMs`, and only while someone else can change
+it: `refetchInterval` is a function of the data that answers `false` during the
+viewer's own turn and once the game has a result.
 
 ## Configuration is a file
 

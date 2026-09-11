@@ -7,6 +7,10 @@
   "freshness": {
     "staleTimeMs": 2000,
     "lobbyIntervalMs": 10000,
-    "tableIntervalMs": 3000
+    "tableIntervalMs": 3000,
+    "gameIntervalMs": 2000
+  },
+  "chess": {
+    "defaultSkin": "classic"
   }
 }

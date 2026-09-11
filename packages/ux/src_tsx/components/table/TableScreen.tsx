@@ -1,4 +1,3 @@
-import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
@@ -7,17 +6,10 @@ import { useCallback, useEffect, type ReactElement } from "react";
 import { useDeleteTable } from "../../lobby/use_delete_table";
 import { useLeaveTable, useStandUp, useTakeSeat } from "../../lobby/use_table_actions";
 import { useTable } from "../../lobby/use_table";
-import { GameArtwork } from "../common/GameArtwork";
 import { LoadingPanel, PanelMessage } from "../common/PanelMessage";
 import { TableStatusChip } from "../common/TableStatusChip";
+import { GameScreen } from "./GameScreen";
 import { SeatList } from "./SeatList";
-
-const LAYOUT_SX = {
-  display: "grid",
-  gap: 3,
-  gridTemplateColumns: { xs: "1fr", md: "minmax(0, 1fr) 300px" },
-  alignItems: "start",
-} as const;
 
 export type TableScreenProps = {
   readonly tableId: string;
@@ -30,6 +22,9 @@ export type TableScreenProps = {
  * Reached by joining, and left by leaving. Sitting down and standing up happen
  * here without leaving. A player who is not at this table is sent back to the
  * list, so this screen only ever shows a table its viewer is at.
+ *
+ * The game's own screen sits above the seats, and is what the table becomes
+ * once it is full.
  */
 export function TableScreen(props: TableScreenProps): ReactElement {
   const { tableId, onLeft } = props;
@@ -96,28 +91,34 @@ export function TableScreen(props: TableScreenProps): ReactElement {
       </Button>
     );
 
+  const gameScreen =
+    summary === null ? null : (
+      <GameScreen
+        gameType={summary.gameType}
+        tableId={tableId}
+        canStart={summary.isFull && summary.isSeated}
+        isSeated={summary.isSeated}
+      />
+    );
+
   const seated =
     summary === null ? null : (
       <>
         {heading}
         {problemPanel}
-        <Box sx={LAYOUT_SX}>
-          <Stack spacing={2}>
-            <SeatList
-              seats={seats}
-              canTakeSeat={summary.canTakeSeat}
-              busySeatNumber={takingSeat?.seatNumber ?? null}
-              isStandingUp={isStandingUp}
-              onTakeSeat={handleTakeSeat}
-              onStandUp={handleStandUp}
-            />
-            <Stack direction="row" spacing={1}>
-              {leaveButton}
-              {closeButton}
-            </Stack>
-          </Stack>
-          <GameArtwork gameType={summary.gameType} />
-        </Box>
+        {gameScreen}
+        <SeatList
+          seats={seats}
+          canTakeSeat={summary.canTakeSeat}
+          busySeatNumber={takingSeat?.seatNumber ?? null}
+          isStandingUp={isStandingUp}
+          onTakeSeat={handleTakeSeat}
+          onStandUp={handleStandUp}
+        />
+        <Stack direction="row" spacing={1}>
+          {leaveButton}
+          {closeButton}
+        </Stack>
       </>
     );
 

@@ -1,3 +1,7 @@
+import {
+  isBoardSkinName,
+  type BoardSkinName,
+} from "../components/chess/skins/board_skin_name";
 import { isThemeName, type ThemeName } from "../theme/theme_name";
 
 /**
@@ -15,19 +19,28 @@ export type GatewaySettings = {
  * How current the screens are kept.
  *
  * `staleTimeMs` is how long an answer is reused without asking again, which is
- * what stops a remount from being a request. The two intervals are polling,
- * and neither runs while the tab is hidden.
+ * what stops a remount from being a request. The intervals are polling, and
+ * none of them runs while the tab is hidden.
  */
 export type FreshnessSettings = {
   readonly staleTimeMs: number;
   readonly lobbyIntervalMs: number;
   readonly tableIntervalMs: number;
+  readonly gameIntervalMs: number;
+};
+
+/**
+ * How a chess board is drawn until the player at this browser picks a skin.
+ */
+export type ChessSettings = {
+  readonly defaultSkin: BoardSkinName;
 };
 
 export type UxConfig = {
   readonly gateway: GatewaySettings;
   readonly theme: ThemeName;
   readonly freshness: FreshnessSettings;
+  readonly chess: ChessSettings;
 };
 
 const CONFIG_SOURCE = "gamez_ux.json";
@@ -76,9 +89,14 @@ export function parseUxConfig(document: unknown): UxConfig {
 
   const gateway = readObject(root, "gateway");
   const freshness = readObject(root, "freshness");
+  const chess = readObject(root, "chess");
   const themeName = readNonEmptyString(root, "theme");
   if (!isThemeName(themeName)) {
     return fail("theme", `names no theme this build has: ${themeName}`);
+  }
+  const defaultSkin = readNonEmptyString(chess, "defaultSkin");
+  if (!isBoardSkinName(defaultSkin)) {
+    return fail("chess.defaultSkin", `names no board skin this build has: ${defaultSkin}`);
   }
 
   return {
@@ -91,7 +109,9 @@ export function parseUxConfig(document: unknown): UxConfig {
       staleTimeMs: readPositiveInteger(freshness, "staleTimeMs"),
       lobbyIntervalMs: readPositiveInteger(freshness, "lobbyIntervalMs"),
       tableIntervalMs: readPositiveInteger(freshness, "tableIntervalMs"),
+      gameIntervalMs: readPositiveInteger(freshness, "gameIntervalMs"),
     },
+    chess: { defaultSkin },
   };
 }
 

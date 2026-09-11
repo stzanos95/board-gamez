@@ -1,7 +1,9 @@
 import { QueryClientProvider } from "@tanstack/react-query";
 import { useMemo, type ReactElement } from "react";
 
+import { ChessGateway } from "../chess/chess_gateway";
 import { App } from "../components/app/App";
+import { BoardSkinProvider } from "../components/chess/skins/board_skin_context";
 import type { UxConfig } from "../config/ux_config";
 import { PlayerProvider } from "../identity/player_context";
 import { TableGateway } from "../lobby/table_gateway";
@@ -17,19 +19,20 @@ export type AppRootProps = {
 /**
  * Everything the application needs, built once from the configuration.
  *
- * This is the only place a client, a cache or a theme is constructed. Nothing
- * below it reads a setting.
+ * This is the only place a client, a cache, a theme or a board skin is
+ * constructed. Nothing below it reads a setting.
  */
 export function AppRoot(props: AppRootProps): ReactElement {
   const { config } = props;
 
-  const services = useMemo<AppServices>(
-    () => ({
-      tableGateway: new TableGateway(new GatewayClient(config.gateway)),
+  const services = useMemo<AppServices>(() => {
+    const client = new GatewayClient(config.gateway);
+    return {
+      tableGateway: new TableGateway(client),
+      chessGateway: new ChessGateway(client),
       freshness: config.freshness,
-    }),
-    [config.gateway, config.freshness],
-  );
+    };
+  }, [config.gateway, config.freshness]);
 
   const queryClient = useMemo(() => buildQueryClient(config.freshness), [config.freshness]);
 
@@ -38,7 +41,9 @@ export function AppRoot(props: AppRootProps): ReactElement {
       <QueryClientProvider client={queryClient}>
         <AppServicesProvider services={services}>
           <PlayerProvider>
-            <App />
+            <BoardSkinProvider defaultSkin={config.chess.defaultSkin}>
+              <App />
+            </BoardSkinProvider>
           </PlayerProvider>
         </AppServicesProvider>
       </QueryClientProvider>

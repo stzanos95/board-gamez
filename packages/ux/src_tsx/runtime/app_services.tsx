@@ -1,5 +1,6 @@
 import { createContext, useContext, type ReactElement, type ReactNode } from "react";
 
+import type { ChessGateway } from "../chess/chess_gateway";
 import type { FreshnessSettings } from "../config/ux_config";
 import type { TableGateway } from "../lobby/table_gateway";
 
@@ -11,6 +12,7 @@ import type { TableGateway } from "../lobby/table_gateway";
  */
 export type AppServices = {
   readonly tableGateway: TableGateway;
+  readonly chessGateway: ChessGateway;
   readonly freshness: FreshnessSettings;
 };
 
@@ -36,6 +38,10 @@ function useAppServices(): AppServices {
 
 export function useTableGateway(): TableGateway {
   return useAppServices().tableGateway;
+}
+
+export function useChessGateway(): ChessGateway {
+  return useAppServices().chessGateway;
 }
 
 export function useFreshness(): FreshnessSettings {

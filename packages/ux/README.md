@@ -14,6 +14,7 @@ src_tsx/
 ├── routing/      which screen is on
 ├── format/       turning a value into text
 ├── lobby/        one domain: its gateway calls, its hooks, its labels
+├── chess/        one game: its gateway calls, its hooks, its views, its labels
 ├── components/   rendering only
 └── runtime/      the collaborators, built once
 ```
@@ -68,12 +69,38 @@ a screen you can be on. Opening a table seats the player who opened it.
 A table's name is derived from its identifier. `idl.lobby.model.Table` has no
 name field; adding one is a schema change.
 
+## Playing chess
+
+A full table shows its game's screen above the seats. `components/table/GameScreen.tsx`
+picks the screen by `GameType`; chess is `components/chess/ChessScreen.tsx`.
+
+The screen holds three things: which square is picked up, whether a promotion
+is being chosen, and whether a resignation is being confirmed. What a piece may
+do is the `legalMoves` list the game sends; clicking a square that is the
+destination of one of them sends that move, and nothing in the browser computes
+a move. Whose turn it is comes from `state.sideToMove` and the session's
+`color`; a spectator has no colour and sees the board with no controls.
+
+The board is composed from parts a skin supplies. `components/chess/skins/` is
+a seam in the same shape as `theme/`: `board_skin_name.ts` selects,
+`board_skin.ts` is the contract, one file per skin, and `board_skin_registry.ts`
+maps the enum to them. A skin is a palette, a shape for each `PieceType`, the
+ground of a square, and the frame around the squares. `ChessBoard` draws
+sixty-four `ChessSquare`s, each holding a `ChessPiece`, and reads every colour
+and shape from the skin in reach. The configured skin is the default; the
+player's own pick is kept in local storage.
+
 ## Freshness
 
 The lobby list and a table are polled, at intervals the deployable's settings
 name. Polling stops while the tab is hidden, so a background tab issues no
-requests and holds no timer. Real-time game state is not this: it arrives over
-the WebSocket server.
+requests and holds no timer.
+
+A chess session is polled on `freshness.gameIntervalMs` while someone else can
+change it: before the game starts and during the other side's turn. Only the
+side to move can act, so the poll stops during the viewer's own turn and once
+the game has a result. Real-time state over the WebSocket server replaces this
+poll when it exists.
 
 ## Identity
 
