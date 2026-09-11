@@ -8,6 +8,18 @@ from pydantic import BaseModel, ConfigDict, Field
 from . import model
 
 
+class ListSeatChoiceRequest(BaseModel):
+    """
+    The seats this player may take at this table now.
+    """
+
+    model_config = ConfigDict(
+        populate_by_name=True,
+    )
+    table_id: str | None = Field(default=None, alias='tableId')
+    player_id: str | None = Field(default=None, alias='playerId')
+
+
 class ReadGameRequest(BaseModel):
     model_config = ConfigDict(
         populate_by_name=True,
@@ -16,13 +28,19 @@ class ReadGameRequest(BaseModel):
     player_id: str | None = Field(default=None, alias='playerId')
 
 
+class ReadTableRequest(BaseModel):
+    model_config = ConfigDict(
+        populate_by_name=True,
+    )
+    table_id: str | None = Field(default=None, alias='tableId')
+
+
 class StartGameRequest(BaseModel):
     """
     Start a game at a table.
 
-     The table's seats decide who plays which side: the first seat is White and the
-     second is Black. A table already playing a game starts nothing and answers the
-     game already there.
+     Each seat's side is the side its player took it with. A table already playing
+     a game starts nothing and answers the game already there.
     """
 
     model_config = ConfigDict(
@@ -30,6 +48,45 @@ class StartGameRequest(BaseModel):
     )
     table_id: str | None = Field(default=None, alias='tableId')
     player_id: str | None = Field(default=None, alias='playerId')
+
+
+class ListSeatChoiceResponse(BaseModel):
+    model_config = ConfigDict(
+        populate_by_name=True,
+    )
+    collection: model.ChessSeatChoiceCollection | None = None
+
+
+class ReadTableResponse(BaseModel):
+    model_config = ConfigDict(
+        populate_by_name=True,
+    )
+    table: model.ChessTable | None = None
+
+
+class TakeSeatRequest(BaseModel):
+    """
+    Take one seat, as one of the choices the player was offered.
+
+     `expected_version` is the version of the table the choice was picked from. A
+     choice carrying an earlier one is refused, so a seat is never taken at a table
+     the player had not seen.
+    """
+
+    model_config = ConfigDict(
+        populate_by_name=True,
+    )
+    table_id: str | None = Field(default=None, alias='tableId')
+    player_id: str | None = Field(default=None, alias='playerId')
+    choice: model.ChessSeatChoice | None = None
+    expected_version: str | None = Field(default=None, alias='expectedVersion')
+
+
+class TakeSeatResponse(BaseModel):
+    model_config = ConfigDict(
+        populate_by_name=True,
+    )
+    result: model.ChessSeatResult | None = None
 
 
 class PlayActionRequest(BaseModel):

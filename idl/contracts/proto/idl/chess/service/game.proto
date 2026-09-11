@@ -1,4 +1,4 @@
-// Starting a game of chess, reading it, and playing it.
+// Sitting down to a game of chess, starting it, reading it, and playing it.
 
 syntax = "proto3";
 
@@ -6,14 +6,37 @@ package idl.chess.service;
 
 import "google/api/annotations.proto";
 import "idl/chess/dto/game.proto";
+import "idl/chess/dto/table.proto";
 
 option go_package = "boardgamez/contracts/gen/go/idl/chess/service;chessservice";
 
 // Chess as it is played at a table.
 //
 // Every request and answer is chess's own type, so a caller never packs or opens
-// a payload. A game changes by playing an action and in no other way.
+// a payload. A seat changes hands by taking a choice and in no other way, and a
+// game changes by playing an action and in no other way.
 service ChessService {
+  rpc ReadTable(idl.chess.dto.ReadTableRequest) returns (idl.chess.dto.ReadTableResponse) {
+    option (google.api.http) = {
+      post: "/internal/product/chess/read/table"
+      body: "*"
+    };
+  }
+
+  rpc ListSeatChoice(idl.chess.dto.ListSeatChoiceRequest) returns (idl.chess.dto.ListSeatChoiceResponse) {
+    option (google.api.http) = {
+      post: "/internal/product/chess/list/seat_choice"
+      body: "*"
+    };
+  }
+
+  rpc TakeSeat(idl.chess.dto.TakeSeatRequest) returns (idl.chess.dto.TakeSeatResponse) {
+    option (google.api.http) = {
+      post: "/internal/product/chess/take/seat"
+      body: "*"
+    };
+  }
+
   rpc StartGame(idl.chess.dto.StartGameRequest) returns (idl.chess.dto.StartGameResponse) {
     option (google.api.http) = {
       post: "/internal/product/chess/start/game"

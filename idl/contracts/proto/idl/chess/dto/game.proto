@@ -11,9 +11,8 @@ option go_package = "boardgamez/contracts/gen/go/idl/chess/dto;chessdto";
 
 // Start a game at a table.
 //
-// The table's seats decide who plays which side: the first seat is White and the
-// second is Black. A table already playing a game starts nothing and answers the
-// game already there.
+// Each seat's side is the side its player took it with. A table already playing
+// a game starts nothing and answers the game already there.
 message StartGameRequest {
   string table_id = 1;
   string player_id = 2;  // Who is asking; the session answered is projected for them.

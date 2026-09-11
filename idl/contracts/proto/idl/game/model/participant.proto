@@ -4,14 +4,30 @@ syntax = "proto3";
 
 package idl.game.model;
 
+import "google/protobuf/any.proto";
+
 option go_package = "boardgamez/contracts/gen/go/idl/game/model;gamemodel";
 
 // A player taking part in a game, and their place in its turn order.
 //
-// `number` is fixed when the game is created and never changes. It is the only
-// part of this a game is told; a player id never reaches a game's rules.
-// Numbered from 1, so 0 means no participant wherever one is named.
+// `number` is fixed when the game is created and never changes. Numbered from
+// 1, so 0 means no participant wherever one is named.
+//
+// `role` is what the participant is in the game's own vocabulary, packed by the
+// game and opened only by the game. It is handed to the rules when the game is
+// created and never changes after. A game with no roles leaves it unset.
+//
+// A player id never reaches a game's rules; the rules are told a
+// ParticipantRole.
 message Participant {
   uint32 number = 1;
   string player_id = 2;
+  google.protobuf.Any role = 3;  // Unset when the game has no roles.
+}
+
+// One participant as a game's rules are told them: a number and a role, and no
+// identity.
+message ParticipantRole {
+  uint32 participant = 1;
+  google.protobuf.Any role = 2;  // Unset when the game has no roles.
 }

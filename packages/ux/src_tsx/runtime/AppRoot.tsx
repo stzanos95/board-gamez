@@ -11,6 +11,7 @@ import { AppThemeProvider } from "../theme/AppThemeProvider";
 import { GatewayClient } from "../transport/gateway_client";
 import { buildQueryClient } from "../transport/query_client";
 import { AppServicesProvider, type AppServices } from "./app_services";
+import { buildPackedTypeRegistry } from "./packed_types";
 
 export type AppRootProps = {
   readonly config: UxConfig;
@@ -26,7 +27,7 @@ export function AppRoot(props: AppRootProps): ReactElement {
   const { config } = props;
 
   const services = useMemo<AppServices>(() => {
-    const client = new GatewayClient(config.gateway);
+    const client = new GatewayClient(config.gateway, buildPackedTypeRegistry());
     return {
       tableGateway: new TableGateway(client),
       chessGateway: new ChessGateway(client),

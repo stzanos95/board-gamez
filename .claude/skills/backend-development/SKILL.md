@@ -158,13 +158,23 @@ What goes where, by the question it answers:
   does a `GameResult` read for participant 2, how is a `GameState` payload
   unpacked" — `packages/product-<game>`. Anything that names a participant, a
   session, a `GameState` or an `Action` is the product's, never the rules'.
-- "Which seat plays which side, who may start the game, how the platform's
-  answer reads to a player of this game" — `packages/product-<game>`, in the
-  controller behind the game's own service. It composes the platform's
-  controllers (`TableController`, `SessionController`) in-process.
+- "Which seats a player may take, and what each one is in this game" —
+  `packages/product-<game>`, as a `BaseSeating` implementation. It answers a
+  list of `SeatChoice`s, each a seat number and a role packed as `Any`, and
+  writes nothing. The lobby's `SeatController` owns the rules every game
+  shares — a seat is taken only while the table waits, a player holds one seat,
+  a choice must be one the game offered — and does the write.
+- "Who may start the game, how the platform's answer reads to a player of this
+  game" — `packages/product-<game>`, in the controller behind the game's own
+  service. It composes the platform's controllers (`TableController`,
+  `SeatController`, `SessionController`) in-process. The game's own service is
+  also where a seat is taken with the role opened: a browser playing chess
+  sends a `Color`, and the product packs it.
+- A role is packed and opened in exactly one adapter in the product. No file in
+  `lobby`, `game` or the browser reads one.
 - `packages/game` imports no product. Adding a game is a `GameType` member, a
-  product package, a dependency of both deployables, and one registry entry in
-  `grpc-server`.
+  product package, a dependency of both deployables, and one entry each in the
+  rules registry and the seating registry in `grpc-server`.
 
 ## SOLID decides the boundaries
 

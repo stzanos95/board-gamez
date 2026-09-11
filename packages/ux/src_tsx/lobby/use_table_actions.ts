@@ -10,14 +10,8 @@ import { tableQueryKeys } from "./table_queries";
 import {
   withPlayerJoined,
   withPlayerLeft,
-  withPlayerSeated,
   withPlayerStood,
 } from "./table_intents";
-
-export type TakeSeatInput = {
-  readonly tableId: string;
-  readonly seatNumber: number;
-};
 
 /**
  * A change to a table in progress.
@@ -49,34 +43,6 @@ export function useJoinTable(): TableAction<string> {
 
   const mutation = useMutation({
     mutationFn: joinTable,
-    onSuccess: (write: TableWrite) => adoptTableWrite(queryClient, write),
-  });
-
-  return useTableAction({
-    run: mutation.mutate,
-    isPending: mutation.isPending,
-    input: mutation.variables,
-    write: mutation.data,
-    error: mutation.error,
-    dismissProblem: mutation.reset,
-  });
-}
-
-export function useTakeSeat(): TableAction<TakeSeatInput> {
-  const gateway = useTableGateway();
-  const queryClient = useQueryClient();
-  const { player } = usePlayer();
-
-  const takeSeat = useCallback(
-    (input: TakeSeatInput) =>
-      writeTableChange(gateway, input.tableId, (table: Table) =>
-        withPlayerSeated(table, player.id, input.seatNumber),
-      ),
-    [gateway, player.id],
-  );
-
-  const mutation = useMutation({
-    mutationFn: takeSeat,
     onSuccess: (write: TableWrite) => adoptTableWrite(queryClient, write),
   });
 

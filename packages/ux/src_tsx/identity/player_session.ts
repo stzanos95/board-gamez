@@ -1,6 +1,8 @@
 import { create } from "@bufbuild/protobuf";
 import { PlayerSchema, type Player } from "@board-gamez/idl/identity/model/player_pb";
 
+import { mintIdentifier } from "../format/mint_identifier";
+
 const PLAYER_ID_KEY = "board-gamez.player.id";
 const PLAYER_NAME_KEY = "board-gamez.player.name";
 const NAME_PREFIX = "Player";
@@ -41,7 +43,7 @@ function readOrCreateId(): string {
   if (stored !== null && stored.length > 0) {
     return stored;
   }
-  const created = window.crypto.randomUUID();
+  const created = mintIdentifier();
   window.sessionStorage.setItem(PLAYER_ID_KEY, created);
   return created;
 }

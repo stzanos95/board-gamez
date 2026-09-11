@@ -21,9 +21,8 @@ export const file_idl_chess_dto_game: GenFile = /*@__PURE__*/
 /**
  * Start a game at a table.
  *
- * The table's seats decide who plays which side: the first seat is White and the
- * second is Black. A table already playing a game starts nothing and answers the
- * game already there.
+ * Each seat's side is the side its player took it with. A table already playing
+ * a game starts nothing and answers the game already there.
  *
  * @generated from message idl.chess.dto.StartGameRequest
  */

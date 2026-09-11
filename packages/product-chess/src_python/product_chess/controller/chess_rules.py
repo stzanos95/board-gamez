@@ -1,8 +1,9 @@
 """
 The rules of chess, as the platform asks them.
 
-The one place that decides what a participant number means in chess: the first
-participant plays White and the second plays Black, and a game takes exactly two.
+The one place that decides what a participant means in chess: the participant
+seated as White plays White, the one seated as Black plays Black, and a game
+takes exactly one of each.
 """
 
 from chess.adapters.game_adapters import GameAdapters
@@ -14,12 +15,11 @@ from idl.chess.model.action_pb2 import ChessAction
 from idl.game.model.action_pb2 import Action
 from idl.game.model.game_spec_pb2 import ParticipantBounds
 from idl.game.model.game_state_pb2 import GameState
+from idl.game.model.participant_pb2 import ParticipantRole
 
 from product_chess.adapters.chess_rules_adapters import ChessRulesAdapters
 
 CHESS_PARTICIPANT_COUNT = 2
-WHITE_PARTICIPANT = 1
-BLACK_PARTICIPANT = 2
 
 
 class ChessRules(BaseRules):
@@ -29,11 +29,15 @@ class ChessRules(BaseRules):
     Every viewer is shown the whole game: chess has no hidden information.
     """
 
-    async def create_game(self, participant_count: int) -> GameState | None:
-        if participant_count != CHESS_PARTICIPANT_COUNT:
+    async def create_game(self, participant_roles: tuple[ParticipantRole, ...]) -> GameState | None:
+        if len(participant_roles) != CHESS_PARTICIPANT_COUNT:
+            return None
+        roster = ChessRulesAdapters.participant_roles_to_player_roster(participant_roles)
+        if roster is None:
             return None
         engine = ChessEngine.new_game(
-            white_participant=WHITE_PARTICIPANT, black_participant=BLACK_PARTICIPANT
+            white_participant=roster.white.participant,
+            black_participant=roster.black.participant,
         )
         return ChessRulesAdapters.engine_to_game_state(engine)
 

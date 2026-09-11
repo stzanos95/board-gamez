@@ -16,6 +16,7 @@ from idl.game.model.action_pb2 import Action
 from idl.game.model.game_result_pb2 import GameResult, ParticipantOutcome, ParticipantResult
 from idl.game.model.game_spec_pb2 import ParticipantBounds
 from idl.game.model.game_state_pb2 import GameState
+from idl.game.model.participant_pb2 import ParticipantRole
 
 from game.controller.base_rules import BaseRules
 
@@ -47,7 +48,8 @@ class ScriptedRules(BaseRules):
     def __init__(self, minimum: int, maximum: int) -> None:
         self._bounds = ParticipantBounds(minimum=minimum, maximum=maximum)
 
-    async def create_game(self, participant_count: int) -> GameState | None:
+    async def create_game(self, participant_roles: tuple[ParticipantRole, ...]) -> GameState | None:
+        participant_count = len(participant_roles)
         if not self._bounds.minimum <= participant_count <= self._bounds.maximum:
             return None
         return GameState(

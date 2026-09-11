@@ -198,6 +198,30 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/google.rpc.Status'
+    /internal/product/chess/list/seat_choice:
+        post:
+            tags:
+                - ChessService
+            operationId: ChessService_ListSeatChoice
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/idl.chess.dto.ListSeatChoiceRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/idl.chess.dto.ListSeatChoiceResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/google.rpc.Status'
     /internal/product/chess/play/action:
         post:
             tags:
@@ -246,6 +270,30 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/google.rpc.Status'
+    /internal/product/chess/read/table:
+        post:
+            tags:
+                - ChessService
+            operationId: ChessService_ReadTable
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/idl.chess.dto.ReadTableRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/idl.chess.dto.ReadTableResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/google.rpc.Status'
     /internal/product/chess/start/game:
         post:
             tags:
@@ -264,6 +312,30 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/idl.chess.dto.StartGameResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/google.rpc.Status'
+    /internal/product/chess/take/seat:
+        post:
+            tags:
+                - ChessService
+            operationId: ChessService_TakeSeat
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/idl.chess.dto.TakeSeatRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/idl.chess.dto.TakeSeatResponse'
                 default:
                     description: Default error response
                     content:
@@ -296,6 +368,19 @@ components:
                         $ref: '#/components/schemas/google.protobuf.Any'
                     description: A list of messages that carry the error details.  There is a common set of message types for APIs to use.
             description: 'The `Status` type defines a logical error model that is suitable for different programming environments, including REST APIs and RPC APIs. It is used by [gRPC](https://github.com/grpc). Each `Status` message contains three pieces of data: error code, error message, and error details. You can find out more about this error model and how to work with it in the [API Design Guide](https://cloud.google.com/apis/design/errors).'
+        idl.chess.dto.ListSeatChoiceRequest:
+            type: object
+            properties:
+                tableId:
+                    type: string
+                playerId:
+                    type: string
+            description: The seats this player may take at this table now.
+        idl.chess.dto.ListSeatChoiceResponse:
+            type: object
+            properties:
+                collection:
+                    $ref: '#/components/schemas/idl.chess.model.ChessSeatChoiceCollection'
         idl.chess.dto.PlayActionRequest:
             type: object
             properties:
@@ -338,6 +423,16 @@ components:
             properties:
                 session:
                     $ref: '#/components/schemas/idl.chess.model.ChessSession'
+        idl.chess.dto.ReadTableRequest:
+            type: object
+            properties:
+                tableId:
+                    type: string
+        idl.chess.dto.ReadTableResponse:
+            type: object
+            properties:
+                table:
+                    $ref: '#/components/schemas/idl.chess.model.ChessTable'
         idl.chess.dto.StartGameRequest:
             type: object
             properties:
@@ -348,14 +443,35 @@ components:
             description: |-
                 Start a game at a table.
 
-                 The table's seats decide who plays which side: the first seat is White and the
-                 second is Black. A table already playing a game starts nothing and answers the
-                 game already there.
+                 Each seat's side is the side its player took it with. A table already playing
+                 a game starts nothing and answers the game already there.
         idl.chess.dto.StartGameResponse:
             type: object
             properties:
                 session:
                     $ref: '#/components/schemas/idl.chess.model.ChessSession'
+        idl.chess.dto.TakeSeatRequest:
+            type: object
+            properties:
+                tableId:
+                    type: string
+                playerId:
+                    type: string
+                choice:
+                    $ref: '#/components/schemas/idl.chess.model.ChessSeatChoice'
+                expectedVersion:
+                    type: string
+            description: |-
+                Take one seat, as one of the choices the player was offered.
+
+                 `expected_version` is the version of the table the choice was picked from. A
+                 choice carrying an earlier one is refused, so a seat is never taken at a table
+                 the player had not seen.
+        idl.chess.dto.TakeSeatResponse:
+            type: object
+            properties:
+                result:
+                    $ref: '#/components/schemas/idl.chess.model.ChessSeatResult'
         idl.chess.model.ActionResult:
             type: object
             properties:
@@ -502,6 +618,73 @@ components:
 
                  A participant is known here by number and nothing else. A name is joined in by
                  whoever draws the game.
+        idl.chess.model.ChessSeat:
+            type: object
+            properties:
+                number:
+                    type: integer
+                    format: uint32
+                status:
+                    enum:
+                        - SEAT_STATUS_UNSPECIFIED
+                        - SEAT_STATUS_OPEN
+                        - SEAT_STATUS_OCCUPIED
+                    type: string
+                    format: enum
+                playerId:
+                    type: string
+                color:
+                    enum:
+                        - COLOR_UNSPECIFIED
+                        - COLOR_WHITE
+                        - COLOR_BLACK
+                    type: string
+                    format: enum
+            description: One seat at a chess table, with the side it plays opened.
+        idl.chess.model.ChessSeatChoice:
+            type: object
+            properties:
+                number:
+                    type: integer
+                    format: uint32
+                color:
+                    enum:
+                        - COLOR_UNSPECIFIED
+                        - COLOR_WHITE
+                        - COLOR_BLACK
+                    type: string
+                    format: enum
+            description: |-
+                One seat a player may take right now, and the side they would play in it.
+
+                 Taken unchanged: the seat and the side are a pair.
+        idl.chess.model.ChessSeatChoiceCollection:
+            type: object
+            properties:
+                chessSeatChoiceItems:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/idl.chess.model.ChessSeatChoice'
+            description: Every seat one player may take.
+        idl.chess.model.ChessSeatResult:
+            type: object
+            properties:
+                outcome:
+                    enum:
+                        - SEAT_OUTCOME_UNSPECIFIED
+                        - SEAT_OUTCOME_TAKEN
+                        - SEAT_OUTCOME_TABLE_NOT_FOUND
+                        - SEAT_OUTCOME_NOT_OFFERED
+                        - SEAT_OUTCOME_VERSION_MOVED
+                    type: string
+                    format: enum
+                table:
+                    $ref: '#/components/schemas/idl.chess.model.ChessTable'
+            description: |-
+                What happened to a seat being taken, and the table as its taker may now see it.
+
+                 The table is carried whatever the outcome, and is unset only when no table
+                 has the id the choice named.
         idl.chess.model.ChessSession:
             type: object
             properties:
@@ -532,6 +715,34 @@ components:
                  `version` counts writes to the game. An action is built against the version
                  it was read at, and a session is rendered only when its version is above the
                  version showing.
+        idl.chess.model.ChessTable:
+            type: object
+            properties:
+                id:
+                    type: string
+                status:
+                    enum:
+                        - TABLE_STATUS_UNSPECIFIED
+                        - TABLE_STATUS_WAITING
+                        - TABLE_STATUS_IN_PROGRESS
+                        - TABLE_STATUS_FINISHED
+                        - TABLE_STATUS_ABANDONED
+                    type: string
+                    format: enum
+                seats:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/idl.chess.model.ChessSeat'
+                playerIds:
+                    type: array
+                    items:
+                        type: string
+                version:
+                    type: string
+            description: |-
+                A table chess is played at, with every seat's side opened.
+
+                 `version` is the table's, and a choice is taken against it.
         idl.chess.model.ChessTurn:
             type: object
             properties:
@@ -974,12 +1185,20 @@ components:
                     format: uint32
                 playerId:
                     type: string
+                role:
+                    $ref: '#/components/schemas/google.protobuf.Any'
             description: |-
                 A player taking part in a game, and their place in its turn order.
 
-                 `number` is fixed when the game is created and never changes. It is the only
-                 part of this a game is told; a player id never reaches a game's rules.
-                 Numbered from 1, so 0 means no participant wherever one is named.
+                 `number` is fixed when the game is created and never changes. Numbered from
+                 1, so 0 means no participant wherever one is named.
+
+                 `role` is what the participant is in the game's own vocabulary, packed by the
+                 game and opened only by the game. It is handed to the rules when the game is
+                 created and never changes after. A game with no roles leaves it unset.
+
+                 A player id never reaches a game's rules; the rules are told a
+                 ParticipantRole.
         idl.game.model.ParticipantBounds:
             type: object
             properties:
@@ -1101,13 +1320,22 @@ components:
                     format: enum
                 playerId:
                     type: string
+                role:
+                    $ref: '#/components/schemas/google.protobuf.Any'
             description: |-
                 One place at a table.
 
                  `number` is the seat's position and never changes once the table is created.
-                 It fixes the order players are handed to a game when one starts. What a game
-                 makes of that order is the game's own business. Numbered from 1, so 0 means no
-                 seat wherever a seat is named.
+                 Numbered from 1, so 0 means no seat wherever a seat is named.
+
+                 `role` is what the seat is in the game's own vocabulary: the side it plays,
+                 the token it moves. It is packed by the game and opened only by the game and
+                 by the client that draws it. It is set when the seat is taken, from the
+                 choice the player took, and cleared when the seat is vacated. A game whose
+                 seats are positions and nothing more leaves it unset.
+
+                 What a game makes of a seat's position and role when it starts is the game's
+                 own business.
 
                  A seat holds a player id and no more. A name to draw is read from identity
                  when it is needed, so a renamed player is never stale here.
@@ -1170,7 +1398,8 @@ tags:
         Chess as it is played at a table.
 
          Every request and answer is chess's own type, so a caller never packs or opens
-         a payload. A game changes by playing an action and in no other way.
+         a payload. A seat changes hands by taking a choice and in no other way, and a
+         game changes by playing an action and in no other way.
     - name: GameSpecService
       description: The catalogue of games, assembled from what each game answers about itself.
     - name: SessionService

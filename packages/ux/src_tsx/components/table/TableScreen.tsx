@@ -4,7 +4,7 @@ import Typography from "@mui/material/Typography";
 import { useCallback, useEffect, type ReactElement } from "react";
 
 import { useDeleteTable } from "../../lobby/use_delete_table";
-import { useLeaveTable, useStandUp, useTakeSeat } from "../../lobby/use_table_actions";
+import { useLeaveTable, useStandUp } from "../../lobby/use_table_actions";
 import { useTable } from "../../lobby/use_table";
 import { LoadingPanel, PanelMessage } from "../common/PanelMessage";
 import { TableStatusChip } from "../common/TableStatusChip";
@@ -19,8 +19,9 @@ export type TableScreenProps = {
 /**
  * The table this player is at.
  *
- * Reached by joining, and left by leaving. Sitting down and standing up happen
- * here without leaving. A player who is not at this table is sent back to the
+ * Reached by joining, and left by leaving. Standing up happens here without
+ * leaving; sitting down happens on the game's own screen, where the game says
+ * what each seat is. A player who is not at this table is sent back to the
  * list, so this screen only ever shows a table its viewer is at.
  *
  * The game's own screen sits above the seats, and is what the table becomes
@@ -29,15 +30,10 @@ export type TableScreenProps = {
 export function TableScreen(props: TableScreenProps): ReactElement {
   const { tableId, onLeft } = props;
   const { summary, seats, isLoading, isMissing, error } = useTable(tableId);
-  const { run: takeSeat, pendingInput: takingSeat, problem: takeProblem } = useTakeSeat();
   const { run: standUp, isPending: isStandingUp, problem: standProblem } = useStandUp();
   const { run: leaveTable, isPending: isLeaving, problem: leaveProblem } = useLeaveTable();
   const { run: deleteTable, isPending: isClosing, problem: closeProblem } = useDeleteTable();
 
-  const handleTakeSeat = useCallback(
-    (seatNumber: number) => takeSeat({ tableId, seatNumber }),
-    [takeSeat, tableId],
-  );
   const handleStandUp = useCallback(() => standUp(tableId), [standUp, tableId]);
   const handleLeave = useCallback(() => leaveTable(tableId), [leaveTable, tableId]);
   const handleClose = useCallback(
@@ -53,7 +49,6 @@ export function TableScreen(props: TableScreenProps): ReactElement {
   }, [hasLeft, onLeft]);
 
   const problem =
-    takeProblem ??
     standProblem ??
     leaveProblem ??
     closeProblem ??
@@ -107,14 +102,7 @@ export function TableScreen(props: TableScreenProps): ReactElement {
         {heading}
         {problemPanel}
         {gameScreen}
-        <SeatList
-          seats={seats}
-          canTakeSeat={summary.canTakeSeat}
-          busySeatNumber={takingSeat?.seatNumber ?? null}
-          isStandingUp={isStandingUp}
-          onTakeSeat={handleTakeSeat}
-          onStandUp={handleStandUp}
-        />
+        <SeatList seats={seats} isStandingUp={isStandingUp} onStandUp={handleStandUp} />
         <Stack direction="row" spacing={1}>
           {leaveButton}
           {closeButton}

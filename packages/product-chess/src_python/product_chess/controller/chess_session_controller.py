@@ -3,16 +3,26 @@ What is done to a game of chess being played at a table.
 
 The one place chess decides anything about a table: which seats become which
 participants, who may start a game, and how the platform's answer is shown to a
-chess player. Whether an action is legal is the platform's and the rules'.
+chess player. Which side a seat plays is ChessSeating's, whether a seat may be
+taken is the lobby's, and whether an action is legal is the platform's and the
+rules'.
 """
 
 from game.controller.session_controller import SessionController
 from idl.chess.model.action_pb2 import ChessAction
 from idl.chess.model.session_pb2 import ActionResult, ChessSession
+from idl.chess.model.table_pb2 import (
+    ChessSeatChoice,
+    ChessSeatChoiceCollection,
+    ChessSeatResult,
+    ChessTable,
+)
 from idl.game.model.game_type_pb2 import GameType
 from idl.game.model.participant_pb2 import Participant
+from lobby.controller.seat_controller import SeatController
 from lobby.controller.table_controller import TableController
 
+from product_chess.adapters.chess_seat_adapters import ChessSeatAdapters
 from product_chess.adapters.chess_session_adapters import ChessSessionAdapters
 from product_chess.controller.chess_rules import CHESS_PARTICIPANT_COUNT
 
@@ -28,9 +38,45 @@ class ChessSessionController:
     Built once at the entry point and passed to whatever serves it.
     """
 
-    def __init__(self, tables: TableController, sessions: SessionController) -> None:
+    def __init__(
+        self, tables: TableController, seats: SeatController, sessions: SessionController
+    ) -> None:
         self._tables = tables
+        self._seats = seats
         self._sessions = sessions
+
+    async def read_table(self, table_id: str) -> ChessTable | None:
+        """
+        The table with every seat's side opened, or None when no chess table has
+        that id.
+        """
+        table = await self._tables.read_table(table_id)
+        if table is None or table.game_type != GameType.GAME_TYPE_CHESS:
+            return None
+        return ChessSeatAdapters.table_to_chess_table(table)
+
+    async def list_seat_choices(self, table_id: str, player_id: str) -> ChessSeatChoiceCollection:
+        """
+        Every seat this player may take at this table now, with the side each
+        plays.
+        """
+        return ChessSeatAdapters.seat_choice_collection_to_chess_seat_choice_collection(
+            await self._seats.list_seat_choices(table_id, player_id)
+        )
+
+    async def take_seat(
+        self, table_id: str, player_id: str, choice: ChessSeatChoice, expected_version: int
+    ) -> ChessSeatResult:
+        """
+        Seat this player as the choice says, and say how it went.
+        """
+        result = await self._seats.take_seat(
+            table_id,
+            player_id,
+            ChessSeatAdapters.chess_seat_choice_to_seat_choice(choice),
+            expected_version,
+        )
+        return ChessSeatAdapters.seat_result_to_chess_seat_result(result)
 
     async def start_game(self, table_id: str, player_id: str) -> ChessSession | None:
         """

@@ -3,7 +3,7 @@ ChessService, as it is answered over HTTP.
 
 Implements the service the generated router declares, and answers each operation
 by calling the platform over gRPC. The service on the other end of that call is
-a different implementation of the same three operations.
+a different implementation of the same operations.
 
 Converting between the two shapes of a message belongs to
 `product_chess.adapters`, so every method here is the same two steps: call, and
@@ -11,15 +11,22 @@ hand back what came out.
 """
 
 from idl_fastapi.idl.chess.dto import (
+    ListSeatChoiceRequest,
+    ListSeatChoiceResponse,
     PlayActionRequest,
     PlayActionResponse,
     ReadGameRequest,
     ReadGameResponse,
+    ReadTableRequest,
+    ReadTableResponse,
     StartGameRequest,
     StartGameResponse,
+    TakeSeatRequest,
+    TakeSeatResponse,
 )
 from idl_fastapi.services.chess_service import BaseChessService
 
+from product_chess.adapters.chess_seat_adapters import ChessSeatAdapters
 from product_chess.adapters.chess_session_adapters import ChessSessionAdapters
 from product_chess.service.grpc_chess_client import GrpcChessClient
 
@@ -31,6 +38,24 @@ class HttpChessService(BaseChessService):
 
     def __init__(self, client: GrpcChessClient) -> None:
         self._client = client
+
+    async def read_table(self, request: ReadTableRequest) -> ReadTableResponse:
+        response = await self._client.read_table(
+            ChessSeatAdapters.read_table_request_model_to_message(request)
+        )
+        return ChessSeatAdapters.read_table_response_message_to_model(response)
+
+    async def list_seat_choice(self, request: ListSeatChoiceRequest) -> ListSeatChoiceResponse:
+        response = await self._client.list_seat_choice(
+            ChessSeatAdapters.list_request_model_to_message(request)
+        )
+        return ChessSeatAdapters.list_response_message_to_model(response)
+
+    async def take_seat(self, request: TakeSeatRequest) -> TakeSeatResponse:
+        response = await self._client.take_seat(
+            ChessSeatAdapters.take_request_model_to_message(request)
+        )
+        return ChessSeatAdapters.take_response_message_to_model(response)
 
     async def start_game(self, request: StartGameRequest) -> StartGameResponse:
         response = await self._client.start_game(

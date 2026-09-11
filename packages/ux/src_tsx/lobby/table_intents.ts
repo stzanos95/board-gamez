@@ -3,22 +3,25 @@ import type { GameType } from "@board-gamez/idl/game/model/game_type_pb";
 import { SeatSchema, SeatStatus, type Seat } from "@board-gamez/idl/lobby/model/seat_pb";
 import { TableSchema, TableStatus, type Table } from "@board-gamez/idl/lobby/model/table_pb";
 
+import { mintIdentifier } from "../format/mint_identifier";
+
 /**
  * The only place in this application that produces a new table.
  *
  * TableService is a store: it writes whole tables, guarded by the version they
- * were read at, and has no verb for joining a table or taking a seat. Nothing
- * between it and a browser decides today, so the decision is made here — a
- * read, a change, and a write.
+ * were read at, and has no verb for joining a table, standing up or leaving.
+ * Nothing between it and a browser decides those today, so the decision is
+ * made here — a read, a change, and a write.
  *
  * This is business logic in the presentation layer. It is confined to this file
- * so that JoinTable and TakeSeat operations on the lobby replace it: every
- * function below becomes one call, and no component changes.
+ * so that JoinTable, StandUp and LeaveTable operations on the lobby replace it:
+ * every function below becomes one call, and no component changes.
  *
- * Joining and sitting are two different changes. Anyone may join, and a seat is
- * taken only by asking for that seat: nothing here chooses a seat on a player's
- * behalf. A seated player is always at the table, and leaving the table gives
- * up the seat.
+ * Taking a seat is not here. A seat is taken through the game's own service,
+ * as one of the choices the game offered, and the lobby writes it.
+ *
+ * A seated player is always at the table, and leaving the table gives up the
+ * seat.
  *
  * Every function is pure. Nothing here reads the network, the clock, or a
  * cache, and a table handed in is never changed.
@@ -29,9 +32,6 @@ const NEVER_STORED_VERSION = 0n;
 const VACANT = "";
 
 export const TableRefusal = {
-  NO_SUCH_SEAT: "no_such_seat",
-  SEAT_TAKEN: "seat_taken",
-  ALREADY_SEATED: "already_seated",
   NOT_SEATED: "not_seated",
   ALREADY_AT_TABLE: "already_at_table",
   NOT_AT_TABLE: "not_at_table",
@@ -41,9 +41,6 @@ export const TableRefusal = {
 export type TableRefusal = (typeof TableRefusal)[keyof typeof TableRefusal];
 
 export const TABLE_REFUSAL_MESSAGES: Record<TableRefusal, string> = {
-  [TableRefusal.NO_SUCH_SEAT]: "That seat is not at this table.",
-  [TableRefusal.SEAT_TAKEN]: "Someone took that seat first.",
-  [TableRefusal.ALREADY_SEATED]: "You are already seated at this table.",
   [TableRefusal.NOT_SEATED]: "You are not seated at this table.",
   [TableRefusal.ALREADY_AT_TABLE]: "You are already at this table.",
   [TableRefusal.NOT_AT_TABLE]: "You are not at this table.",
@@ -70,7 +67,7 @@ const JOINABLE_STATUSES: readonly TableStatus[] = [TableStatus.WAITING, TableSta
  */
 export function newTable(gameType: GameType, seatCount: number, hostPlayerId: string): Table {
   return create(TableSchema, {
-    id: globalThis.crypto.randomUUID(),
+    id: mintIdentifier(),
     gameType,
     status: TableStatus.WAITING,
     seats: openSeats(seatCount),
@@ -89,34 +86,6 @@ export function withPlayerJoined(table: Table, playerId: string): TableIntent {
   return {
     kind: "changed",
     table: withPlayers(table, table.seats, [...table.playerIds, playerId]),
-  };
-}
-
-/**
- * Seat this player in the seat they asked for. Taking a seat puts a player at
- * the table if they were not already there.
- */
-export function withPlayerSeated(table: Table, playerId: string, seatNumber: number): TableIntent {
-  if (table.status !== TableStatus.WAITING) {
-    return { kind: "refused", refusal: TableRefusal.NOT_ACCEPTING_PLAYERS };
-  }
-  if (seatOf(table, playerId) !== null) {
-    return { kind: "refused", refusal: TableRefusal.ALREADY_SEATED };
-  }
-  const target = table.seats.find(matchesNumber(seatNumber));
-  if (target === undefined) {
-    return { kind: "refused", refusal: TableRefusal.NO_SUCH_SEAT };
-  }
-  if (target.status !== SeatStatus.OPEN) {
-    return { kind: "refused", refusal: TableRefusal.SEAT_TAKEN };
-  }
-  return {
-    kind: "changed",
-    table: withPlayers(
-      table,
-      table.seats.map((seat) => (seat.number === seatNumber ? occupiedBy(seat, playerId) : seat)),
-      isAtTable(table, playerId) ? table.playerIds : [...table.playerIds, playerId],
-    ),
   };
 }
 
@@ -171,10 +140,6 @@ export function isAcceptingPlayers(table: Table): boolean {
   return JOINABLE_STATUSES.includes(table.status);
 }
 
-function matchesNumber(seatNumber: number): (seat: Seat) => boolean {
-  return (seat: Seat) => seat.number === seatNumber;
-}
-
 function openSeats(seatCount: number): Seat[] {
   return Array.from({ length: seatCount }, (_unused, index) =>
     create(SeatSchema, {
@@ -187,14 +152,6 @@ function openSeats(seatCount: number): Seat[] {
 
 function seatsWithout(table: Table, playerId: string): Seat[] {
   return table.seats.map((seat) => (seat.playerId === playerId ? vacated(seat) : seat));
-}
-
-function occupiedBy(seat: Seat, playerId: string): Seat {
-  return create(SeatSchema, {
-    number: seat.number,
-    status: SeatStatus.OCCUPIED,
-    playerId,
-  });
 }
 
 function vacated(seat: Seat): Seat {

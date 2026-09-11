@@ -153,10 +153,15 @@ class ChessSessionAdapters:
     @staticmethod
     def table_to_participants(table: Table) -> tuple[Participant, ...]:
         """
-        One participant per occupied seat, numbered as the seat is.
+        One participant per occupied seat, numbered as the seat is and carrying
+        the role the seat was taken with.
         """
         return tuple(
-            Participant(number=seat.number, player_id=seat.player_id)
+            Participant(
+                number=seat.number,
+                player_id=seat.player_id,
+                role=seat.role if seat.HasField("role") else None,
+            )
             for seat in table.seats
             if seat.status == SeatStatus.SEAT_STATUS_OCCUPIED
         )

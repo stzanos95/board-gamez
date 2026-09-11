@@ -6,20 +6,28 @@
 
 import type { GenFile, GenMessage } from "@bufbuild/protobuf/codegenv1";
 import { fileDesc, messageDesc } from "@bufbuild/protobuf/codegenv1";
+import type { Any } from "@bufbuild/protobuf/wkt";
+import { file_google_protobuf_any } from "@bufbuild/protobuf/wkt";
 import type { Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file idl/game/model/participant.proto.
  */
 export const file_idl_game_model_participant: GenFile = /*@__PURE__*/
-  fileDesc("CiBpZGwvZ2FtZS9tb2RlbC9wYXJ0aWNpcGFudC5wcm90bxIOaWRsLmdhbWUubW9kZWwiMAoLUGFydGljaXBhbnQSDgoGbnVtYmVyGAEgASgNEhEKCXBsYXllcl9pZBgCIAEoCUI2WjRib2FyZGdhbWV6L2NvbnRyYWN0cy9nZW4vZ28vaWRsL2dhbWUvbW9kZWw7Z2FtZW1vZGVsYgZwcm90bzM");
+  fileDesc("CiBpZGwvZ2FtZS9tb2RlbC9wYXJ0aWNpcGFudC5wcm90bxIOaWRsLmdhbWUubW9kZWwiVAoLUGFydGljaXBhbnQSDgoGbnVtYmVyGAEgASgNEhEKCXBsYXllcl9pZBgCIAEoCRIiCgRyb2xlGAMgASgLMhQuZ29vZ2xlLnByb3RvYnVmLkFueSJKCg9QYXJ0aWNpcGFudFJvbGUSEwoLcGFydGljaXBhbnQYASABKA0SIgoEcm9sZRgCIAEoCzIULmdvb2dsZS5wcm90b2J1Zi5BbnlCNlo0Ym9hcmRnYW1lei9jb250cmFjdHMvZ2VuL2dvL2lkbC9nYW1lL21vZGVsO2dhbWVtb2RlbGIGcHJvdG8z", [file_google_protobuf_any]);
 
 /**
  * A player taking part in a game, and their place in its turn order.
  *
- * `number` is fixed when the game is created and never changes. It is the only
- * part of this a game is told; a player id never reaches a game's rules.
- * Numbered from 1, so 0 means no participant wherever one is named.
+ * `number` is fixed when the game is created and never changes. Numbered from
+ * 1, so 0 means no participant wherever one is named.
+ *
+ * `role` is what the participant is in the game's own vocabulary, packed by the
+ * game and opened only by the game. It is handed to the rules when the game is
+ * created and never changes after. A game with no roles leaves it unset.
+ *
+ * A player id never reaches a game's rules; the rules are told a
+ * ParticipantRole.
  *
  * @generated from message idl.game.model.Participant
  */
@@ -33,6 +41,13 @@ export type Participant = Message<"idl.game.model.Participant"> & {
    * @generated from field: string player_id = 2;
    */
   playerId: string;
+
+  /**
+   * Unset when the game has no roles.
+   *
+   * @generated from field: google.protobuf.Any role = 3;
+   */
+  role?: Any;
 };
 
 /**
@@ -41,4 +56,31 @@ export type Participant = Message<"idl.game.model.Participant"> & {
  */
 export const ParticipantSchema: GenMessage<Participant> = /*@__PURE__*/
   messageDesc(file_idl_game_model_participant, 0);
+
+/**
+ * One participant as a game's rules are told them: a number and a role, and no
+ * identity.
+ *
+ * @generated from message idl.game.model.ParticipantRole
+ */
+export type ParticipantRole = Message<"idl.game.model.ParticipantRole"> & {
+  /**
+   * @generated from field: uint32 participant = 1;
+   */
+  participant: number;
+
+  /**
+   * Unset when the game has no roles.
+   *
+   * @generated from field: google.protobuf.Any role = 2;
+   */
+  role?: Any;
+};
+
+/**
+ * Describes the message idl.game.model.ParticipantRole.
+ * Use `create(ParticipantRoleSchema)` to create a new message.
+ */
+export const ParticipantRoleSchema: GenMessage<ParticipantRole> = /*@__PURE__*/
+  messageDesc(file_idl_game_model_participant, 1);
 

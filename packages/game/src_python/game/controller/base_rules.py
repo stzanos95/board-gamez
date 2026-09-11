@@ -8,6 +8,7 @@ from google.protobuf import any_pb2
 from idl.game.model.action_pb2 import Action
 from idl.game.model.game_spec_pb2 import ParticipantBounds
 from idl.game.model.game_state_pb2 import GameState
+from idl.game.model.participant_pb2 import ParticipantRole
 
 
 class BaseRules(ABC):
@@ -20,10 +21,11 @@ class BaseRules(ABC):
     """
 
     @abstractmethod
-    async def create_game(self, participant_count: int) -> GameState | None:
+    async def create_game(self, participant_roles: tuple[ParticipantRole, ...]) -> GameState | None:
         """
-        The opening state of a game for this many participants, or None when the
-        game does not take that many.
+        The opening state of a game for these participants, numbered 1 through
+        N and each carrying the role it was seated with, or None when the game
+        does not take them.
         """
 
     @abstractmethod

@@ -8,7 +8,9 @@ services:
       dockerfile: deployables/chess-cli/docker/Dockerfile
     image: board-gamez/chess-cli:latest
     # Both are needed for an interactive prompt. Start it with
-    # `docker compose run --rm chess-cli`, not `up`.
+    # `docker compose run --rm chess-cli`, not `up`; the profile keeps a bare
+    # `up` from starting it.
+    profiles: ["cli"]
     stdin_open: true
     tty: true
     command: ["play"]

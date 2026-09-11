@@ -2,6 +2,7 @@ import { GameType } from "@board-gamez/idl/game/model/game_type_pb";
 import type { Move } from "@board-gamez/idl/chess/model/move_pb";
 import { PieceType } from "@board-gamez/idl/chess/model/piece_pb";
 import type { Square } from "@board-gamez/idl/chess/model/square_pb";
+import type { ChessSeatChoice } from "@board-gamez/idl/chess/model/table_pb";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
@@ -19,8 +20,10 @@ import {
 } from "../../chess/chess_views";
 import { useBoardSquares } from "../../chess/use_board_squares";
 import { useChessSession } from "../../chess/use_chess_session";
+import { useChessTable } from "../../chess/use_chess_table";
 import { usePlayAction } from "../../chess/use_play_action";
 import { useStartGame } from "../../chess/use_start_game";
+import { useTakeSeat } from "../../chess/use_take_seat";
 import { GameArtwork } from "../common/GameArtwork";
 import { LoadingPanel, PanelMessage } from "../common/PanelMessage";
 import type { GameScreenProps } from "../table/game_screen_props";
@@ -57,17 +60,25 @@ type PendingPromotion = {
 };
 
 /**
- * The chess game at a table.
+ * The chess table and, once it has begun, the game at it.
  *
- * Which square is picked up, which dialog is open and whether a resignation
- * is being confirmed are the only state this screen holds. What a piece may
- * do comes from the legal moves the game listed; clicking one of their
- * destinations sends that move.
+ * Before the game, the sides and who holds them are drawn from chess's own
+ * view of the table, and a side is taken as one of the choices the game
+ * offered. Which square is picked up, which dialog is open and whether a
+ * resignation is being confirmed are the only state this screen holds. What a
+ * piece may do comes from the legal moves the game listed; clicking one of
+ * their destinations sends that move.
  */
 export function ChessScreen(props: GameScreenProps): ReactElement {
   const { tableId, canStart, isSeated } = props;
   const { game, isLoading, error } = useChessSession(tableId);
+  const { seats, version: tableVersion, error: tableError } = useChessTable(tableId);
   const { run: startGame, isPending: isStarting, problem: startProblem } = useStartGame();
+  const {
+    run: takeSeat,
+    pendingChoice: busyChoice,
+    problem: seatProblem,
+  } = useTakeSeat();
   const { playMove, resign, isPending: isPlaying, problem: playProblem, dismissProblem } =
     usePlayAction();
   const [selectedKey, setSelectedKey] = useState<SquareKey | null>(null);
@@ -92,6 +103,15 @@ export function ChessScreen(props: GameScreenProps): ReactElement {
   );
 
   const handleStart = useCallback(() => startGame(tableId), [startGame, tableId]);
+
+  const handleTakeSeat = useCallback(
+    (choice: ChessSeatChoice) => {
+      if (tableVersion !== null) {
+        takeSeat({ tableId, choice, expectedVersion: tableVersion });
+      }
+    },
+    [takeSeat, tableId, tableVersion],
+  );
 
   const commitMove = useCallback(
     (move: Move, promotionType: PieceType) => {
@@ -171,7 +191,12 @@ export function ChessScreen(props: GameScreenProps): ReactElement {
     }
   }, [game, resign, tableId]);
 
-  const problem = playProblem ?? startProblem ?? (error === null ? null : error.message);
+  const problem =
+    playProblem ??
+    startProblem ??
+    seatProblem ??
+    (error === null ? null : error.message) ??
+    (tableError === null ? null : tableError.message);
   const problemPanel =
     problem === null ? null : (
       <PanelMessage severity="warning" title="That did not work" detail={problem} />
@@ -180,9 +205,12 @@ export function ChessScreen(props: GameScreenProps): ReactElement {
   const preGame = (
     <Box sx={PRE_GAME_LAYOUT_SX}>
       <PreGamePanel
+        seats={seats}
         canStart={canStart}
         isSeated={isSeated}
         isStarting={isStarting}
+        busyChoice={busyChoice}
+        onTakeSeat={handleTakeSeat}
         onStart={handleStart}
       />
       <GameArtwork gameType={GameType.CHESS} />

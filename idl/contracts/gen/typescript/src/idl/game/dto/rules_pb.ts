@@ -14,16 +14,22 @@ import type { ParticipantBounds } from "../model/game_spec_pb";
 import { file_idl_game_model_game_spec } from "../model/game_spec_pb";
 import type { GameState } from "../model/game_state_pb";
 import { file_idl_game_model_game_state } from "../model/game_state_pb";
+import type { ParticipantRole } from "../model/participant_pb";
+import { file_idl_game_model_participant } from "../model/participant_pb";
 import type { Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file idl/game/dto/rules.proto.
  */
 export const file_idl_game_dto_rules: GenFile = /*@__PURE__*/
-  fileDesc("ChhpZGwvZ2FtZS9kdG8vcnVsZXMucHJvdG8SDGlkbC5nYW1lLmR0byIuChFDcmVhdGVHYW1lUmVxdWVzdBIZChFwYXJ0aWNpcGFudF9jb3VudBgBIAEoDSI+ChJDcmVhdGVHYW1lUmVzcG9uc2USKAoFc3RhdGUYASABKAsyGS5pZGwuZ2FtZS5tb2RlbC5HYW1lU3RhdGUiZgoSQXBwbHlBY3Rpb25SZXF1ZXN0EigKBXN0YXRlGAEgASgLMhkuaWRsLmdhbWUubW9kZWwuR2FtZVN0YXRlEiYKBmFjdGlvbhgCIAEoCzIWLmlkbC5nYW1lLm1vZGVsLkFjdGlvbiI/ChNBcHBseUFjdGlvblJlc3BvbnNlEigKBXN0YXRlGAEgASgLMhkuaWRsLmdhbWUubW9kZWwuR2FtZVN0YXRlIlAKD1JlYWRWaWV3UmVxdWVzdBIoCgVzdGF0ZRgBIAEoCzIZLmlkbC5nYW1lLm1vZGVsLkdhbWVTdGF0ZRITCgtwYXJ0aWNpcGFudBgCIAEoDSI2ChBSZWFkVmlld1Jlc3BvbnNlEiIKBHZpZXcYASABKAsyFC5nb29nbGUucHJvdG9idWYuQW55IhMKEVJlYWRCb3VuZHNSZXF1ZXN0IkcKElJlYWRCb3VuZHNSZXNwb25zZRIxCgZib3VuZHMYASABKAsyIS5pZGwuZ2FtZS5tb2RlbC5QYXJ0aWNpcGFudEJvdW5kc0IyWjBib2FyZGdhbWV6L2NvbnRyYWN0cy9nZW4vZ28vaWRsL2dhbWUvZHRvO2dhbWVkdG9iBnByb3RvMw", [file_google_protobuf_any, file_idl_game_model_action, file_idl_game_model_game_spec, file_idl_game_model_game_state]);
+  fileDesc("ChhpZGwvZ2FtZS9kdG8vcnVsZXMucHJvdG8SDGlkbC5nYW1lLmR0byJqChFDcmVhdGVHYW1lUmVxdWVzdBIZChFwYXJ0aWNpcGFudF9jb3VudBgBIAEoDRI6ChFwYXJ0aWNpcGFudF9yb2xlcxgCIAMoCzIfLmlkbC5nYW1lLm1vZGVsLlBhcnRpY2lwYW50Um9sZSI+ChJDcmVhdGVHYW1lUmVzcG9uc2USKAoFc3RhdGUYASABKAsyGS5pZGwuZ2FtZS5tb2RlbC5HYW1lU3RhdGUiZgoSQXBwbHlBY3Rpb25SZXF1ZXN0EigKBXN0YXRlGAEgASgLMhkuaWRsLmdhbWUubW9kZWwuR2FtZVN0YXRlEiYKBmFjdGlvbhgCIAEoCzIWLmlkbC5nYW1lLm1vZGVsLkFjdGlvbiI/ChNBcHBseUFjdGlvblJlc3BvbnNlEigKBXN0YXRlGAEgASgLMhkuaWRsLmdhbWUubW9kZWwuR2FtZVN0YXRlIlAKD1JlYWRWaWV3UmVxdWVzdBIoCgVzdGF0ZRgBIAEoCzIZLmlkbC5nYW1lLm1vZGVsLkdhbWVTdGF0ZRITCgtwYXJ0aWNpcGFudBgCIAEoDSI2ChBSZWFkVmlld1Jlc3BvbnNlEiIKBHZpZXcYASABKAsyFC5nb29nbGUucHJvdG9idWYuQW55IhMKEVJlYWRCb3VuZHNSZXF1ZXN0IkcKElJlYWRCb3VuZHNSZXNwb25zZRIxCgZib3VuZHMYASABKAsyIS5pZGwuZ2FtZS5tb2RlbC5QYXJ0aWNpcGFudEJvdW5kc0IyWjBib2FyZGdhbWV6L2NvbnRyYWN0cy9nZW4vZ28vaWRsL2dhbWUvZHRvO2dhbWVkdG9iBnByb3RvMw", [file_google_protobuf_any, file_idl_game_model_action, file_idl_game_model_game_spec, file_idl_game_model_game_state, file_idl_game_model_participant]);
 
 /**
- * Begin a game for this many participants, numbered 1 through participant_count.
+ * Begin a game for these participants.
+ *
+ * One entry per participant, numbered 1 through N with no gap, each carrying
+ * the role it was seated with. `participant_count` is not read; the count is
+ * the length of `participant_roles`.
  *
  * @generated from message idl.game.dto.CreateGameRequest
  */
@@ -32,6 +38,11 @@ export type CreateGameRequest = Message<"idl.game.dto.CreateGameRequest"> & {
    * @generated from field: uint32 participant_count = 1;
    */
   participantCount: number;
+
+  /**
+   * @generated from field: repeated idl.game.model.ParticipantRole participant_roles = 2;
+   */
+  participantRoles: ParticipantRole[];
 };
 
 /**
@@ -46,7 +57,7 @@ export const CreateGameRequestSchema: GenMessage<CreateGameRequest> = /*@__PURE_
  */
 export type CreateGameResponse = Message<"idl.game.dto.CreateGameResponse"> & {
   /**
-   * Unset when the game does not take that many.
+   * Unset when the game does not take these participants.
    *
    * @generated from field: idl.game.model.GameState state = 1;
    */

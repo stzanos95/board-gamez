@@ -1,8 +1,10 @@
-// A place at a table, and who is in it.
+// A place at a table, who is in it, and what a player may take.
 
 syntax = "proto3";
 
 package idl.lobby.model;
+
+import "google/protobuf/any.proto";
 
 option go_package = "boardgamez/contracts/gen/go/idl/lobby/model;lobbymodel";
 
@@ -16,14 +18,37 @@ enum SeatStatus {
 // One place at a table.
 //
 // `number` is the seat's position and never changes once the table is created.
-// It fixes the order players are handed to a game when one starts. What a game
-// makes of that order is the game's own business. Numbered from 1, so 0 means no
-// seat wherever a seat is named.
+// Numbered from 1, so 0 means no seat wherever a seat is named.
+//
+// `role` is what the seat is in the game's own vocabulary: the side it plays,
+// the token it moves. It is packed by the game and opened only by the game and
+// by the client that draws it. It is set when the seat is taken, from the
+// choice the player took, and cleared when the seat is vacated. A game whose
+// seats are positions and nothing more leaves it unset.
+//
+// What a game makes of a seat's position and role when it starts is the game's
+// own business.
 //
 // A seat holds a player id and no more. A name to draw is read from identity
 // when it is needed, so a renamed player is never stale here.
 message Seat {
   uint32 number = 1;
   SeatStatus status = 2;
-  string player_id = 3;  // Empty exactly when the seat is OPEN.
+  string player_id = 3;          // Empty exactly when the seat is OPEN.
+  google.protobuf.Any role = 4;  // Unset exactly when the seat is OPEN, or when the game has no roles.
+}
+
+// One seat a player may take right now, and the role they would take it with.
+//
+// Enumerated by the game for one player against one table. Taking a seat is
+// taking one of these unchanged: the position and the role are a pair, and the
+// player does not choose them separately.
+message SeatChoice {
+  uint32 number = 1;
+  google.protobuf.Any role = 2;  // Unset when the game has no roles.
+}
+
+// Every seat one player may take.
+message SeatChoiceCollection {
+  repeated SeatChoice seat_choice_items = 1;
 }

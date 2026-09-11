@@ -11,6 +11,7 @@ import type { Square } from "@board-gamez/idl/chess/model/square_pb";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useMemo } from "react";
 
+import { mintIdentifier } from "../format/mint_identifier";
 import { usePlayer } from "../identity/player_context";
 import { useChessGateway } from "../runtime/app_services";
 import { COMMAND_OUTCOME_MESSAGES } from "./chess_labels";
@@ -76,7 +77,7 @@ export function usePlayAction(): PlayActionHandle {
       mutate({
         tableId,
         playerId: player.id,
-        commandId: window.crypto.randomUUID(),
+        commandId: mintIdentifier(),
         action,
         expectedVersion,
       });

@@ -1,0 +1,21 @@
+// How a game seats its players.
+
+syntax = "proto3";
+
+package idl.lobby.service;
+
+import "idl/lobby/dto/seating.proto";
+
+option go_package = "boardgamez/contracts/gen/go/idl/lobby/service;lobbyservice";
+
+// What a game answers about its seats, whatever game it is.
+//
+// Implemented once per game and reached under the game type it was configured
+// for. Every call carries the table it acts on, so an implementation keeps
+// nothing between calls and writes no table of its own.
+//
+// Nothing outside the platform asks a game how it seats people, so no HTTP path
+// is declared here.
+service SeatingService {
+  rpc ListSeatChoice(idl.lobby.dto.ListSeatChoiceRequest) returns (idl.lobby.dto.ListSeatChoiceResponse);
+}

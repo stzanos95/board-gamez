@@ -1,0 +1,18 @@
+// The side a seat plays.
+
+syntax = "proto3";
+
+package idl.chess.model;
+
+import "idl/chess/model/piece.proto";
+
+option go_package = "boardgamez/contracts/gen/go/idl/chess/model;chessmodel";
+
+// The role a seat carries at a chess table.
+//
+// Packed into a seat when it is taken and opened by whoever draws the seat or
+// starts the game. Every seat at a chess table carries exactly one, and no two
+// seats carry the same colour.
+message ChessSide {
+  Color color = 1;
+}

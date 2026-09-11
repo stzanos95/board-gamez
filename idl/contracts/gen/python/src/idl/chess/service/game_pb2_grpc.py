@@ -4,6 +4,7 @@ import grpc
 import warnings
 
 from idl.chess.dto import game_pb2 as idl_dot_chess_dot_dto_dot_game__pb2
+from idl.chess.dto import table_pb2 as idl_dot_chess_dot_dto_dot_table__pb2
 
 GRPC_GENERATED_VERSION = '1.68.1'
 GRPC_VERSION = grpc.__version__
@@ -29,7 +30,8 @@ class ChessServiceStub(object):
     """Chess as it is played at a table.
 
     Every request and answer is chess's own type, so a caller never packs or opens
-    a payload. A game changes by playing an action and in no other way.
+    a payload. A seat changes hands by taking a choice and in no other way, and a
+    game changes by playing an action and in no other way.
     """
 
     def __init__(self, channel):
@@ -38,6 +40,21 @@ class ChessServiceStub(object):
         Args:
             channel: A grpc.Channel.
         """
+        self.ReadTable = channel.unary_unary(
+                '/idl.chess.service.ChessService/ReadTable',
+                request_serializer=idl_dot_chess_dot_dto_dot_table__pb2.ReadTableRequest.SerializeToString,
+                response_deserializer=idl_dot_chess_dot_dto_dot_table__pb2.ReadTableResponse.FromString,
+                _registered_method=True)
+        self.ListSeatChoice = channel.unary_unary(
+                '/idl.chess.service.ChessService/ListSeatChoice',
+                request_serializer=idl_dot_chess_dot_dto_dot_table__pb2.ListSeatChoiceRequest.SerializeToString,
+                response_deserializer=idl_dot_chess_dot_dto_dot_table__pb2.ListSeatChoiceResponse.FromString,
+                _registered_method=True)
+        self.TakeSeat = channel.unary_unary(
+                '/idl.chess.service.ChessService/TakeSeat',
+                request_serializer=idl_dot_chess_dot_dto_dot_table__pb2.TakeSeatRequest.SerializeToString,
+                response_deserializer=idl_dot_chess_dot_dto_dot_table__pb2.TakeSeatResponse.FromString,
+                _registered_method=True)
         self.StartGame = channel.unary_unary(
                 '/idl.chess.service.ChessService/StartGame',
                 request_serializer=idl_dot_chess_dot_dto_dot_game__pb2.StartGameRequest.SerializeToString,
@@ -59,8 +76,27 @@ class ChessServiceServicer(object):
     """Chess as it is played at a table.
 
     Every request and answer is chess's own type, so a caller never packs or opens
-    a payload. A game changes by playing an action and in no other way.
+    a payload. A seat changes hands by taking a choice and in no other way, and a
+    game changes by playing an action and in no other way.
     """
+
+    def ReadTable(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ListSeatChoice(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def TakeSeat(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
 
     def StartGame(self, request, context):
         """Missing associated documentation comment in .proto file."""
@@ -83,6 +119,21 @@ class ChessServiceServicer(object):
 
 def add_ChessServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
+            'ReadTable': grpc.unary_unary_rpc_method_handler(
+                    servicer.ReadTable,
+                    request_deserializer=idl_dot_chess_dot_dto_dot_table__pb2.ReadTableRequest.FromString,
+                    response_serializer=idl_dot_chess_dot_dto_dot_table__pb2.ReadTableResponse.SerializeToString,
+            ),
+            'ListSeatChoice': grpc.unary_unary_rpc_method_handler(
+                    servicer.ListSeatChoice,
+                    request_deserializer=idl_dot_chess_dot_dto_dot_table__pb2.ListSeatChoiceRequest.FromString,
+                    response_serializer=idl_dot_chess_dot_dto_dot_table__pb2.ListSeatChoiceResponse.SerializeToString,
+            ),
+            'TakeSeat': grpc.unary_unary_rpc_method_handler(
+                    servicer.TakeSeat,
+                    request_deserializer=idl_dot_chess_dot_dto_dot_table__pb2.TakeSeatRequest.FromString,
+                    response_serializer=idl_dot_chess_dot_dto_dot_table__pb2.TakeSeatResponse.SerializeToString,
+            ),
             'StartGame': grpc.unary_unary_rpc_method_handler(
                     servicer.StartGame,
                     request_deserializer=idl_dot_chess_dot_dto_dot_game__pb2.StartGameRequest.FromString,
@@ -110,8 +161,90 @@ class ChessService(object):
     """Chess as it is played at a table.
 
     Every request and answer is chess's own type, so a caller never packs or opens
-    a payload. A game changes by playing an action and in no other way.
+    a payload. A seat changes hands by taking a choice and in no other way, and a
+    game changes by playing an action and in no other way.
     """
+
+    @staticmethod
+    def ReadTable(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/idl.chess.service.ChessService/ReadTable',
+            idl_dot_chess_dot_dto_dot_table__pb2.ReadTableRequest.SerializeToString,
+            idl_dot_chess_dot_dto_dot_table__pb2.ReadTableResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def ListSeatChoice(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/idl.chess.service.ChessService/ListSeatChoice',
+            idl_dot_chess_dot_dto_dot_table__pb2.ListSeatChoiceRequest.SerializeToString,
+            idl_dot_chess_dot_dto_dot_table__pb2.ListSeatChoiceResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def TakeSeat(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/idl.chess.service.ChessService/TakeSeat',
+            idl_dot_chess_dot_dto_dot_table__pb2.TakeSeatRequest.SerializeToString,
+            idl_dot_chess_dot_dto_dot_table__pb2.TakeSeatResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
 
     @staticmethod
     def StartGame(request,

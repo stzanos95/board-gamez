@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build every deployable's image.
+# Build every deployable's image, the CLI included.
 source "$(dirname "${BASH_SOURCE[0]}")/_shared.sh"
 require_docker
-compose -f "$BASE_COMPOSE" build "$@"
+compose --profile cli -f "$BASE_COMPOSE" build "$@"

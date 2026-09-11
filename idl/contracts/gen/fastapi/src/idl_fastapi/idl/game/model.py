@@ -14,9 +14,15 @@ class Participant(BaseModel):
     """
     A player taking part in a game, and their place in its turn order.
 
-     `number` is fixed when the game is created and never changes. It is the only
-     part of this a game is told; a player id never reaches a game's rules.
-     Numbered from 1, so 0 means no participant wherever one is named.
+     `number` is fixed when the game is created and never changes. Numbered from
+     1, so 0 means no participant wherever one is named.
+
+     `role` is what the participant is in the game's own vocabulary, packed by the
+     game and opened only by the game. It is handed to the rules when the game is
+     created and never changes after. A game with no roles leaves it unset.
+
+     A player id never reaches a game's rules; the rules are told a
+     ParticipantRole.
     """
 
     model_config = ConfigDict(
@@ -24,6 +30,7 @@ class Participant(BaseModel):
     )
     number: int | None = None
     player_id: str | None = Field(default=None, alias='playerId')
+    role: protobuf.Any | None = None
 
 
 class ParticipantBounds(BaseModel):

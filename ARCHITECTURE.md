@@ -114,19 +114,28 @@ for. A rule it evaluated would be a second copy of that rule, on a machine this
 project does not control, that drifts from the first.
 
 `TableService` is a store with four methods and no domain verb, and nothing
-between it and a browser decides yet, so taking a seat is currently a read, a
-change and a version-guarded write made in
+between it and a browser decides yet, so joining a table, standing up and
+leaving are currently a read, a change and a version-guarded write made in
 `packages/ux/src_tsx/lobby/table_intents.ts`. That is business logic above the
-Application layer. It is in one file so that a `JoinSeat` operation on the lobby
-replaces it with a call.
+Application layer. It is in one file so that `JoinTable`, `StandUp` and
+`LeaveTable` operations on the lobby replace it with calls.
+
+Taking a seat is not made there. A seat is taken through the game's own service
+as one of the `SeatChoice`s the game offered, and the lobby's `SeatController`
+checks the choice and writes the table.
 
 ### The platform does not interpret games
 
 A table names a `GameType` and seats N players. A game's rules, position and
 legal moves reach the session layer as `google.protobuf.Any`, which is stored and
-relayed without being unpacked. Adding a game requires a `GameType` member, a
-product package, and one entry in the rules registry at bringup. No file in
-`lobby` or `game` changes.
+relayed without being unpacked. What a seat is in the game's own terms — the
+side it plays, the token it moves — is a `role` on the seat, carried the same
+way: packed by the product when the seat is taken, handed to the rules when the
+game starts, and never opened by `lobby` or `game`. Which seats a player may
+take, and with which role, is answered by the product's `BaseSeating`, found
+by game type in the lobby's `SeatingRegistry`. Adding a game requires a
+`GameType` member, a product package, and one entry each in the rules registry
+and the seating registry at bringup. No file in `lobby` or `game` changes.
 
 A game is two packages. `packages/chess` is the rules and performs no I/O: no
 printing, no reading, no storage, so it is callable from a CLI, a server, or a

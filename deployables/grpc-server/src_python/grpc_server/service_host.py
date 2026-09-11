@@ -15,10 +15,13 @@ from game.repository.provider import SessionRepositoryProvider
 from game.service.game_servicers import GameServicers
 from grpc_reflection.v1alpha import reflection
 from idl.game.model.game_type_pb2 import GameType
+from lobby.controller.seat_controller import SeatController
+from lobby.controller.seating_registry import SeatingRegistry
 from lobby.controller.table_controller import TableController
 from lobby.repository.provider import TableRepositoryProvider
 from lobby.service.lobby_servicers import LobbyServicers
 from product_chess.controller.chess_rules import ChessRules
+from product_chess.controller.chess_seating import ChessSeating
 from product_chess.controller.chess_session_controller import ChessSessionController
 from product_chess.service.product_chess_servicers import ProductChessServicers
 
@@ -100,7 +103,8 @@ class ServiceHost:
 
         Each controller and everything it depends on is built here, from the
         configuration. Adding a domain is a dependency and one more line; adding
-        a game is a product dependency and one entry in the rules registry.
+        a game is a product dependency and one entry each in the rules registry
+        and the seating registry.
 
         A product's rules are held in-process: the session controller calls
         them directly, and the same object answers RulesService for a tool that
@@ -112,7 +116,9 @@ class ServiceHost:
         )
         chess_rules = ChessRules()
         rules = RulesRegistry({GameType.GAME_TYPE_CHESS: chess_rules})
+        seating = SeatingRegistry({GameType.GAME_TYPE_CHESS: ChessSeating()})
         table_controller = TableController(repository=table_repository)
+        seat_controller = SeatController(tables=table_controller, seating=seating)
         session_controller = SessionController(repository=session_repository, rules=rules)
         return (
             LobbyServicers.add_table_service(server, table_controller),
@@ -121,7 +127,9 @@ class ServiceHost:
             ProductChessServicers.add_rules_service(server, chess_rules),
             ProductChessServicers.add_chess_service(
                 server,
-                ChessSessionController(tables=table_controller, sessions=session_controller),
+                ChessSessionController(
+                    tables=table_controller, seats=seat_controller, sessions=session_controller
+                ),
             ),
         )
 

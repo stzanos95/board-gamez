@@ -1,6 +1,6 @@
 import type { GameType } from "@board-gamez/idl/game/model/game_type_pb";
 import { SeatStatus, type Seat } from "@board-gamez/idl/lobby/model/seat_pb";
-import { TableStatus, type Table } from "@board-gamez/idl/lobby/model/table_pb";
+import type { Table, TableStatus } from "@board-gamez/idl/lobby/model/table_pb";
 
 import { shortIdentifier } from "../format/short_identifier";
 import { GAME_TYPE_LABELS } from "./table_labels";
@@ -46,7 +46,6 @@ export type TableSummaryView = {
   readonly isSeated: boolean;
   readonly isFull: boolean;
   readonly canJoin: boolean;
-  readonly canTakeSeat: boolean;
 };
 
 export function toSeatViews(
@@ -80,7 +79,6 @@ export function toTableSummaryView(table: Table, viewerId: string): TableSummary
     isSeated,
     isFull,
     canJoin: isAcceptingPlayers(table) && !atTable,
-    canTakeSeat: table.status === TableStatus.WAITING && !isSeated && !isFull,
   };
 }
 

@@ -1,0 +1,22 @@
+// Asking a game which seats a player may take.
+
+syntax = "proto3";
+
+package idl.lobby.dto;
+
+import "idl/lobby/model/seat.proto";
+import "idl/lobby/model/table.proto";
+
+option go_package = "boardgamez/contracts/gen/go/idl/lobby/dto;lobbydto";
+
+// The seats this player may take at this table, as the game seats people.
+//
+// The table is carried in full, so nothing about it is held between calls.
+message ListSeatChoiceRequest {
+  idl.lobby.model.Table table = 1;
+  string player_id = 2;
+}
+
+message ListSeatChoiceResponse {
+  idl.lobby.model.SeatChoiceCollection collection = 1;  // Empty when the player may take no seat.
+}

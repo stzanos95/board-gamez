@@ -28,15 +28,15 @@ apply to the next file too, fix the line and write the rule into the skill.
 
 ```bash
 ./infra/scripts/build.sh          # every image; name one to build one
-./infra/scripts/web.sh -d         # the stack in containers
+./infra/scripts/up.sh             # the stack in containers, detached
 ./infra/scripts/down.sh
 ```
 
 Open **http://localhost:8081**. Every browser tab is a different player: a
 player id is minted per tab into `sessionStorage`
-(`packages/ux/src_tsx/identity/player_session.ts`). `web.sh` does not rebuild
-images. After a frontend change: `./infra/scripts/build.sh gamez-ux &&
-./infra/scripts/web.sh -d`, then a hard reload.
+(`packages/ux/src_tsx/identity/player_session.ts`). `up.sh` rebuilds images
+whose source changed and recreates their containers. After a frontend change:
+`./infra/scripts/up.sh`, then a hard reload.
 
 Without containers, with Redis on 6379 (the compose `redis` service is enough):
 
@@ -100,7 +100,9 @@ branches on:
 
 **`StartGame`** answers `session` unset when the table is not chess, has an open
 seat, or the caller is not seated; a table already playing answers the game
-already there. Seat 1 plays White, seat 2 plays Black.
+already there. Each seat plays the side it was taken with: `ListSeatChoice`
+offers the open seats with their sides (seat 1 White, seat 2 Black), and
+`TakeSeat` takes one of those choices.
 
 **What the game carries that the screen needs**, all in `session.game`:
 
@@ -279,7 +281,7 @@ grpc-server, the gateway and `local-dev.sh` up, in two tabs: create a chess
 table, sit in both, start, play Scholar's mate from both tabs, watch the other
 tab update within `gameIntervalMs`, resign a second game, open a third tab as
 a spectator and confirm it sees the board with no controls. Then the container
-path: `./infra/scripts/build.sh gamez-ux && ./infra/scripts/web.sh -d`.
+path: `./infra/scripts/up.sh`.
 
 Two verification techniques without a browser, if needed: bundle a throwaway
 `.mts` with esbuild (`node_modules/.bin/esbuild`, with the banner
@@ -303,8 +305,8 @@ against a running gateway. Delete the throwaway file.
   names a side. `result` is what says the game is over.
 - **The npm workspace is rooted at the repository**; installing inside a member
   duplicates React. Run npm through `deployables/gamez-ux/scripts/npm.sh`.
-- **`web.sh` does not rebuild images.** A frontend change needs `build.sh
-  gamez-ux` first; the dev server on 5173 needs neither.
+- **`up.sh` rebuilds what changed.** A frontend change is `up.sh` then a hard
+  reload; the dev server on 5173 needs no rebuild.
 - **The table screen already polls** on `tableIntervalMs`. Two queries on one
   screen is two timers; keep the session query's interval the only one that
   runs while a game is in progress if a slow machine shows it.

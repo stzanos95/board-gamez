@@ -2,17 +2,21 @@ from google.protobuf import any_pb2 as _any_pb2
 from idl.game.model import action_pb2 as _action_pb2
 from idl.game.model import game_spec_pb2 as _game_spec_pb2
 from idl.game.model import game_state_pb2 as _game_state_pb2
+from idl.game.model import participant_pb2 as _participant_pb2
+from google.protobuf.internal import containers as _containers
 from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
-from typing import ClassVar as _ClassVar, Mapping as _Mapping, Optional as _Optional, Union as _Union
+from typing import ClassVar as _ClassVar, Iterable as _Iterable, Mapping as _Mapping, Optional as _Optional, Union as _Union
 
 DESCRIPTOR: _descriptor.FileDescriptor
 
 class CreateGameRequest(_message.Message):
-    __slots__ = ("participant_count",)
+    __slots__ = ("participant_count", "participant_roles")
     PARTICIPANT_COUNT_FIELD_NUMBER: _ClassVar[int]
+    PARTICIPANT_ROLES_FIELD_NUMBER: _ClassVar[int]
     participant_count: int
-    def __init__(self, participant_count: _Optional[int] = ...) -> None: ...
+    participant_roles: _containers.RepeatedCompositeFieldContainer[_participant_pb2.ParticipantRole]
+    def __init__(self, participant_count: _Optional[int] = ..., participant_roles: _Optional[_Iterable[_Union[_participant_pb2.ParticipantRole, _Mapping]]] = ...) -> None: ...
 
 class CreateGameResponse(_message.Message):
     __slots__ = ("state",)

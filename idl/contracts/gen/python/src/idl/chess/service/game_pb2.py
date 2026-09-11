@@ -24,9 +24,10 @@ _sym_db = _symbol_database.Default()
 
 from google.api import annotations_pb2 as google_dot_api_dot_annotations__pb2
 from idl.chess.dto import game_pb2 as idl_dot_chess_dot_dto_dot_game__pb2
+from idl.chess.dto import table_pb2 as idl_dot_chess_dot_dto_dot_table__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1cidl/chess/service/game.proto\x12\x11idl.chess.service\x1a\x1cgoogle/api/annotations.proto\x1a\x18idl/chess/dto/game.proto2\x8c\x03\n\x0c\x43hessService\x12}\n\tStartGame\x12\x1f.idl.chess.dto.StartGameRequest\x1a .idl.chess.dto.StartGameResponse\"-\x82\xd3\xe4\x93\x02\'\"\"/internal/product/chess/start/game:\x01*\x12y\n\x08ReadGame\x12\x1e.idl.chess.dto.ReadGameRequest\x1a\x1f.idl.chess.dto.ReadGameResponse\",\x82\xd3\xe4\x93\x02&\"!/internal/product/chess/read/game:\x01*\x12\x81\x01\n\nPlayAction\x12 .idl.chess.dto.PlayActionRequest\x1a!.idl.chess.dto.PlayActionResponse\".\x82\xd3\xe4\x93\x02(\"#/internal/product/chess/play/action:\x01*B<Z:boardgamez/contracts/gen/go/idl/chess/service;chessserviceb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1cidl/chess/service/game.proto\x12\x11idl.chess.service\x1a\x1cgoogle/api/annotations.proto\x1a\x18idl/chess/dto/game.proto\x1a\x19idl/chess/dto/table.proto2\x9b\x06\n\x0c\x43hessService\x12}\n\tReadTable\x12\x1f.idl.chess.dto.ReadTableRequest\x1a .idl.chess.dto.ReadTableResponse\"-\x82\xd3\xe4\x93\x02\'\"\"/internal/product/chess/read/table:\x01*\x12\x92\x01\n\x0eListSeatChoice\x12$.idl.chess.dto.ListSeatChoiceRequest\x1a%.idl.chess.dto.ListSeatChoiceResponse\"3\x82\xd3\xe4\x93\x02-\"(/internal/product/chess/list/seat_choice:\x01*\x12y\n\x08TakeSeat\x12\x1e.idl.chess.dto.TakeSeatRequest\x1a\x1f.idl.chess.dto.TakeSeatResponse\",\x82\xd3\xe4\x93\x02&\"!/internal/product/chess/take/seat:\x01*\x12}\n\tStartGame\x12\x1f.idl.chess.dto.StartGameRequest\x1a .idl.chess.dto.StartGameResponse\"-\x82\xd3\xe4\x93\x02\'\"\"/internal/product/chess/start/game:\x01*\x12y\n\x08ReadGame\x12\x1e.idl.chess.dto.ReadGameRequest\x1a\x1f.idl.chess.dto.ReadGameResponse\",\x82\xd3\xe4\x93\x02&\"!/internal/product/chess/read/game:\x01*\x12\x81\x01\n\nPlayAction\x12 .idl.chess.dto.PlayActionRequest\x1a!.idl.chess.dto.PlayActionResponse\".\x82\xd3\xe4\x93\x02(\"#/internal/product/chess/play/action:\x01*B<Z:boardgamez/contracts/gen/go/idl/chess/service;chessserviceb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -34,12 +35,18 @@ _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'idl.chess.service.game_pb2'
 if not _descriptor._USE_C_DESCRIPTORS:
   _globals['DESCRIPTOR']._loaded_options = None
   _globals['DESCRIPTOR']._serialized_options = b'Z:boardgamez/contracts/gen/go/idl/chess/service;chessservice'
+  _globals['_CHESSSERVICE'].methods_by_name['ReadTable']._loaded_options = None
+  _globals['_CHESSSERVICE'].methods_by_name['ReadTable']._serialized_options = b'\202\323\344\223\002\'\"\"/internal/product/chess/read/table:\001*'
+  _globals['_CHESSSERVICE'].methods_by_name['ListSeatChoice']._loaded_options = None
+  _globals['_CHESSSERVICE'].methods_by_name['ListSeatChoice']._serialized_options = b'\202\323\344\223\002-\"(/internal/product/chess/list/seat_choice:\001*'
+  _globals['_CHESSSERVICE'].methods_by_name['TakeSeat']._loaded_options = None
+  _globals['_CHESSSERVICE'].methods_by_name['TakeSeat']._serialized_options = b'\202\323\344\223\002&\"!/internal/product/chess/take/seat:\001*'
   _globals['_CHESSSERVICE'].methods_by_name['StartGame']._loaded_options = None
   _globals['_CHESSSERVICE'].methods_by_name['StartGame']._serialized_options = b'\202\323\344\223\002\'\"\"/internal/product/chess/start/game:\001*'
   _globals['_CHESSSERVICE'].methods_by_name['ReadGame']._loaded_options = None
   _globals['_CHESSSERVICE'].methods_by_name['ReadGame']._serialized_options = b'\202\323\344\223\002&\"!/internal/product/chess/read/game:\001*'
   _globals['_CHESSSERVICE'].methods_by_name['PlayAction']._loaded_options = None
   _globals['_CHESSSERVICE'].methods_by_name['PlayAction']._serialized_options = b'\202\323\344\223\002(\"#/internal/product/chess/play/action:\001*'
-  _globals['_CHESSSERVICE']._serialized_start=108
-  _globals['_CHESSSERVICE']._serialized_end=504
+  _globals['_CHESSSERVICE']._serialized_start=135
+  _globals['_CHESSSERVICE']._serialized_end=930
 # @@protoc_insertion_point(module_scope)

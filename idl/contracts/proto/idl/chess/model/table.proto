@@ -1,0 +1,53 @@
+// A chess table, its two seats, and the sides a player may take.
+
+syntax = "proto3";
+
+package idl.chess.model;
+
+import "idl/chess/model/piece.proto";
+import "idl/lobby/model/seat.proto";
+import "idl/lobby/model/seat_result.proto";
+import "idl/lobby/model/table.proto";
+
+option go_package = "boardgamez/contracts/gen/go/idl/chess/model;chessmodel";
+
+// One seat at a chess table, with the side it plays opened.
+message ChessSeat {
+  uint32 number = 1;
+  idl.lobby.model.SeatStatus status = 2;
+  string player_id = 3;  // Empty exactly when the seat is OPEN.
+  Color color = 4;       // Unset exactly when the seat is OPEN.
+}
+
+// A table chess is played at, with every seat's side opened.
+//
+// `version` is the table's, and a choice is taken against it.
+message ChessTable {
+  string id = 1;
+  idl.lobby.model.TableStatus status = 2;
+  repeated ChessSeat seats = 3;
+  repeated string player_ids = 4;  // Everyone at the table, seated or not.
+  uint64 version = 5;
+}
+
+// One seat a player may take right now, and the side they would play in it.
+//
+// Taken unchanged: the seat and the side are a pair.
+message ChessSeatChoice {
+  uint32 number = 1;
+  Color color = 2;
+}
+
+// Every seat one player may take.
+message ChessSeatChoiceCollection {
+  repeated ChessSeatChoice chess_seat_choice_items = 1;
+}
+
+// What happened to a seat being taken, and the table as its taker may now see it.
+//
+// The table is carried whatever the outcome, and is unset only when no table
+// has the id the choice named.
+message ChessSeatResult {
+  idl.lobby.model.SeatOutcome outcome = 1;
+  ChessTable table = 2;
+}

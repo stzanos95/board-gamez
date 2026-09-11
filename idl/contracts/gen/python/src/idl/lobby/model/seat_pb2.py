@@ -22,9 +22,10 @@ _runtime_version.ValidateProtobufRuntimeVersion(
 _sym_db = _symbol_database.Default()
 
 
+from google.protobuf import any_pb2 as google_dot_protobuf_dot_any__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1aidl/lobby/model/seat.proto\x12\x0fidl.lobby.model\"V\n\x04Seat\x12\x0e\n\x06number\x18\x01 \x01(\r\x12+\n\x06status\x18\x02 \x01(\x0e\x32\x1b.idl.lobby.model.SeatStatus\x12\x11\n\tplayer_id\x18\x03 \x01(\t*Y\n\nSeatStatus\x12\x1b\n\x17SEAT_STATUS_UNSPECIFIED\x10\x00\x12\x14\n\x10SEAT_STATUS_OPEN\x10\x01\x12\x18\n\x14SEAT_STATUS_OCCUPIED\x10\x02\x42\x38Z6boardgamez/contracts/gen/go/idl/lobby/model;lobbymodelb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1aidl/lobby/model/seat.proto\x12\x0fidl.lobby.model\x1a\x19google/protobuf/any.proto\"z\n\x04Seat\x12\x0e\n\x06number\x18\x01 \x01(\r\x12+\n\x06status\x18\x02 \x01(\x0e\x32\x1b.idl.lobby.model.SeatStatus\x12\x11\n\tplayer_id\x18\x03 \x01(\t\x12\"\n\x04role\x18\x04 \x01(\x0b\x32\x14.google.protobuf.Any\"@\n\nSeatChoice\x12\x0e\n\x06number\x18\x01 \x01(\r\x12\"\n\x04role\x18\x02 \x01(\x0b\x32\x14.google.protobuf.Any\"N\n\x14SeatChoiceCollection\x12\x36\n\x11seat_choice_items\x18\x01 \x03(\x0b\x32\x1b.idl.lobby.model.SeatChoice*Y\n\nSeatStatus\x12\x1b\n\x17SEAT_STATUS_UNSPECIFIED\x10\x00\x12\x14\n\x10SEAT_STATUS_OPEN\x10\x01\x12\x18\n\x14SEAT_STATUS_OCCUPIED\x10\x02\x42\x38Z6boardgamez/contracts/gen/go/idl/lobby/model;lobbymodelb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -32,8 +33,12 @@ _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'idl.lobby.model.seat_pb2', 
 if not _descriptor._USE_C_DESCRIPTORS:
   _globals['DESCRIPTOR']._loaded_options = None
   _globals['DESCRIPTOR']._serialized_options = b'Z6boardgamez/contracts/gen/go/idl/lobby/model;lobbymodel'
-  _globals['_SEATSTATUS']._serialized_start=135
-  _globals['_SEATSTATUS']._serialized_end=224
-  _globals['_SEAT']._serialized_start=47
-  _globals['_SEAT']._serialized_end=133
+  _globals['_SEATSTATUS']._serialized_start=344
+  _globals['_SEATSTATUS']._serialized_end=433
+  _globals['_SEAT']._serialized_start=74
+  _globals['_SEAT']._serialized_end=196
+  _globals['_SEATCHOICE']._serialized_start=198
+  _globals['_SEATCHOICE']._serialized_end=262
+  _globals['_SEATCHOICECOLLECTION']._serialized_start=264
+  _globals['_SEATCHOICECOLLECTION']._serialized_end=342
 # @@protoc_insertion_point(module_scope)

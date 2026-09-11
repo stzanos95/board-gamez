@@ -11,11 +11,15 @@ from chess.engine.chess_engine import ChessEngine
 from google.protobuf import any_pb2
 from idl.chess.model import game_pb2
 from idl.chess.model.action_pb2 import ChessAction
+from idl.chess.model.piece_pb2 import COLOR_BLACK, COLOR_WHITE, Color
 from idl.game.dto import rules_pb2
 from idl.game.model.action_pb2 import Action
 from idl.game.model.game_result_pb2 import GameResult, ParticipantOutcome, ParticipantResult
 from idl.game.model.game_spec_pb2 import ParticipantBounds
 from idl.game.model.game_state_pb2 import GameState
+from idl.game.model.participant_pb2 import ParticipantRole
+
+from product_chess.adapters.chess_seat_adapters import ChessSeatAdapters
 
 NOBODY_TO_ACT = 0
 
@@ -47,6 +51,35 @@ class ChessRulesAdapters:
         if not action.payload.Unpack(chess_action):
             return None
         return chess_action
+
+    # --- the platform's roles, to chess's roster ----------------------------
+
+    @staticmethod
+    def participant_roles_to_player_roster(
+        participant_roles: tuple[ParticipantRole, ...],
+    ) -> game_pb2.PlayerRoster | None:
+        """
+        The roster these roles seat, or None unless exactly one participant is
+        seated as White and exactly one as Black.
+        """
+        white = ChessRulesAdapters._get_participants_seated_as(participant_roles, COLOR_WHITE)
+        black = ChessRulesAdapters._get_participants_seated_as(participant_roles, COLOR_BLACK)
+        if len(white) != 1 or len(black) != 1:
+            return None
+        return game_pb2.PlayerRoster(
+            white=game_pb2.ChessPlayer(color=COLOR_WHITE, participant=white[0]),
+            black=game_pb2.ChessPlayer(color=COLOR_BLACK, participant=black[0]),
+        )
+
+    @staticmethod
+    def _get_participants_seated_as(
+        participant_roles: tuple[ParticipantRole, ...], color: Color
+    ) -> tuple[int, ...]:
+        return tuple(
+            participant_role.participant
+            for participant_role in participant_roles
+            if ChessSeatAdapters.role_to_color(participant_role.role) == color
+        )
 
     # --- the engine, to the platform's state -------------------------------
 
@@ -113,8 +146,10 @@ class ChessRulesAdapters:
     # --- a request, to the arguments an operation takes ----------------------
 
     @staticmethod
-    def create_request_to_participant_count(request: rules_pb2.CreateGameRequest) -> int:
-        return request.participant_count
+    def create_request_to_participant_roles(
+        request: rules_pb2.CreateGameRequest,
+    ) -> tuple[ParticipantRole, ...]:
+        return tuple(request.participant_roles)
 
     @staticmethod
     def apply_request_to_state(request: rules_pb2.ApplyActionRequest) -> GameState:

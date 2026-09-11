@@ -4,13 +4,19 @@ from game.controller.rules_registry import RulesRegistry
 from game.controller.session_controller import SessionController
 from idl.chess.model import piece_pb2
 from idl.chess.model.session_pb2 import ChessSession
+from idl.chess.model.table_pb2 import ChessSeatChoice
 from idl.game.model.command_result_pb2 import CommandOutcome
 from idl.game.model.game_type_pb2 import GameType
 from idl.lobby.model.seat_pb2 import Seat, SeatStatus
+from idl.lobby.model.seat_result_pb2 import SeatOutcome
 from idl.lobby.model.table_pb2 import Table, TableStatus
+from lobby.controller.seat_controller import SeatController
+from lobby.controller.seating_registry import SeatingRegistry
 from lobby.controller.table_controller import TableController
 
+from product_chess.adapters.chess_seat_adapters import ChessSeatAdapters
 from product_chess.controller.chess_rules import ChessRules
+from product_chess.controller.chess_seating import ChessSeating
 from product_chess.controller.chess_session_controller import ChessSessionController
 from tests_python.chess_actions import move, resignation
 from tests_python.in_memory_repositories import InMemorySessionRepository, InMemoryTableRepository
@@ -32,7 +38,12 @@ OTHER_COMMAND_ID = "c-2"
 
 
 def occupied(number: int, player_id: str) -> Seat:
-    return Seat(number=number, status=SeatStatus.SEAT_STATUS_OCCUPIED, player_id=player_id)
+    return Seat(
+        number=number,
+        status=SeatStatus.SEAT_STATUS_OCCUPIED,
+        player_id=player_id,
+        role=ChessSeatAdapters.color_to_role(ChessSeatAdapters.seat_number_to_color(number)),
+    )
 
 
 def open_seat(number: int) -> Seat:
@@ -56,7 +67,13 @@ class ChessSessionControllerTest(unittest.IsolatedAsyncioTestCase):
             repository=InMemorySessionRepository(),
             rules=RulesRegistry({GameType.GAME_TYPE_CHESS: ChessRules()}),
         )
-        self.controller = ChessSessionController(tables=self.tables, sessions=self.sessions)
+        self.seats = SeatController(
+            tables=self.tables,
+            seating=SeatingRegistry({GameType.GAME_TYPE_CHESS: ChessSeating()}),
+        )
+        self.controller = ChessSessionController(
+            tables=self.tables, seats=self.seats, sessions=self.sessions
+        )
         await self.tables.upsert_table(
             Table(
                 id=TABLE_ID,
@@ -88,8 +105,8 @@ class ChessSessionControllerTest(unittest.IsolatedAsyncioTestCase):
             )
         )
 
-    async def start(self, player_id: str = WHITE_PLAYER) -> ChessSession:
-        return require_session(await self.controller.start_game(TABLE_ID, player_id))
+    async def start(self, player_id: str = WHITE_PLAYER, table_id: str = TABLE_ID) -> ChessSession:
+        return require_session(await self.controller.start_game(table_id, player_id))
 
     async def test_a_seated_player_starts_the_game(self) -> None:
         session = await self.start()
@@ -187,3 +204,73 @@ class ChessSessionControllerTest(unittest.IsolatedAsyncioTestCase):
             TABLE_ID, BLACK_PLAYER, OTHER_COMMAND_ID, move("e7e5"), resigned.session.version
         )
         self.assertEqual(after.outcome, CommandOutcome.COMMAND_OUTCOME_GAME_OVER)
+
+    # --- seats ---------------------------------------------------------------
+
+    async def test_the_open_seat_is_offered_with_its_side(self) -> None:
+        choices = await self.controller.list_seat_choices(EMPTY_TABLE_ID, ONLOOKER)
+        self.assertEqual(
+            list(choices.chess_seat_choice_items),
+            [ChessSeatChoice(number=SECOND_SEAT, color=piece_pb2.COLOR_BLACK)],
+        )
+
+    async def test_a_seated_player_is_offered_nothing(self) -> None:
+        choices = await self.controller.list_seat_choices(EMPTY_TABLE_ID, WHITE_PLAYER)
+        self.assertEqual(len(choices.chess_seat_choice_items), 0)
+
+    async def test_a_full_table_offers_nothing(self) -> None:
+        choices = await self.controller.list_seat_choices(TABLE_ID, ONLOOKER)
+        self.assertEqual(len(choices.chess_seat_choice_items), 0)
+
+    async def test_taking_the_open_seat_seats_the_player_as_black(self) -> None:
+        result = await self.controller.take_seat(
+            EMPTY_TABLE_ID,
+            ONLOOKER,
+            ChessSeatChoice(number=SECOND_SEAT, color=piece_pb2.COLOR_BLACK),
+            FIRST_STORED_VERSION,
+        )
+        self.assertEqual(result.outcome, SeatOutcome.SEAT_OUTCOME_TAKEN)
+        self.assertEqual(result.table.version, SECOND_STORED_VERSION)
+        self.assertIn(ONLOOKER, result.table.player_ids)
+        taken = result.table.seats[SECOND_SEAT - 1]
+        self.assertEqual(taken.player_id, ONLOOKER)
+        self.assertEqual(taken.color, piece_pb2.COLOR_BLACK)
+        session = await self.start(ONLOOKER, EMPTY_TABLE_ID)
+        self.assertEqual(session.color, piece_pb2.COLOR_BLACK)
+
+    async def test_a_side_the_seat_does_not_play_is_not_offered(self) -> None:
+        result = await self.controller.take_seat(
+            EMPTY_TABLE_ID,
+            ONLOOKER,
+            ChessSeatChoice(number=SECOND_SEAT, color=piece_pb2.COLOR_WHITE),
+            FIRST_STORED_VERSION,
+        )
+        self.assertEqual(result.outcome, SeatOutcome.SEAT_OUTCOME_NOT_OFFERED)
+        self.assertEqual(result.table.version, FIRST_STORED_VERSION)
+
+    async def test_a_choice_from_an_earlier_table_is_refused(self) -> None:
+        result = await self.controller.take_seat(
+            EMPTY_TABLE_ID,
+            ONLOOKER,
+            ChessSeatChoice(number=SECOND_SEAT, color=piece_pb2.COLOR_BLACK),
+            UNSTORED_VERSION,
+        )
+        self.assertEqual(result.outcome, SeatOutcome.SEAT_OUTCOME_VERSION_MOVED)
+
+    async def test_a_missing_table_has_no_seat_to_take(self) -> None:
+        result = await self.controller.take_seat(
+            MISSING_TABLE_ID,
+            ONLOOKER,
+            ChessSeatChoice(number=FIRST_SEAT, color=piece_pb2.COLOR_WHITE),
+            UNSTORED_VERSION,
+        )
+        self.assertEqual(result.outcome, SeatOutcome.SEAT_OUTCOME_TABLE_NOT_FOUND)
+        self.assertFalse(result.HasField("table"))
+
+    async def test_reading_the_table_opens_every_side(self) -> None:
+        table = await self.controller.read_table(TABLE_ID)
+        assert table is not None
+        self.assertEqual(
+            [seat.color for seat in table.seats], [piece_pb2.COLOR_WHITE, piece_pb2.COLOR_BLACK]
+        )
+        self.assertIsNone(await self.controller.read_table(OTHER_GAME_TABLE_ID))

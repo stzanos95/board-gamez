@@ -14,7 +14,8 @@ scripts/     thin wrappers over them, runnable from anywhere
 scripts/build.sh    build every deployable's image
 scripts/play.sh     play a game
 scripts/serve.sh    serve the gateway on the port its config names
-scripts/web.sh      serve the whole stack, interface included, on 8081
+scripts/up.sh       serve the whole stack detached, interface included, on 8081
+scripts/down.sh     stop and remove every container of the stack
 scripts/dev.sh      run a service with the host source bind-mounted, no rebuild
 scripts/test.sh     every test suite
 scripts/lint.sh     ruff and mypy

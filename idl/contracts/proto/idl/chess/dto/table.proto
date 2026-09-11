@@ -1,0 +1,43 @@
+// Reading a chess table, and taking a seat at it.
+
+syntax = "proto3";
+
+package idl.chess.dto;
+
+import "idl/chess/model/table.proto";
+
+option go_package = "boardgamez/contracts/gen/go/idl/chess/dto;chessdto";
+
+message ReadTableRequest {
+  string table_id = 1;
+}
+
+message ReadTableResponse {
+  idl.chess.model.ChessTable table = 1;  // Unset when no chess table has that id.
+}
+
+// The seats this player may take at this table now.
+message ListSeatChoiceRequest {
+  string table_id = 1;
+  string player_id = 2;
+}
+
+message ListSeatChoiceResponse {
+  idl.chess.model.ChessSeatChoiceCollection collection = 1;  // Empty when the player may take no seat.
+}
+
+// Take one seat, as one of the choices the player was offered.
+//
+// `expected_version` is the version of the table the choice was picked from. A
+// choice carrying an earlier one is refused, so a seat is never taken at a table
+// the player had not seen.
+message TakeSeatRequest {
+  string table_id = 1;
+  string player_id = 2;
+  idl.chess.model.ChessSeatChoice choice = 3;
+  uint64 expected_version = 4;
+}
+
+message TakeSeatResponse {
+  idl.chess.model.ChessSeatResult result = 1;
+}

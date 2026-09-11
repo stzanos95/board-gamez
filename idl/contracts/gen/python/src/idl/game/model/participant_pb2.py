@@ -22,9 +22,10 @@ _runtime_version.ValidateProtobufRuntimeVersion(
 _sym_db = _symbol_database.Default()
 
 
+from google.protobuf import any_pb2 as google_dot_protobuf_dot_any__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n idl/game/model/participant.proto\x12\x0eidl.game.model\"0\n\x0bParticipant\x12\x0e\n\x06number\x18\x01 \x01(\r\x12\x11\n\tplayer_id\x18\x02 \x01(\tB6Z4boardgamez/contracts/gen/go/idl/game/model;gamemodelb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n idl/game/model/participant.proto\x12\x0eidl.game.model\x1a\x19google/protobuf/any.proto\"T\n\x0bParticipant\x12\x0e\n\x06number\x18\x01 \x01(\r\x12\x11\n\tplayer_id\x18\x02 \x01(\t\x12\"\n\x04role\x18\x03 \x01(\x0b\x32\x14.google.protobuf.Any\"J\n\x0fParticipantRole\x12\x13\n\x0bparticipant\x18\x01 \x01(\r\x12\"\n\x04role\x18\x02 \x01(\x0b\x32\x14.google.protobuf.AnyB6Z4boardgamez/contracts/gen/go/idl/game/model;gamemodelb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -32,6 +33,8 @@ _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'idl.game.model.participant_
 if not _descriptor._USE_C_DESCRIPTORS:
   _globals['DESCRIPTOR']._loaded_options = None
   _globals['DESCRIPTOR']._serialized_options = b'Z4boardgamez/contracts/gen/go/idl/game/model;gamemodel'
-  _globals['_PARTICIPANT']._serialized_start=52
-  _globals['_PARTICIPANT']._serialized_end=100
+  _globals['_PARTICIPANT']._serialized_start=79
+  _globals['_PARTICIPANT']._serialized_end=163
+  _globals['_PARTICIPANTROLE']._serialized_start=165
+  _globals['_PARTICIPANTROLE']._serialized_end=239
 # @@protoc_insertion_point(module_scope)

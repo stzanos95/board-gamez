@@ -19,8 +19,17 @@ from idl.chess.dto.game_pb2 import (
     StartGameRequest,
     StartGameResponse,
 )
+from idl.chess.dto.table_pb2 import (
+    ListSeatChoiceRequest,
+    ListSeatChoiceResponse,
+    ReadTableRequest,
+    ReadTableResponse,
+    TakeSeatRequest,
+    TakeSeatResponse,
+)
 from idl.chess.service.game_pb2_grpc import ChessServiceServicer
 
+from product_chess.adapters.chess_seat_adapters import ChessSeatAdapters
 from product_chess.adapters.chess_session_adapters import ChessSessionAdapters
 from product_chess.controller.chess_session_controller import ChessSessionController
 
@@ -32,6 +41,40 @@ class GrpcChessService(ChessServiceServicer):
 
     def __init__(self, controller: ChessSessionController) -> None:
         self._controller = controller
+
+    async def ReadTable(
+        self,
+        request: ReadTableRequest,
+        context: grpc.aio.ServicerContext[ReadTableRequest, ReadTableResponse],
+    ) -> ReadTableResponse:
+        table = await self._controller.read_table(
+            ChessSeatAdapters.read_table_request_to_table_id(request)
+        )
+        return ChessSeatAdapters.chess_table_to_read_response(table)
+
+    async def ListSeatChoice(
+        self,
+        request: ListSeatChoiceRequest,
+        context: grpc.aio.ServicerContext[ListSeatChoiceRequest, ListSeatChoiceResponse],
+    ) -> ListSeatChoiceResponse:
+        collection = await self._controller.list_seat_choices(
+            ChessSeatAdapters.list_request_to_table_id(request),
+            ChessSeatAdapters.list_request_to_player_id(request),
+        )
+        return ChessSeatAdapters.chess_seat_choice_collection_to_list_response(collection)
+
+    async def TakeSeat(
+        self,
+        request: TakeSeatRequest,
+        context: grpc.aio.ServicerContext[TakeSeatRequest, TakeSeatResponse],
+    ) -> TakeSeatResponse:
+        result = await self._controller.take_seat(
+            ChessSeatAdapters.take_request_to_table_id(request),
+            ChessSeatAdapters.take_request_to_player_id(request),
+            ChessSeatAdapters.take_request_to_choice(request),
+            ChessSeatAdapters.take_request_to_expected_version(request),
+        )
+        return ChessSeatAdapters.chess_seat_result_to_take_response(result)
 
     async def StartGame(
         self,

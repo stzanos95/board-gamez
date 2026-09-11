@@ -21,6 +21,14 @@ from idl.chess.dto.game_pb2 import (
     StartGameRequest,
     StartGameResponse,
 )
+from idl.chess.dto.table_pb2 import (
+    ListSeatChoiceRequest,
+    ListSeatChoiceResponse,
+    ReadTableRequest,
+    ReadTableResponse,
+    TakeSeatRequest,
+    TakeSeatResponse,
+)
 from idl.chess.service.game_pb2_grpc import ChessServiceAsyncStub, ChessServiceStub
 
 
@@ -55,6 +63,15 @@ class GrpcChessClient:
             await self._channel.close()
             self._channel = None
             self._stub = None
+
+    async def read_table(self, request: ReadTableRequest) -> ReadTableResponse:
+        return await self._connected_stub().ReadTable(request)
+
+    async def list_seat_choice(self, request: ListSeatChoiceRequest) -> ListSeatChoiceResponse:
+        return await self._connected_stub().ListSeatChoice(request)
+
+    async def take_seat(self, request: TakeSeatRequest) -> TakeSeatResponse:
+        return await self._connected_stub().TakeSeat(request)
 
     async def start_game(self, request: StartGameRequest) -> StartGameResponse:
         return await self._connected_stub().StartGame(request)

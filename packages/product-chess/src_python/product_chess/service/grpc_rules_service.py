@@ -41,7 +41,7 @@ class GrpcRulesService(RulesServiceServicer):
         context: grpc.aio.ServicerContext[CreateGameRequest, CreateGameResponse],
     ) -> CreateGameResponse:
         state = await self._rules.create_game(
-            ChessRulesAdapters.create_request_to_participant_count(request)
+            ChessRulesAdapters.create_request_to_participant_roles(request)
         )
         return ChessRulesAdapters.game_state_to_create_response(state)
 

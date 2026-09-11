@@ -54,6 +54,68 @@ class ChessPlayer(BaseModel):
     participant: int | None = None
 
 
+class ChessSeat(BaseModel):
+    """
+    One seat at a chess table, with the side it plays opened.
+    """
+
+    model_config = ConfigDict(
+        populate_by_name=True,
+    )
+    number: int | None = None
+    status: Literal['SEAT_STATUS_UNSPECIFIED', 'SEAT_STATUS_OPEN', 'SEAT_STATUS_OCCUPIED'] | None = (
+        None
+    )
+    player_id: str | None = Field(default=None, alias='playerId')
+    color: Literal['COLOR_UNSPECIFIED', 'COLOR_WHITE', 'COLOR_BLACK'] | None = None
+
+
+class ChessSeatChoice(BaseModel):
+    """
+    One seat a player may take right now, and the side they would play in it.
+
+     Taken unchanged: the seat and the side are a pair.
+    """
+
+    model_config = ConfigDict(
+        populate_by_name=True,
+    )
+    number: int | None = None
+    color: Literal['COLOR_UNSPECIFIED', 'COLOR_WHITE', 'COLOR_BLACK'] | None = None
+
+
+class ChessSeatChoiceCollection(BaseModel):
+    """
+    Every seat one player may take.
+    """
+
+    model_config = ConfigDict(
+        populate_by_name=True,
+    )
+    chess_seat_choice_items: list[ChessSeatChoice] | None = Field(
+        default=None, alias='chessSeatChoiceItems'
+    )
+
+
+class ChessTable(BaseModel):
+    """
+    A table chess is played at, with every seat's side opened.
+
+     `version` is the table's, and a choice is taken against it.
+    """
+
+    model_config = ConfigDict(
+        populate_by_name=True,
+    )
+    id: str | None = None
+    status: Literal['TABLE_STATUS_UNSPECIFIED', 'TABLE_STATUS_WAITING', 'TABLE_STATUS_IN_PROGRESS', 'TABLE_STATUS_FINISHED', 'TABLE_STATUS_ABANDONED'] | None = (
+        None
+    )
+    seats: list[ChessSeat] | None = None
+    player_ids: list[str] | None = Field(default=None, alias='playerIds')
+    version: str | None = None
+
+
 class GameResult(BaseModel):
     """
     How a game finished.
@@ -176,6 +238,23 @@ class BoardState(BaseModel):
     en_passant_target: Square | None = Field(default=None, alias='enPassantTarget')
     halfmove_clock: int | None = Field(default=None, alias='halfmoveClock')
     fullmove_number: int | None = Field(default=None, alias='fullmoveNumber')
+
+
+class ChessSeatResult(BaseModel):
+    """
+    What happened to a seat being taken, and the table as its taker may now see it.
+
+     The table is carried whatever the outcome, and is unset only when no table
+     has the id the choice named.
+    """
+
+    model_config = ConfigDict(
+        populate_by_name=True,
+    )
+    outcome: Literal['SEAT_OUTCOME_UNSPECIFIED', 'SEAT_OUTCOME_TAKEN', 'SEAT_OUTCOME_TABLE_NOT_FOUND', 'SEAT_OUTCOME_NOT_OFFERED', 'SEAT_OUTCOME_VERSION_MOVED'] | None = (
+        None
+    )
+    table: ChessTable | None = None
 
 
 class CoordinateMove(BaseModel):

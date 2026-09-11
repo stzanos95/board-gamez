@@ -4,6 +4,7 @@ import type {
   JsonValue,
   MessageInitShape,
   MessageShape,
+  Registry,
 } from "@bufbuild/protobuf";
 import { create, fromJson, toJson } from "@bufbuild/protobuf";
 
@@ -24,12 +25,19 @@ const ABORT_ERROR_NAME = "TimeoutError";
  * Unknown fields are ignored when reading. A gateway redeployed against a newer
  * schema sends fields a running browser has never heard of, and a tab that has
  * been open since before the deploy has to keep working.
+ *
+ * The registry names every type a payload may carry packed. JSON writes a
+ * packed message by its type name and reads it back by the same name, so a
+ * type the registry does not hold cannot be sent or received inside one, in
+ * any message. Nothing here opens a payload; the registry only lets it cross.
  */
 export class GatewayClient {
   private readonly settings: GatewaySettings;
+  private readonly registry: Registry;
 
-  constructor(settings: GatewaySettings) {
+  constructor(settings: GatewaySettings, registry: Registry) {
     this.settings = settings;
+    this.registry = registry;
   }
 
   async unary<Input extends DescMessage, Output extends DescMessage>(
@@ -37,7 +45,9 @@ export class GatewayClient {
     request: MessageInitShape<Input>,
   ): Promise<MessageShape<Output>> {
     const url = `${this.settings.baseUrl}${postPathOf(method)}`;
-    const body = toJson(method.input, create(method.input, request));
+    const body = toJson(method.input, create(method.input, request), {
+      registry: this.registry,
+    });
     const answer = await this.post(url, body);
     return this.decode(method.output, answer, url);
   }
@@ -85,7 +95,10 @@ export class GatewayClient {
     url: string,
   ): MessageShape<Output> {
     try {
-      return fromJson(schema, answer as JsonValue, { ignoreUnknownFields: true });
+      return fromJson(schema, answer as JsonValue, {
+        ignoreUnknownFields: true,
+        registry: this.registry,
+      });
     } catch (cause: unknown) {
       const detail = cause instanceof Error ? cause.message : String(cause);
       throw new GatewayError(

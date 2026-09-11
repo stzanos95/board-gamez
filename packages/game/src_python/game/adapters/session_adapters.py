@@ -23,7 +23,7 @@ from idl.game.dto import command_pb2, session_pb2
 from idl.game.model.command_result_pb2 import CommandResult
 from idl.game.model.game_state_pb2 import GameState
 from idl.game.model.game_type_pb2 import GameType
-from idl.game.model.participant_pb2 import Participant
+from idl.game.model.participant_pb2 import Participant, ParticipantRole
 from idl.game.model.session_pb2 import Session, SessionView
 from idl.game.obj.session_pb2 import SessionObj
 from idl_fastapi.idl.game.dto import (
@@ -62,6 +62,23 @@ class SessionAdapters:
         request: session_pb2.CreateSessionRequest,
     ) -> tuple[Participant, ...]:
         return tuple(request.participants)
+
+    # --- participants, to what a game's rules are told ----------------------
+
+    @staticmethod
+    def participants_to_participant_roles(
+        participants: tuple[Participant, ...],
+    ) -> tuple[ParticipantRole, ...]:
+        """
+        Each participant's number and role, with the player id left behind.
+        """
+        return tuple(
+            ParticipantRole(
+                participant=participant.number,
+                role=participant.role if participant.HasField("role") else None,
+            )
+            for participant in participants
+        )
 
     @staticmethod
     def read_request_to_session_id(request: session_pb2.ReadSessionRequest) -> str:

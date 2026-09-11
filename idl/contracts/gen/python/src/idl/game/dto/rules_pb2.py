@@ -26,9 +26,10 @@ from google.protobuf import any_pb2 as google_dot_protobuf_dot_any__pb2
 from idl.game.model import action_pb2 as idl_dot_game_dot_model_dot_action__pb2
 from idl.game.model import game_spec_pb2 as idl_dot_game_dot_model_dot_game__spec__pb2
 from idl.game.model import game_state_pb2 as idl_dot_game_dot_model_dot_game__state__pb2
+from idl.game.model import participant_pb2 as idl_dot_game_dot_model_dot_participant__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x18idl/game/dto/rules.proto\x12\x0cidl.game.dto\x1a\x19google/protobuf/any.proto\x1a\x1bidl/game/model/action.proto\x1a\x1eidl/game/model/game_spec.proto\x1a\x1fidl/game/model/game_state.proto\".\n\x11\x43reateGameRequest\x12\x19\n\x11participant_count\x18\x01 \x01(\r\">\n\x12\x43reateGameResponse\x12(\n\x05state\x18\x01 \x01(\x0b\x32\x19.idl.game.model.GameState\"f\n\x12\x41pplyActionRequest\x12(\n\x05state\x18\x01 \x01(\x0b\x32\x19.idl.game.model.GameState\x12&\n\x06\x61\x63tion\x18\x02 \x01(\x0b\x32\x16.idl.game.model.Action\"?\n\x13\x41pplyActionResponse\x12(\n\x05state\x18\x01 \x01(\x0b\x32\x19.idl.game.model.GameState\"P\n\x0fReadViewRequest\x12(\n\x05state\x18\x01 \x01(\x0b\x32\x19.idl.game.model.GameState\x12\x13\n\x0bparticipant\x18\x02 \x01(\r\"6\n\x10ReadViewResponse\x12\"\n\x04view\x18\x01 \x01(\x0b\x32\x14.google.protobuf.Any\"\x13\n\x11ReadBoundsRequest\"G\n\x12ReadBoundsResponse\x12\x31\n\x06\x62ounds\x18\x01 \x01(\x0b\x32!.idl.game.model.ParticipantBoundsB2Z0boardgamez/contracts/gen/go/idl/game/dto;gamedtob\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x18idl/game/dto/rules.proto\x12\x0cidl.game.dto\x1a\x19google/protobuf/any.proto\x1a\x1bidl/game/model/action.proto\x1a\x1eidl/game/model/game_spec.proto\x1a\x1fidl/game/model/game_state.proto\x1a idl/game/model/participant.proto\"j\n\x11\x43reateGameRequest\x12\x19\n\x11participant_count\x18\x01 \x01(\r\x12:\n\x11participant_roles\x18\x02 \x03(\x0b\x32\x1f.idl.game.model.ParticipantRole\">\n\x12\x43reateGameResponse\x12(\n\x05state\x18\x01 \x01(\x0b\x32\x19.idl.game.model.GameState\"f\n\x12\x41pplyActionRequest\x12(\n\x05state\x18\x01 \x01(\x0b\x32\x19.idl.game.model.GameState\x12&\n\x06\x61\x63tion\x18\x02 \x01(\x0b\x32\x16.idl.game.model.Action\"?\n\x13\x41pplyActionResponse\x12(\n\x05state\x18\x01 \x01(\x0b\x32\x19.idl.game.model.GameState\"P\n\x0fReadViewRequest\x12(\n\x05state\x18\x01 \x01(\x0b\x32\x19.idl.game.model.GameState\x12\x13\n\x0bparticipant\x18\x02 \x01(\r\"6\n\x10ReadViewResponse\x12\"\n\x04view\x18\x01 \x01(\x0b\x32\x14.google.protobuf.Any\"\x13\n\x11ReadBoundsRequest\"G\n\x12ReadBoundsResponse\x12\x31\n\x06\x62ounds\x18\x01 \x01(\x0b\x32!.idl.game.model.ParticipantBoundsB2Z0boardgamez/contracts/gen/go/idl/game/dto;gamedtob\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -36,20 +37,20 @@ _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'idl.game.dto.rules_pb2', _g
 if not _descriptor._USE_C_DESCRIPTORS:
   _globals['DESCRIPTOR']._loaded_options = None
   _globals['DESCRIPTOR']._serialized_options = b'Z0boardgamez/contracts/gen/go/idl/game/dto;gamedto'
-  _globals['_CREATEGAMEREQUEST']._serialized_start=163
-  _globals['_CREATEGAMEREQUEST']._serialized_end=209
-  _globals['_CREATEGAMERESPONSE']._serialized_start=211
-  _globals['_CREATEGAMERESPONSE']._serialized_end=273
-  _globals['_APPLYACTIONREQUEST']._serialized_start=275
-  _globals['_APPLYACTIONREQUEST']._serialized_end=377
-  _globals['_APPLYACTIONRESPONSE']._serialized_start=379
-  _globals['_APPLYACTIONRESPONSE']._serialized_end=442
-  _globals['_READVIEWREQUEST']._serialized_start=444
-  _globals['_READVIEWREQUEST']._serialized_end=524
-  _globals['_READVIEWRESPONSE']._serialized_start=526
-  _globals['_READVIEWRESPONSE']._serialized_end=580
-  _globals['_READBOUNDSREQUEST']._serialized_start=582
-  _globals['_READBOUNDSREQUEST']._serialized_end=601
-  _globals['_READBOUNDSRESPONSE']._serialized_start=603
-  _globals['_READBOUNDSRESPONSE']._serialized_end=674
+  _globals['_CREATEGAMEREQUEST']._serialized_start=197
+  _globals['_CREATEGAMEREQUEST']._serialized_end=303
+  _globals['_CREATEGAMERESPONSE']._serialized_start=305
+  _globals['_CREATEGAMERESPONSE']._serialized_end=367
+  _globals['_APPLYACTIONREQUEST']._serialized_start=369
+  _globals['_APPLYACTIONREQUEST']._serialized_end=471
+  _globals['_APPLYACTIONRESPONSE']._serialized_start=473
+  _globals['_APPLYACTIONRESPONSE']._serialized_end=536
+  _globals['_READVIEWREQUEST']._serialized_start=538
+  _globals['_READVIEWREQUEST']._serialized_end=618
+  _globals['_READVIEWRESPONSE']._serialized_start=620
+  _globals['_READVIEWRESPONSE']._serialized_end=674
+  _globals['_READBOUNDSREQUEST']._serialized_start=676
+  _globals['_READBOUNDSREQUEST']._serialized_end=695
+  _globals['_READBOUNDSRESPONSE']._serialized_start=697
+  _globals['_READBOUNDSRESPONSE']._serialized_end=768
 # @@protoc_insertion_point(module_scope)

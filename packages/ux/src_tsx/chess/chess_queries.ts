@@ -6,4 +6,7 @@
 export const chessQueryKeys = {
   all: ["chess"] as const,
   session: (tableId: string) => [...chessQueryKeys.all, "session", tableId] as const,
+  table: (tableId: string) => [...chessQueryKeys.all, "table", tableId] as const,
+  seatChoices: (tableId: string, playerId: string) =>
+    [...chessQueryKeys.all, "seat_choices", tableId, playerId] as const,
 };

@@ -7,15 +7,24 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from ...google import protobuf
+
 
 class Seat(BaseModel):
     """
     One place at a table.
 
      `number` is the seat's position and never changes once the table is created.
-     It fixes the order players are handed to a game when one starts. What a game
-     makes of that order is the game's own business. Numbered from 1, so 0 means no
-     seat wherever a seat is named.
+     Numbered from 1, so 0 means no seat wherever a seat is named.
+
+     `role` is what the seat is in the game's own vocabulary: the side it plays,
+     the token it moves. It is packed by the game and opened only by the game and
+     by the client that draws it. It is set when the seat is taken, from the
+     choice the player took, and cleared when the seat is vacated. A game whose
+     seats are positions and nothing more leaves it unset.
+
+     What a game makes of a seat's position and role when it starts is the game's
+     own business.
 
      A seat holds a player id and no more. A name to draw is read from identity
      when it is needed, so a renamed player is never stale here.
@@ -29,6 +38,7 @@ class Seat(BaseModel):
         None
     )
     player_id: str | None = Field(default=None, alias='playerId')
+    role: protobuf.Any | None = None
 
 
 class Table(BaseModel):

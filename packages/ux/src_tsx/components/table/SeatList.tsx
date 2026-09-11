@@ -19,15 +19,12 @@ const CONTAINER_SX = { border: 1, borderColor: "divider" } as const;
 
 export type SeatListProps = {
   readonly seats: readonly SeatView[];
-  readonly canTakeSeat: boolean;
-  readonly busySeatNumber: number | null;
   readonly isStandingUp: boolean;
-  readonly onTakeSeat: (seatNumber: number) => void;
   readonly onStandUp: () => void;
 };
 
 export const SeatList = memo(function SeatList(props: SeatListProps): ReactElement {
-  const { seats, canTakeSeat, busySeatNumber, isStandingUp, onTakeSeat, onStandUp } = props;
+  const { seats, isStandingUp, onStandUp } = props;
 
   const header = (
     <TableHead>
@@ -43,9 +40,7 @@ export const SeatList = memo(function SeatList(props: SeatListProps): ReactEleme
     <SeatRow
       key={seat.number}
       seat={seat}
-      isBusy={seat.number === busySeatNumber || (seat.isMine && isStandingUp)}
-      canTakeSeat={canTakeSeat}
-      onTakeSeat={onTakeSeat}
+      isBusy={seat.isMine && isStandingUp}
       onStandUp={onStandUp}
     />
   ));

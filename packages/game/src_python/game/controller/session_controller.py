@@ -50,7 +50,7 @@ class SessionController:
 
         A table already playing a game is answered that game. None comes back
         when the participants are not numbered from 1 without a gap, or when the
-        game does not take that many.
+        game does not take them.
         """
         existing = await self._repository.read(table_id)
         if existing is not None:
@@ -58,7 +58,9 @@ class SessionController:
             return await self._get_session_view(session, player_id)
         if not SessionController._is_numbered_without_gaps(participants):
             return None
-        state = await self._rules.get_rules(game_type).create_game(len(participants))
+        state = await self._rules.get_rules(game_type).create_game(
+            SessionAdapters.participants_to_participant_roles(participants)
+        )
         if state is None:
             return None
         opening = Session(

@@ -84,7 +84,7 @@ The dev server forwards to a gateway on `127.0.0.1:8080`, so start one first:
 In a container, from [infra/](../../infra/):
 
 ```bash
-../../infra/scripts/web.sh   # http://127.0.0.1:8081
+../../infra/scripts/up.sh    # http://127.0.0.1:8081
 ```
 
 ## The workspace

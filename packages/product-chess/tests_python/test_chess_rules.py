@@ -5,18 +5,25 @@ from idl.chess.model import game_pb2, piece_pb2
 from idl.game.model.action_pb2 import Action
 from idl.game.model.game_result_pb2 import ParticipantOutcome
 from idl.game.model.game_state_pb2 import GameState
+from idl.game.model.participant_pb2 import ParticipantRole
 
 from product_chess.adapters.chess_rules_adapters import ChessRulesAdapters
-from product_chess.controller.chess_rules import (
-    BLACK_PARTICIPANT,
-    CHESS_PARTICIPANT_COUNT,
-    WHITE_PARTICIPANT,
-    ChessRules,
-)
+from product_chess.adapters.chess_seat_adapters import ChessSeatAdapters
+from product_chess.controller.chess_rules import ChessRules
 from tests_python.chess_actions import move_action, packed, resignation_action
 
 NOBODY = 0
+WHITE_PARTICIPANT = 1
+BLACK_PARTICIPANT = 2
 ONLOOKER = 3
+
+
+def seated_as(participant: int, color: piece_pb2.Color) -> ParticipantRole:
+    return ParticipantRole(participant=participant, role=ChessSeatAdapters.color_to_role(color))
+
+
+WHITE_SEATED = seated_as(WHITE_PARTICIPANT, piece_pb2.COLOR_WHITE)
+BLACK_SEATED = seated_as(BLACK_PARTICIPANT, piece_pb2.COLOR_BLACK)
 SCHOLARS_MATE = ("e2e4", "e7e5", "f1c4", "b8c6", "d1h5", "g8f6", "h5f7")
 KNIGHT_SHUFFLE = ("g1f3", "g8f6", "f3g1", "f6g8")
 
@@ -37,7 +44,7 @@ class ChessRulesTest(unittest.IsolatedAsyncioTestCase):
         self.rules = ChessRules()
 
     async def new_game(self) -> GameState:
-        return require_state(await self.rules.create_game(CHESS_PARTICIPANT_COUNT))
+        return require_state(await self.rules.create_game((WHITE_SEATED, BLACK_SEATED)))
 
     async def play_all(self, state: GameState, texts: tuple[str, ...]) -> GameState:
         for text in texts:
@@ -47,9 +54,28 @@ class ChessRulesTest(unittest.IsolatedAsyncioTestCase):
         return state
 
     async def test_a_game_takes_exactly_two(self) -> None:
-        self.assertIsNone(await self.rules.create_game(1))
-        self.assertIsNone(await self.rules.create_game(3))
-        self.assertIsNotNone(await self.rules.create_game(2))
+        self.assertIsNone(await self.rules.create_game((WHITE_SEATED,)))
+        self.assertIsNone(
+            await self.rules.create_game(
+                (WHITE_SEATED, BLACK_SEATED, seated_as(ONLOOKER, piece_pb2.COLOR_WHITE))
+            )
+        )
+        self.assertIsNotNone(await self.rules.create_game((WHITE_SEATED, BLACK_SEATED)))
+
+    async def test_a_game_takes_one_of_each_side(self) -> None:
+        both_white = (WHITE_SEATED, seated_as(BLACK_PARTICIPANT, piece_pb2.COLOR_WHITE))
+        self.assertIsNone(await self.rules.create_game(both_white))
+        unseated = (WHITE_SEATED, ParticipantRole(participant=BLACK_PARTICIPANT))
+        self.assertIsNone(await self.rules.create_game(unseated))
+
+    async def test_the_side_comes_from_the_role_and_not_the_number(self) -> None:
+        swapped = (
+            seated_as(WHITE_PARTICIPANT, piece_pb2.COLOR_BLACK),
+            seated_as(BLACK_PARTICIPANT, piece_pb2.COLOR_WHITE),
+        )
+        game = require_game(require_state(await self.rules.create_game(swapped)))
+        self.assertEqual(game.roster.white.participant, BLACK_PARTICIPANT)
+        self.assertEqual(game.roster.black.participant, WHITE_PARTICIPANT)
 
     async def test_the_bounds_say_two(self) -> None:
         bounds = await self.rules.read_bounds()

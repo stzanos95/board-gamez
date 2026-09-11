@@ -3,14 +3,14 @@
 An online multiplayer board-game platform. People sit at tables, take seats, and
 play a game the platform hosts without interpreting its rules.
 
-## Running the backend locally
+## Running the stack locally
 
-Needs Docker. Builds any missing image, then starts both services.
+Needs Docker. Builds any missing image, then starts everything detached: the
+store, the gRPC server on 50051, the gateway on 8080 and the interface on 8081.
 
 ```bash
-./infra/scripts/up.sh              # gateway on 8080, gRPC server on 50051
-./infra/scripts/up.sh --detach     # same, in the background
-./infra/scripts/down.sh            # stop and remove the containers
+./infra/scripts/up.sh              # everything, in the background
+./infra/scripts/down.sh            # stop and remove every container
 ```
 
 Check that both answer:
@@ -23,11 +23,7 @@ grpcurl -plaintext 127.0.0.1:50051 list          # the server's services
 ## Playing in a browser
 
 The interface is [`deployables/gamez-ux`](deployables/gamez-ux/). Nothing has to
-be installed: the node toolchain is a container.
-
-```bash
-./infra/scripts/web.sh                          # everything, on 8081
-```
+be installed: the node toolchain is a container, and `up.sh` serves it on 8081.
 
 Or against a backend already running on this machine:
 
