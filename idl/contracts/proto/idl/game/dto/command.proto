@@ -1,0 +1,38 @@
+// Doing one thing in a game.
+
+syntax = "proto3";
+
+package idl.game.dto;
+
+import "google/protobuf/any.proto";
+import "idl/game/model/command_outcome.proto";
+import "idl/game/model/session.proto";
+
+option go_package = "boardgamez/contracts/gen/go/idl/game/dto;gamedto";
+
+// One thing a player does in a game.
+//
+// `command_id` is minted by the caller. Sending a command a second time applies
+// nothing and answers the state the first one produced.
+//
+// `expected_version` is the version of the view the action was built against. A
+// command carrying an earlier one is refused, so an action never reaches a game
+// in a state the player who chose it had not seen.
+//
+// Who is acting is not carried. It is taken from the caller and matched to a
+// participant, so a request cannot act as somebody else.
+message ApplyCommandRequest {
+  string session_id = 1;
+  string command_id = 2;
+  google.protobuf.Any action = 3;  // The game's own action type.
+  uint64 expected_version = 4;
+}
+
+// What happened to the command, and the game as it now stands.
+//
+// The session is answered whatever the outcome, projected for whoever sent the
+// command, and is unset only when no game is stored under the id.
+message ApplyCommandResponse {
+  idl.game.model.CommandOutcome outcome = 1;
+  idl.game.model.SessionView session = 2;
+}

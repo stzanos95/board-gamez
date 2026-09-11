@@ -5,7 +5,7 @@ syntax = "proto3";
 package idl.lobby.obj;
 
 import "idl/core/obj/object_metadata.proto";
-import "idl/lobby/model/game_type.proto";
+import "idl/game/model/game_type.proto";
 import "idl/lobby/model/seat.proto";
 import "idl/lobby/model/table.proto";
 
@@ -23,7 +23,7 @@ option go_package = "boardgamez/contracts/gen/go/idl/lobby/obj;lobbyobj";
 // declaration that drifts in numbering reinterprets every row already stored.
 message TableObj {
   idl.core.obj.ObjectMetadata metadata = 1;
-  idl.lobby.model.GameType game_type = 2;
+  idl.game.model.GameType game_type = 2;
   idl.lobby.model.TableStatus status = 3;
   repeated idl.lobby.model.Seat seats = 4;
 }

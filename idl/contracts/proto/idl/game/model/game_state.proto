@@ -1,0 +1,21 @@
+// A game as the platform holds it.
+
+syntax = "proto3";
+
+package idl.game.model;
+
+import "google/protobuf/any.proto";
+import "idl/game/model/game_result.proto";
+
+option go_package = "boardgamez/contracts/gen/go/idl/game/model;gamemodel";
+
+// One game, and the two things about it that are true whatever game it is.
+//
+// `payload` is the game's own state. It is kept and handed back to that game's
+// rules unopened, and only that game can read it. Its type is what `Any` carries
+// and is not repeated here.
+message GameState {
+  google.protobuf.Any payload = 1;
+  uint32 participant_to_act = 2;  // Who may act next; 0 once the game has a result.
+  GameResult result = 3;          // Unset while the game is still being played.
+}

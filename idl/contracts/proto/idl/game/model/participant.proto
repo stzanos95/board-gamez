@@ -1,0 +1,17 @@
+// One of the players in a game, and the number the game knows them by.
+
+syntax = "proto3";
+
+package idl.game.model;
+
+option go_package = "boardgamez/contracts/gen/go/idl/game/model;gamemodel";
+
+// A player taking part in a game, and their place in its turn order.
+//
+// `number` is fixed when the game is created and never changes. It is the only
+// part of this a game is told; a player id never reaches a game's rules.
+// Numbered from 1, so 0 means no participant wherever one is named.
+message Participant {
+  uint32 number = 1;
+  string player_id = 2;
+}

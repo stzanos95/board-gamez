@@ -8,8 +8,8 @@ import type { GenFile, GenMessage } from "@bufbuild/protobuf/codegenv1";
 import { fileDesc, messageDesc } from "@bufbuild/protobuf/codegenv1";
 import type { ObjectMetadata } from "../../core/obj/object_metadata_pb";
 import { file_idl_core_obj_object_metadata } from "../../core/obj/object_metadata_pb";
-import type { GameType } from "../model/game_type_pb";
-import { file_idl_lobby_model_game_type } from "../model/game_type_pb";
+import type { GameType } from "../../game/model/game_type_pb";
+import { file_idl_game_model_game_type } from "../../game/model/game_type_pb";
 import type { Seat } from "../model/seat_pb";
 import { file_idl_lobby_model_seat } from "../model/seat_pb";
 import type { TableStatus } from "../model/table_pb";
@@ -20,7 +20,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file idl/lobby/obj/table.proto.
  */
 export const file_idl_lobby_obj_table: GenFile = /*@__PURE__*/
-  fileDesc("ChlpZGwvbG9iYnkvb2JqL3RhYmxlLnByb3RvEg1pZGwubG9iYnkub2JqIrwBCghUYWJsZU9iahIuCghtZXRhZGF0YRgBIAEoCzIcLmlkbC5jb3JlLm9iai5PYmplY3RNZXRhZGF0YRIsCglnYW1lX3R5cGUYAiABKA4yGS5pZGwubG9iYnkubW9kZWwuR2FtZVR5cGUSLAoGc3RhdHVzGAMgASgOMhwuaWRsLmxvYmJ5Lm1vZGVsLlRhYmxlU3RhdHVzEiQKBXNlYXRzGAQgAygLMhUuaWRsLmxvYmJ5Lm1vZGVsLlNlYXRCNFoyYm9hcmRnYW1lei9jb250cmFjdHMvZ2VuL2dvL2lkbC9sb2JieS9vYmo7bG9iYnlvYmpiBnByb3RvMw", [file_idl_core_obj_object_metadata, file_idl_lobby_model_game_type, file_idl_lobby_model_seat, file_idl_lobby_model_table]);
+  fileDesc("ChlpZGwvbG9iYnkvb2JqL3RhYmxlLnByb3RvEg1pZGwubG9iYnkub2JqIrsBCghUYWJsZU9iahIuCghtZXRhZGF0YRgBIAEoCzIcLmlkbC5jb3JlLm9iai5PYmplY3RNZXRhZGF0YRIrCglnYW1lX3R5cGUYAiABKA4yGC5pZGwuZ2FtZS5tb2RlbC5HYW1lVHlwZRIsCgZzdGF0dXMYAyABKA4yHC5pZGwubG9iYnkubW9kZWwuVGFibGVTdGF0dXMSJAoFc2VhdHMYBCADKAsyFS5pZGwubG9iYnkubW9kZWwuU2VhdEI0WjJib2FyZGdhbWV6L2NvbnRyYWN0cy9nZW4vZ28vaWRsL2xvYmJ5L29iajtsb2JieW9iamIGcHJvdG8z", [file_idl_core_obj_object_metadata, file_idl_game_model_game_type, file_idl_lobby_model_seat, file_idl_lobby_model_table]);
 
 /**
  * One stored table.
@@ -43,7 +43,7 @@ export type TableObj = Message<"idl.lobby.obj.TableObj"> & {
   metadata?: ObjectMetadata;
 
   /**
-   * @generated from field: idl.lobby.model.GameType game_type = 2;
+   * @generated from field: idl.game.model.GameType game_type = 2;
    */
   gameType: GameType;
 

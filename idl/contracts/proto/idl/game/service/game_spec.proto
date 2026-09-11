@@ -1,0 +1,20 @@
+// Reading what games there are.
+
+syntax = "proto3";
+
+package idl.game.service;
+
+import "google/api/annotations.proto";
+import "idl/game/dto/game_spec.proto";
+
+option go_package = "boardgamez/contracts/gen/go/idl/game/service;gameservice";
+
+// The catalogue of games, assembled from what each game answers about itself.
+service GameSpecService {
+  rpc ListGameSpec(idl.game.dto.ListGameSpecRequest) returns (idl.game.dto.ListGameSpecResponse) {
+    option (google.api.http) = {
+      post: "/internal/platform/game/list/game_spec"
+      body: "*"
+    };
+  }
+}

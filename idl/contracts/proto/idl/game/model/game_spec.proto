@@ -1,0 +1,31 @@
+// How many people a game takes.
+
+syntax = "proto3";
+
+package idl.game.model;
+
+import "idl/game/model/game_type.proto";
+
+option go_package = "boardgamez/contracts/gen/go/idl/game/model;gamemodel";
+
+// The number of participants a game can be played by.
+//
+// A bound on how many a game may be started with, not on how many have joined.
+message ParticipantBounds {
+  uint32 minimum = 1;
+  uint32 maximum = 2;
+}
+
+// One game, and what it takes to play it.
+message GameSpec {
+  GameType game_type = 1;
+  ParticipantBounds bounds = 2;
+}
+
+// Every game this system hosts.
+//
+// What every listing of games answers with. A count or the filter a listing was
+// answered under belongs here.
+message GameSpecCollection {
+  repeated GameSpec game_spec_items = 1;
+}

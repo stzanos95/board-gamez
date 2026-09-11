@@ -1,0 +1,38 @@
+// Starting and reading a game.
+
+syntax = "proto3";
+
+package idl.game.dto;
+
+import "idl/game/model/game_type.proto";
+import "idl/game/model/participant.proto";
+import "idl/game/model/session.proto";
+
+option go_package = "boardgamez/contracts/gen/go/idl/game/dto;gamedto";
+
+// Start a game at a table.
+//
+// The table's id becomes the game's id, so starting a game at a table that is
+// already playing one starts nothing and answers the game already there.
+//
+// Participants are built by the caller from the table's seats, which is where a
+// seat becomes a participant number.
+message CreateSessionRequest {
+  string table_id = 1;
+  idl.game.model.GameType game_type = 2;
+  repeated idl.game.model.Participant participants = 3;
+}
+
+// The game, projected for whoever asked.
+message CreateSessionResponse {
+  idl.game.model.SessionView session = 1;  // Unset when the game does not take this roster.
+}
+
+message ReadSessionRequest {
+  string session_id = 1;
+}
+
+// The game, projected for whoever asked.
+message ReadSessionResponse {
+  idl.game.model.SessionView session = 1;  // Unset when no game is stored under that id.
+}

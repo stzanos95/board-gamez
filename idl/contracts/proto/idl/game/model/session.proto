@@ -1,0 +1,49 @@
+// A game being played, and the part of it one participant may see.
+
+syntax = "proto3";
+
+package idl.game.model;
+
+import "idl/game/model/game_state.proto";
+import "idl/game/model/game_type.proto";
+import "idl/game/model/participant.proto";
+
+option go_package = "boardgamez/contracts/gen/go/idl/game/model;gamemodel";
+
+// One game being played, in full.
+//
+// The id is the id of the table the game is played at, so a table holds one game
+// at a time.
+//
+// `version` counts writes to this game. It is what a write is compared against
+// and what tells two readings of the same game apart, and it says nothing about
+// the schema these fields are declared in.
+//
+// `state.payload` is the whole game, including anything a participant is not
+// allowed to see. What a client is answered with is a SessionView.
+message Session {
+  string id = 1;
+  GameType game_type = 2;
+  repeated Participant participants = 3;
+  GameState state = 4;
+  string last_command_id = 5;  // The command that produced this state.
+  uint64 version = 6;          // Send back what you read; 0 if never stored.
+}
+
+// One game as one participant may see it.
+//
+// `state.payload` is the game projected for `participant`, which in a game with
+// hidden information is less than the whole game. A view is rendered, never
+// written back, and never handed to a game's rules.
+//
+// A view arrives both as an answer and unasked, so two of them can cross. A
+// client renders one only when its version is above the version it is showing.
+message SessionView {
+  string id = 1;
+  GameType game_type = 2;
+  repeated Participant participants = 3;
+  uint32 participant = 4;  // Whose view this is; 0 for someone who is not playing.
+  GameState state = 5;
+  string last_command_id = 6;
+  uint64 version = 7;
+}

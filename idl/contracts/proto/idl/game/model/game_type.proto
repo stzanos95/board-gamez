@@ -1,10 +1,10 @@
-// Which game's rules a table is playing by.
+// Which game's rules are being played.
 
 syntax = "proto3";
 
-package idl.lobby.model;
+package idl.game.model;
 
-option go_package = "boardgamez/contracts/gen/go/idl/lobby/model;lobbymodel";
+option go_package = "boardgamez/contracts/gen/go/idl/game/model;gamemodel";
 
 // The games this system knows how to host.
 //

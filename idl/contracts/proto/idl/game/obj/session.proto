@@ -1,0 +1,30 @@
+// A stored game.
+
+syntax = "proto3";
+
+package idl.game.obj;
+
+import "idl/core/obj/object_metadata.proto";
+import "idl/game/model/game_state.proto";
+import "idl/game/model/game_type.proto";
+import "idl/game/model/participant.proto";
+
+option go_package = "boardgamez/contracts/gen/go/idl/game/obj;gameobj";
+
+// One stored game.
+//
+// The identity of the row is the id of the table the game is played at, and it
+// carries the version every write is compared against.
+//
+// Participants and the state are held inside this row, so they are the model's
+// own types. The enums are shared for the same reason: a field number is local
+// to the message that declares it, and an enum value is written into the data,
+// where a second declaration that drifts in numbering reinterprets every row
+// already stored.
+message SessionObj {
+  idl.core.obj.ObjectMetadata metadata = 1;
+  idl.game.model.GameType game_type = 2;
+  repeated idl.game.model.Participant participants = 3;
+  idl.game.model.GameState state = 4;
+  string last_command_id = 5;
+}

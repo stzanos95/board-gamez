@@ -1,0 +1,25 @@
+// How a command to a game ended.
+
+syntax = "proto3";
+
+package idl.game.model;
+
+option go_package = "boardgamez/contracts/gen/go/idl/game/model;gamemodel";
+
+// Every way a command ends.
+//
+// APPLIED and ALREADY_APPLIED both mean the command's action is in the game.
+// VERSION_MOVED means the caller read an earlier state, and the command is worth
+// building again on the state answered with it. The rest are worth telling the
+// player about, and sending again unchanged will end the same way.
+enum CommandOutcome {
+  COMMAND_OUTCOME_UNSPECIFIED = 0;
+  COMMAND_OUTCOME_APPLIED = 1;
+  COMMAND_OUTCOME_ALREADY_APPLIED = 2;
+  COMMAND_OUTCOME_SESSION_NOT_FOUND = 3;
+  COMMAND_OUTCOME_NOT_A_PARTICIPANT = 4;
+  COMMAND_OUTCOME_GAME_OVER = 5;
+  COMMAND_OUTCOME_VERSION_MOVED = 6;
+  COMMAND_OUTCOME_OUT_OF_TURN = 7;
+  COMMAND_OUTCOME_ILLEGAL_ACTION = 8;
+}

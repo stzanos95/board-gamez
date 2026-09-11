@@ -1,5 +1,5 @@
 from idl.core.obj import object_metadata_pb2 as _object_metadata_pb2
-from idl.lobby.model import game_type_pb2 as _game_type_pb2
+from idl.game.model import game_type_pb2 as _game_type_pb2
 from idl.lobby.model import seat_pb2 as _seat_pb2
 from idl.lobby.model import table_pb2 as _table_pb2
 from google.protobuf.internal import containers as _containers

@@ -1,0 +1,18 @@
+// What one participant does on their turn.
+
+syntax = "proto3";
+
+package idl.game.model;
+
+import "google/protobuf/any.proto";
+
+option go_package = "boardgamez/contracts/gen/go/idl/game/model;gamemodel";
+
+// One thing a participant does, addressed to the rules of the game they are in.
+//
+// The payload is packed by a client that plays this game and opened only by that
+// game's rules. Nothing between the two reads it.
+message Action {
+  uint32 participant = 1;           // Who is acting.
+  google.protobuf.Any payload = 2;  // The game's own action type.
+}

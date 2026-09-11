@@ -22,11 +22,11 @@ _runtime_version.ValidateProtobufRuntimeVersion(
 _sym_db = _symbol_database.Default()
 
 
-from idl.lobby.model import game_type_pb2 as idl_dot_lobby_dot_model_dot_game__type__pb2
+from idl.game.model import game_type_pb2 as idl_dot_game_dot_model_dot_game__type__pb2
 from idl.lobby.model import seat_pb2 as idl_dot_lobby_dot_model_dot_seat__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1bidl/lobby/model/table.proto\x12\x0fidl.lobby.model\x1a\x1fidl/lobby/model/game_type.proto\x1a\x1aidl/lobby/model/seat.proto\"\xa6\x01\n\x05Table\x12\n\n\x02id\x18\x01 \x01(\t\x12,\n\tgame_type\x18\x02 \x01(\x0e\x32\x19.idl.lobby.model.GameType\x12,\n\x06status\x18\x03 \x01(\x0e\x32\x1c.idl.lobby.model.TableStatus\x12$\n\x05seats\x18\x04 \x03(\x0b\x32\x15.idl.lobby.model.Seat\x12\x0f\n\x07version\x18\x05 \x01(\x04\">\n\x0fTableCollection\x12+\n\x0btable_items\x18\x01 \x03(\x0b\x32\x16.idl.lobby.model.Table*\x9a\x01\n\x0bTableStatus\x12\x1c\n\x18TABLE_STATUS_UNSPECIFIED\x10\x00\x12\x18\n\x14TABLE_STATUS_WAITING\x10\x01\x12\x1c\n\x18TABLE_STATUS_IN_PROGRESS\x10\x02\x12\x19\n\x15TABLE_STATUS_FINISHED\x10\x03\x12\x1a\n\x16TABLE_STATUS_ABANDONED\x10\x04\x42\x38Z6boardgamez/contracts/gen/go/idl/lobby/model;lobbymodelb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1bidl/lobby/model/table.proto\x12\x0fidl.lobby.model\x1a\x1eidl/game/model/game_type.proto\x1a\x1aidl/lobby/model/seat.proto\"\xa5\x01\n\x05Table\x12\n\n\x02id\x18\x01 \x01(\t\x12+\n\tgame_type\x18\x02 \x01(\x0e\x32\x18.idl.game.model.GameType\x12,\n\x06status\x18\x03 \x01(\x0e\x32\x1c.idl.lobby.model.TableStatus\x12$\n\x05seats\x18\x04 \x03(\x0b\x32\x15.idl.lobby.model.Seat\x12\x0f\n\x07version\x18\x05 \x01(\x04\">\n\x0fTableCollection\x12+\n\x0btable_items\x18\x01 \x03(\x0b\x32\x16.idl.lobby.model.Table*\x9a\x01\n\x0bTableStatus\x12\x1c\n\x18TABLE_STATUS_UNSPECIFIED\x10\x00\x12\x18\n\x14TABLE_STATUS_WAITING\x10\x01\x12\x1c\n\x18TABLE_STATUS_IN_PROGRESS\x10\x02\x12\x19\n\x15TABLE_STATUS_FINISHED\x10\x03\x12\x1a\n\x16TABLE_STATUS_ABANDONED\x10\x04\x42\x38Z6boardgamez/contracts/gen/go/idl/lobby/model;lobbymodelb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -34,10 +34,10 @@ _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'idl.lobby.model.table_pb2',
 if not _descriptor._USE_C_DESCRIPTORS:
   _globals['DESCRIPTOR']._loaded_options = None
   _globals['DESCRIPTOR']._serialized_options = b'Z6boardgamez/contracts/gen/go/idl/lobby/model;lobbymodel'
-  _globals['_TABLESTATUS']._serialized_start=343
-  _globals['_TABLESTATUS']._serialized_end=497
-  _globals['_TABLE']._serialized_start=110
-  _globals['_TABLE']._serialized_end=276
-  _globals['_TABLECOLLECTION']._serialized_start=278
-  _globals['_TABLECOLLECTION']._serialized_end=340
+  _globals['_TABLESTATUS']._serialized_start=341
+  _globals['_TABLESTATUS']._serialized_end=495
+  _globals['_TABLE']._serialized_start=109
+  _globals['_TABLE']._serialized_end=274
+  _globals['_TABLECOLLECTION']._serialized_start=276
+  _globals['_TABLECOLLECTION']._serialized_end=338
 # @@protoc_insertion_point(module_scope)

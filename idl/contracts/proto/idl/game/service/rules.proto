@@ -1,0 +1,27 @@
+// One game's rules.
+
+syntax = "proto3";
+
+package idl.game.service;
+
+import "idl/game/dto/rules.proto";
+
+option go_package = "boardgamez/contracts/gen/go/idl/game/service;gameservice";
+
+// What a game answers, whatever game it is.
+//
+// Implemented once per game and reached under the game type it was configured
+// for. Every call carries the state it acts on, so an implementation keeps
+// nothing between calls and holds no game of its own.
+//
+// Nothing outside the platform asks a game for its rules, so no HTTP path is
+// declared here.
+service RulesService {
+  rpc CreateGame(idl.game.dto.CreateGameRequest) returns (idl.game.dto.CreateGameResponse);
+
+  rpc ApplyAction(idl.game.dto.ApplyActionRequest) returns (idl.game.dto.ApplyActionResponse);
+
+  rpc ReadView(idl.game.dto.ReadViewRequest) returns (idl.game.dto.ReadViewResponse);
+
+  rpc ReadBounds(idl.game.dto.ReadBoundsRequest) returns (idl.game.dto.ReadBoundsResponse);
+}

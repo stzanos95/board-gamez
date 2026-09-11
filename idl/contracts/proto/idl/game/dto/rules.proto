@@ -1,0 +1,50 @@
+// What a game's rules are asked.
+
+syntax = "proto3";
+
+package idl.game.dto;
+
+import "google/protobuf/any.proto";
+import "idl/game/model/action.proto";
+import "idl/game/model/game_spec.proto";
+import "idl/game/model/game_state.proto";
+
+option go_package = "boardgamez/contracts/gen/go/idl/game/dto;gamedto";
+
+// Begin a game for this many participants, numbered 1 through participant_count.
+message CreateGameRequest {
+  uint32 participant_count = 1;
+}
+
+message CreateGameResponse {
+  idl.game.model.GameState state = 1;  // Unset when the game does not take that many.
+}
+
+// Play one action against one state.
+//
+// The state is carried in full, so nothing about a game in progress is held
+// between calls.
+message ApplyActionRequest {
+  idl.game.model.GameState state = 1;
+  idl.game.model.Action action = 2;
+}
+
+message ApplyActionResponse {
+  idl.game.model.GameState state = 1;  // Unset when the action is not legal in that state.
+}
+
+// The game as one participant may see it, and what they may do next.
+message ReadViewRequest {
+  idl.game.model.GameState state = 1;
+  uint32 participant = 2;  // 0 for someone who is not playing.
+}
+
+message ReadViewResponse {
+  google.protobuf.Any view = 1;  // The game's own view type.
+}
+
+message ReadBoundsRequest {}
+
+message ReadBoundsResponse {
+  idl.game.model.ParticipantBounds bounds = 1;
+}

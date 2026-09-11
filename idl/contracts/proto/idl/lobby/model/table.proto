@@ -4,7 +4,7 @@ syntax = "proto3";
 
 package idl.lobby.model;
 
-import "idl/lobby/model/game_type.proto";
+import "idl/game/model/game_type.proto";
 import "idl/lobby/model/seat.proto";
 
 option go_package = "boardgamez/contracts/gen/go/idl/lobby/model;lobbymodel";
@@ -27,7 +27,7 @@ enum TableStatus {
 // game's.
 message Table {
   string id = 1;
-  GameType game_type = 2;
+  idl.game.model.GameType game_type = 2;
   TableStatus status = 3;
   repeated Seat seats = 4;  // Fixed in count at creation.
   uint64 version = 5;       // Send back what you read; 0 if never stored.

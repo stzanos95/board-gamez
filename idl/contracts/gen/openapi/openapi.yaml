@@ -4,14 +4,104 @@
 openapi: 3.0.3
 info:
     title: board-gamez chess API
-    description: |-
-        Storage for tables.
-
-         Four methods and no domain verbs. Joining a seat and leaving one are decided
-         above this layer and arrive here as a write of the whole table, guarded by the
-         version it was read at.
     version: 1.0.0
 paths:
+    /internal/platform/game/apply/command:
+        post:
+            tags:
+                - SessionService
+            operationId: SessionService_ApplyCommand
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/idl.game.dto.ApplyCommandRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/idl.game.dto.ApplyCommandResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/google.rpc.Status'
+    /internal/platform/game/create/session:
+        post:
+            tags:
+                - SessionService
+            operationId: SessionService_CreateSession
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/idl.game.dto.CreateSessionRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/idl.game.dto.CreateSessionResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/google.rpc.Status'
+    /internal/platform/game/list/game_spec:
+        post:
+            tags:
+                - GameSpecService
+            operationId: GameSpecService_ListGameSpec
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/idl.game.dto.ListGameSpecRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/idl.game.dto.ListGameSpecResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/google.rpc.Status'
+    /internal/platform/game/read/session:
+        post:
+            tags:
+                - SessionService
+            operationId: SessionService_ReadSession
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/idl.game.dto.ReadSessionRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/idl.game.dto.ReadSessionResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/google.rpc.Status'
     /internal/platform/lobby/delete/table:
         post:
             tags:
@@ -134,6 +224,227 @@ components:
                         $ref: '#/components/schemas/google.protobuf.Any'
                     description: A list of messages that carry the error details.  There is a common set of message types for APIs to use.
             description: 'The `Status` type defines a logical error model that is suitable for different programming environments, including REST APIs and RPC APIs. It is used by [gRPC](https://github.com/grpc). Each `Status` message contains three pieces of data: error code, error message, and error details. You can find out more about this error model and how to work with it in the [API Design Guide](https://cloud.google.com/apis/design/errors).'
+        idl.game.dto.ApplyCommandRequest:
+            type: object
+            properties:
+                sessionId:
+                    type: string
+                commandId:
+                    type: string
+                action:
+                    $ref: '#/components/schemas/google.protobuf.Any'
+                expectedVersion:
+                    type: string
+            description: |-
+                One thing a player does in a game.
+
+                 `command_id` is minted by the caller. Sending a command a second time applies
+                 nothing and answers the state the first one produced.
+
+                 `expected_version` is the version of the view the action was built against. A
+                 command carrying an earlier one is refused, so an action never reaches a game
+                 in a state the player who chose it had not seen.
+
+                 Who is acting is not carried. It is taken from the caller and matched to a
+                 participant, so a request cannot act as somebody else.
+        idl.game.dto.ApplyCommandResponse:
+            type: object
+            properties:
+                outcome:
+                    enum:
+                        - COMMAND_OUTCOME_UNSPECIFIED
+                        - COMMAND_OUTCOME_APPLIED
+                        - COMMAND_OUTCOME_ALREADY_APPLIED
+                        - COMMAND_OUTCOME_SESSION_NOT_FOUND
+                        - COMMAND_OUTCOME_NOT_A_PARTICIPANT
+                        - COMMAND_OUTCOME_GAME_OVER
+                        - COMMAND_OUTCOME_VERSION_MOVED
+                        - COMMAND_OUTCOME_OUT_OF_TURN
+                        - COMMAND_OUTCOME_ILLEGAL_ACTION
+                    type: string
+                    format: enum
+                session:
+                    $ref: '#/components/schemas/idl.game.model.SessionView'
+            description: |-
+                What happened to the command, and the game as it now stands.
+
+                 The session is answered whatever the outcome, projected for whoever sent the
+                 command, and is unset only when no game is stored under the id.
+        idl.game.dto.CreateSessionRequest:
+            type: object
+            properties:
+                tableId:
+                    type: string
+                gameType:
+                    enum:
+                        - GAME_TYPE_UNSPECIFIED
+                        - GAME_TYPE_CHESS
+                    type: string
+                    format: enum
+                participants:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/idl.game.model.Participant'
+            description: |-
+                Start a game at a table.
+
+                 The table's id becomes the game's id, so starting a game at a table that is
+                 already playing one starts nothing and answers the game already there.
+
+                 Participants are built by the caller from the table's seats, which is where a
+                 seat becomes a participant number.
+        idl.game.dto.CreateSessionResponse:
+            type: object
+            properties:
+                session:
+                    $ref: '#/components/schemas/idl.game.model.SessionView'
+            description: The game, projected for whoever asked.
+        idl.game.dto.ListGameSpecRequest:
+            type: object
+            properties: {}
+        idl.game.dto.ListGameSpecResponse:
+            type: object
+            properties:
+                collection:
+                    $ref: '#/components/schemas/idl.game.model.GameSpecCollection'
+        idl.game.dto.ReadSessionRequest:
+            type: object
+            properties:
+                sessionId:
+                    type: string
+        idl.game.dto.ReadSessionResponse:
+            type: object
+            properties:
+                session:
+                    $ref: '#/components/schemas/idl.game.model.SessionView'
+            description: The game, projected for whoever asked.
+        idl.game.model.GameResult:
+            type: object
+            properties:
+                participantItems:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/idl.game.model.ParticipantResult'
+            description: |-
+                How a finished game came out, one entry per participant.
+
+                 A game of more than two says what each of them got. No score is carried: a
+                 game that is scored rather than won says so in its own state.
+        idl.game.model.GameSpec:
+            type: object
+            properties:
+                gameType:
+                    enum:
+                        - GAME_TYPE_UNSPECIFIED
+                        - GAME_TYPE_CHESS
+                    type: string
+                    format: enum
+                bounds:
+                    $ref: '#/components/schemas/idl.game.model.ParticipantBounds'
+            description: One game, and what it takes to play it.
+        idl.game.model.GameSpecCollection:
+            type: object
+            properties:
+                gameSpecItems:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/idl.game.model.GameSpec'
+            description: |-
+                Every game this system hosts.
+
+                 What every listing of games answers with. A count or the filter a listing was
+                 answered under belongs here.
+        idl.game.model.GameState:
+            type: object
+            properties:
+                payload:
+                    $ref: '#/components/schemas/google.protobuf.Any'
+                participantToAct:
+                    type: integer
+                    format: uint32
+                result:
+                    $ref: '#/components/schemas/idl.game.model.GameResult'
+            description: |-
+                One game, and the two things about it that are true whatever game it is.
+
+                 `payload` is the game's own state. It is kept and handed back to that game's
+                 rules unopened, and only that game can read it. Its type is what `Any` carries
+                 and is not repeated here.
+        idl.game.model.Participant:
+            type: object
+            properties:
+                number:
+                    type: integer
+                    format: uint32
+                playerId:
+                    type: string
+            description: |-
+                A player taking part in a game, and their place in its turn order.
+
+                 `number` is fixed when the game is created and never changes. It is the only
+                 part of this a game is told; a player id never reaches a game's rules.
+                 Numbered from 1, so 0 means no participant wherever one is named.
+        idl.game.model.ParticipantBounds:
+            type: object
+            properties:
+                minimum:
+                    type: integer
+                    format: uint32
+                maximum:
+                    type: integer
+                    format: uint32
+            description: |-
+                The number of participants a game can be played by.
+
+                 A bound on how many a game may be started with, not on how many have joined.
+        idl.game.model.ParticipantResult:
+            type: object
+            properties:
+                participant:
+                    type: integer
+                    format: uint32
+                outcome:
+                    enum:
+                        - PARTICIPANT_OUTCOME_UNSPECIFIED
+                        - PARTICIPANT_OUTCOME_WON
+                        - PARTICIPANT_OUTCOME_LOST
+                        - PARTICIPANT_OUTCOME_DRAW
+                    type: string
+                    format: enum
+            description: What one participant got out of a finished game.
+        idl.game.model.SessionView:
+            type: object
+            properties:
+                id:
+                    type: string
+                gameType:
+                    enum:
+                        - GAME_TYPE_UNSPECIFIED
+                        - GAME_TYPE_CHESS
+                    type: string
+                    format: enum
+                participants:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/idl.game.model.Participant'
+                participant:
+                    type: integer
+                    format: uint32
+                state:
+                    $ref: '#/components/schemas/idl.game.model.GameState'
+                lastCommandId:
+                    type: string
+                version:
+                    type: string
+            description: |-
+                One game as one participant may see it.
+
+                 `state.payload` is the game projected for `participant`, which in a game with
+                 hidden information is less than the whole game. A view is rendered, never
+                 written back, and never handed to a game's rules.
+
+                 A view arrives both as an answer and unasked, so two of them can cross. A
+                 client renders one only when its version is above the version it is showing.
         idl.lobby.dto.DeleteTableRequest:
             type: object
             properties:
@@ -249,4 +560,18 @@ components:
                  What every listing of tables answers with. A count, a cursor or the filter a
                  listing was answered under belongs here.
 tags:
+    - name: GameSpecService
+      description: The catalogue of games, assembled from what each game answers about itself.
+    - name: SessionService
+      description: |-
+        A game being played, and the one way to change one.
+
+         A game changes by applying a command and in no other way. There is no write of
+         a state, so no caller can set one.
     - name: TableService
+      description: |-
+        Storage for tables.
+
+         Four methods and no domain verbs. Joining a seat and leaving one are decided
+         above this layer and arrive here as a write of the whole table, guarded by the
+         version it was read at.

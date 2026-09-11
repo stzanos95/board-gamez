@@ -1,0 +1,29 @@
+// How a game finished.
+
+syntax = "proto3";
+
+package idl.game.model;
+
+option go_package = "boardgamez/contracts/gen/go/idl/game/model;gamemodel";
+
+// How one participant finished.
+enum ParticipantOutcome {
+  PARTICIPANT_OUTCOME_UNSPECIFIED = 0;
+  PARTICIPANT_OUTCOME_WON = 1;
+  PARTICIPANT_OUTCOME_LOST = 2;
+  PARTICIPANT_OUTCOME_DRAW = 3;
+}
+
+// What one participant got out of a finished game.
+message ParticipantResult {
+  uint32 participant = 1;
+  ParticipantOutcome outcome = 2;
+}
+
+// How a finished game came out, one entry per participant.
+//
+// A game of more than two says what each of them got. No score is carried: a
+// game that is scored rather than won says so in its own state.
+message GameResult {
+  repeated ParticipantResult participant_items = 1;
+}

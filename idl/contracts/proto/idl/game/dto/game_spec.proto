@@ -1,0 +1,15 @@
+// Reading what games there are.
+
+syntax = "proto3";
+
+package idl.game.dto;
+
+import "idl/game/model/game_spec.proto";
+
+option go_package = "boardgamez/contracts/gen/go/idl/game/dto;gamedto";
+
+message ListGameSpecRequest {}
+
+message ListGameSpecResponse {
+  idl.game.model.GameSpecCollection collection = 1;
+}

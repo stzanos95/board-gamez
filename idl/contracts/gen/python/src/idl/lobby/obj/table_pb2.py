@@ -23,12 +23,12 @@ _sym_db = _symbol_database.Default()
 
 
 from idl.core.obj import object_metadata_pb2 as idl_dot_core_dot_obj_dot_object__metadata__pb2
-from idl.lobby.model import game_type_pb2 as idl_dot_lobby_dot_model_dot_game__type__pb2
+from idl.game.model import game_type_pb2 as idl_dot_game_dot_model_dot_game__type__pb2
 from idl.lobby.model import seat_pb2 as idl_dot_lobby_dot_model_dot_seat__pb2
 from idl.lobby.model import table_pb2 as idl_dot_lobby_dot_model_dot_table__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x19idl/lobby/obj/table.proto\x12\ridl.lobby.obj\x1a\"idl/core/obj/object_metadata.proto\x1a\x1fidl/lobby/model/game_type.proto\x1a\x1aidl/lobby/model/seat.proto\x1a\x1bidl/lobby/model/table.proto\"\xbc\x01\n\x08TableObj\x12.\n\x08metadata\x18\x01 \x01(\x0b\x32\x1c.idl.core.obj.ObjectMetadata\x12,\n\tgame_type\x18\x02 \x01(\x0e\x32\x19.idl.lobby.model.GameType\x12,\n\x06status\x18\x03 \x01(\x0e\x32\x1c.idl.lobby.model.TableStatus\x12$\n\x05seats\x18\x04 \x03(\x0b\x32\x15.idl.lobby.model.SeatB4Z2boardgamez/contracts/gen/go/idl/lobby/obj;lobbyobjb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x19idl/lobby/obj/table.proto\x12\ridl.lobby.obj\x1a\"idl/core/obj/object_metadata.proto\x1a\x1eidl/game/model/game_type.proto\x1a\x1aidl/lobby/model/seat.proto\x1a\x1bidl/lobby/model/table.proto\"\xbb\x01\n\x08TableObj\x12.\n\x08metadata\x18\x01 \x01(\x0b\x32\x1c.idl.core.obj.ObjectMetadata\x12+\n\tgame_type\x18\x02 \x01(\x0e\x32\x18.idl.game.model.GameType\x12,\n\x06status\x18\x03 \x01(\x0e\x32\x1c.idl.lobby.model.TableStatus\x12$\n\x05seats\x18\x04 \x03(\x0b\x32\x15.idl.lobby.model.SeatB4Z2boardgamez/contracts/gen/go/idl/lobby/obj;lobbyobjb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -36,6 +36,6 @@ _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'idl.lobby.obj.table_pb2', _
 if not _descriptor._USE_C_DESCRIPTORS:
   _globals['DESCRIPTOR']._loaded_options = None
   _globals['DESCRIPTOR']._serialized_options = b'Z2boardgamez/contracts/gen/go/idl/lobby/obj;lobbyobj'
-  _globals['_TABLEOBJ']._serialized_start=171
-  _globals['_TABLEOBJ']._serialized_end=359
+  _globals['_TABLEOBJ']._serialized_start=170
+  _globals['_TABLEOBJ']._serialized_end=357
 # @@protoc_insertion_point(module_scope)

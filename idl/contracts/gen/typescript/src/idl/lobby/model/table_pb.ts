@@ -6,8 +6,8 @@
 
 import type { GenEnum, GenFile, GenMessage } from "@bufbuild/protobuf/codegenv1";
 import { enumDesc, fileDesc, messageDesc } from "@bufbuild/protobuf/codegenv1";
-import type { GameType } from "./game_type_pb";
-import { file_idl_lobby_model_game_type } from "./game_type_pb";
+import type { GameType } from "../../game/model/game_type_pb";
+import { file_idl_game_model_game_type } from "../../game/model/game_type_pb";
 import type { Seat } from "./seat_pb";
 import { file_idl_lobby_model_seat } from "./seat_pb";
 import type { Message } from "@bufbuild/protobuf";
@@ -16,7 +16,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file idl/lobby/model/table.proto.
  */
 export const file_idl_lobby_model_table: GenFile = /*@__PURE__*/
-  fileDesc("ChtpZGwvbG9iYnkvbW9kZWwvdGFibGUucHJvdG8SD2lkbC5sb2JieS5tb2RlbCKmAQoFVGFibGUSCgoCaWQYASABKAkSLAoJZ2FtZV90eXBlGAIgASgOMhkuaWRsLmxvYmJ5Lm1vZGVsLkdhbWVUeXBlEiwKBnN0YXR1cxgDIAEoDjIcLmlkbC5sb2JieS5tb2RlbC5UYWJsZVN0YXR1cxIkCgVzZWF0cxgEIAMoCzIVLmlkbC5sb2JieS5tb2RlbC5TZWF0Eg8KB3ZlcnNpb24YBSABKAQiPgoPVGFibGVDb2xsZWN0aW9uEisKC3RhYmxlX2l0ZW1zGAEgAygLMhYuaWRsLmxvYmJ5Lm1vZGVsLlRhYmxlKpoBCgtUYWJsZVN0YXR1cxIcChhUQUJMRV9TVEFUVVNfVU5TUEVDSUZJRUQQABIYChRUQUJMRV9TVEFUVVNfV0FJVElORxABEhwKGFRBQkxFX1NUQVRVU19JTl9QUk9HUkVTUxACEhkKFVRBQkxFX1NUQVRVU19GSU5JU0hFRBADEhoKFlRBQkxFX1NUQVRVU19BQkFORE9ORUQQBEI4WjZib2FyZGdhbWV6L2NvbnRyYWN0cy9nZW4vZ28vaWRsL2xvYmJ5L21vZGVsO2xvYmJ5bW9kZWxiBnByb3RvMw", [file_idl_lobby_model_game_type, file_idl_lobby_model_seat]);
+  fileDesc("ChtpZGwvbG9iYnkvbW9kZWwvdGFibGUucHJvdG8SD2lkbC5sb2JieS5tb2RlbCKlAQoFVGFibGUSCgoCaWQYASABKAkSKwoJZ2FtZV90eXBlGAIgASgOMhguaWRsLmdhbWUubW9kZWwuR2FtZVR5cGUSLAoGc3RhdHVzGAMgASgOMhwuaWRsLmxvYmJ5Lm1vZGVsLlRhYmxlU3RhdHVzEiQKBXNlYXRzGAQgAygLMhUuaWRsLmxvYmJ5Lm1vZGVsLlNlYXQSDwoHdmVyc2lvbhgFIAEoBCI+Cg9UYWJsZUNvbGxlY3Rpb24SKwoLdGFibGVfaXRlbXMYASADKAsyFi5pZGwubG9iYnkubW9kZWwuVGFibGUqmgEKC1RhYmxlU3RhdHVzEhwKGFRBQkxFX1NUQVRVU19VTlNQRUNJRklFRBAAEhgKFFRBQkxFX1NUQVRVU19XQUlUSU5HEAESHAoYVEFCTEVfU1RBVFVTX0lOX1BST0dSRVNTEAISGQoVVEFCTEVfU1RBVFVTX0ZJTklTSEVEEAMSGgoWVEFCTEVfU1RBVFVTX0FCQU5ET05FRBAEQjhaNmJvYXJkZ2FtZXovY29udHJhY3RzL2dlbi9nby9pZGwvbG9iYnkvbW9kZWw7bG9iYnltb2RlbGIGcHJvdG8z", [file_idl_game_model_game_type, file_idl_lobby_model_seat]);
 
 /**
  * A table and the seats around it.
@@ -34,7 +34,7 @@ export type Table = Message<"idl.lobby.model.Table"> & {
   id: string;
 
   /**
-   * @generated from field: idl.lobby.model.GameType game_type = 2;
+   * @generated from field: idl.game.model.GameType game_type = 2;
    */
   gameType: GameType;
 
