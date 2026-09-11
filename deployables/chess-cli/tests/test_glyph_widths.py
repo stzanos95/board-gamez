@@ -5,11 +5,10 @@ Every glyph the board can draw must occupy exactly one terminal column.
 import unicodedata
 import unittest
 
-from chess.models.color import Color
-from chess.models.occupant import Occupant
-from chess.models.piece_type import PieceType
+from chess.core.colors import ALL_COLORS
+from idl.chess.model.piece_pb2 import Occupant
 
-from chess_cli.display.piece_glyphs import PieceGlyphs
+from chess_cli.display.piece_glyphs import HOLLOW_UNICODE_GLYPHS_BY_PIECE_TYPE, PieceGlyphs
 
 # Narrow and Neutral are one column everywhere. Ambiguous is one column on some
 # terminals and two on others, which silently misaligns the board; Wide and
@@ -21,8 +20,8 @@ def every_glyph() -> list[str]:
     glyphs = []
     for use_unicode in (True, False):
         glyphs.append(PieceGlyphs.empty_square_glyph(use_unicode))
-        for color in Color:
-            for piece_type in PieceType:
+        for color in ALL_COLORS:
+            for piece_type in HOLLOW_UNICODE_GLYPHS_BY_PIECE_TYPE:
                 for transparent_white in (True, False):
                     glyphs.append(
                         PieceGlyphs.glyph_for(

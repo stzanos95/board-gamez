@@ -2,7 +2,7 @@
 The direction bundles each sliding piece travels along.
 """
 
-from chess.models.direction import Direction
+from chess.movement.direction import Direction
 
 ORTHOGONAL_DIRECTIONS: tuple[Direction, ...] = (
     Direction.NORTH,

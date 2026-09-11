@@ -2,7 +2,9 @@ from abc import ABC, abstractmethod
 
 from chess.board.chess_board_state import ChessBoardState
 from chess.engine.chess_engine import ChessEngine
-from chess.models.chess_turn_history import ChessTurnHistory
+from idl.chess.model.game_pb2 import ChessTurn
+
+from chess_cli.player_names import PlayerNames
 
 
 class BaseDisplay(ABC):
@@ -21,13 +23,13 @@ class BaseDisplay(ABC):
         """
 
     @abstractmethod
-    def render_status(self, engine: ChessEngine) -> str:
+    def render_status(self, engine: ChessEngine, names: PlayerNames) -> str:
         """
         Where the game stands, or an empty string if there is nothing to say.
         """
 
     @abstractmethod
-    def render_move_list(self, history: ChessTurnHistory) -> str:
+    def render_move_list(self, turns: tuple[ChessTurn, ...]) -> str:
         """
         The moves played so far, or an empty string if there are none.
         """

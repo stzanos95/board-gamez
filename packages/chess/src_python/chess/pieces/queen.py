@@ -1,9 +1,10 @@
 from dataclasses import dataclass
 
+from idl.chess.model.move_pb2 import Move
+from idl.chess.model.piece_pb2 import PIECE_TYPE_QUEEN, PieceType
+
 from chess.contracts.board_state_view import BoardStateView
-from chess.models.move import Move
-from chess.models.piece_type import PieceType
-from chess.models.square import Square
+from chess.core.squares import SquareIndex
 from chess.movement.direction_sets import ALL_EIGHT_DIRECTIONS
 from chess.movement.ray_scanner import RayScanner
 from chess.pieces.base_piece import BasePiece
@@ -13,7 +14,7 @@ from chess.pieces.base_piece import BasePiece
 class Queen(BasePiece):
     @property
     def piece_type(self) -> PieceType:
-        return PieceType.QUEEN
+        return PIECE_TYPE_QUEEN
 
     def pseudo_legal_moves(self, state: BoardStateView) -> tuple[Move, ...]:
         return RayScanner.moves_along_rays(
@@ -24,7 +25,7 @@ class Queen(BasePiece):
             directions=ALL_EIGHT_DIRECTIONS,
         )
 
-    def attacked_squares(self, state: BoardStateView) -> frozenset[Square]:
+    def attacked_squares(self, state: BoardStateView) -> frozenset[SquareIndex]:
         return RayScanner.attacked_squares_along_rays(
             state=state, origin=self.square, directions=ALL_EIGHT_DIRECTIONS
         )

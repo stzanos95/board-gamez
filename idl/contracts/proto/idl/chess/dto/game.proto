@@ -1,0 +1,56 @@
+// Starting a game of chess, reading it, and doing something in it.
+
+syntax = "proto3";
+
+package idl.chess.dto;
+
+import "idl/chess/model/action.proto";
+import "idl/chess/model/session.proto";
+
+option go_package = "boardgamez/contracts/gen/go/idl/chess/dto;chessdto";
+
+// Start a game at a table.
+//
+// The table's seats decide who plays which side: the first seat is White and the
+// second is Black. A table already playing a game starts nothing and answers the
+// game already there.
+message StartGameRequest {
+  string table_id = 1;
+  string player_id = 2;  // Who is asking; the session answered is projected for them.
+}
+
+message StartGameResponse {
+  idl.chess.model.ChessSession session = 1;  // Unset when the table cannot start a game.
+}
+
+message ReadGameRequest {
+  string table_id = 1;
+  string player_id = 2;  // Who is asking; the session answered is projected for them.
+}
+
+message ReadGameResponse {
+  idl.chess.model.ChessSession session = 1;  // Unset when no game is being played there.
+}
+
+// One thing a player does in a game.
+//
+// `command_id` is minted by the caller. Sending an action a second time applies
+// nothing and answers the game the first one produced.
+//
+// `expected_version` is the version of the session the action was built against.
+// An action carrying an earlier one is refused, so an action never reaches the
+// game in a position the player who chose it had not seen.
+//
+// The acting side is not carried. It is found from `player_id`, so a request
+// cannot act for a side its sender does not play.
+message PlayActionRequest {
+  string table_id = 1;
+  string command_id = 2;
+  string player_id = 3;
+  idl.chess.model.ChessAction action = 4;
+  uint64 expected_version = 5;
+}
+
+message PlayActionResponse {
+  idl.chess.model.ActionResult result = 1;
+}

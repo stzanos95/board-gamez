@@ -1,9 +1,16 @@
 import unittest
 
+from idl.chess.model.piece_pb2 import (
+    PIECE_TYPE_KING,
+    PIECE_TYPE_KNIGHT,
+    PIECE_TYPE_PAWN,
+    PIECE_TYPE_QUEEN,
+    PIECE_TYPE_ROOK,
+)
+
 from chess.board.chess_board_state import ChessBoardState
 from chess.board.starting_position import StartingPosition
-from chess.models.castling_rights import CastlingRights
-from chess.models.piece_type import PieceType
+from chess.core.castling_rights import CastlingRightSets
 from chess.notation.coordinate_notation import CoordinateNotation
 from chess.notation.standard_algebraic_notation import StandardAlgebraicNotation
 from chess.rules.game_status_evaluator import GameStatusEvaluator
@@ -22,7 +29,7 @@ def san_for(state: ChessBoardState, coordinate_text: str) -> str:
     )
     return StandardAlgebraicNotation.to_text(
         move=move, legal_moves=legal_moves, resulting_status=resulting_status
-    ).text
+    )
 
 
 class SimpleNotationTest(unittest.TestCase):
@@ -35,10 +42,10 @@ class SimpleNotationTest(unittest.TestCase):
     def test_a_capture_is_marked(self) -> None:
         state = board_with(
             pieces=[
-                white(PieceType.KING, "a1"),
-                black(PieceType.KING, "a8"),
-                white(PieceType.KNIGHT, "f3"),
-                black(PieceType.PAWN, "e5"),
+                white(PIECE_TYPE_KING, "a1"),
+                black(PIECE_TYPE_KING, "a8"),
+                white(PIECE_TYPE_KNIGHT, "f3"),
+                black(PIECE_TYPE_PAWN, "e5"),
             ]
         )
         self.assertEqual(san_for(state, "f3e5"), "Nxe5")
@@ -46,10 +53,10 @@ class SimpleNotationTest(unittest.TestCase):
     def test_a_pawn_capture_names_the_file_it_left(self) -> None:
         state = board_with(
             pieces=[
-                white(PieceType.KING, "a1"),
-                black(PieceType.KING, "a8"),
-                white(PieceType.PAWN, "e4"),
-                black(PieceType.PAWN, "d5"),
+                white(PIECE_TYPE_KING, "a1"),
+                black(PIECE_TYPE_KING, "a8"),
+                white(PIECE_TYPE_PAWN, "e4"),
+                black(PIECE_TYPE_PAWN, "d5"),
             ]
         )
         self.assertEqual(san_for(state, "e4d5"), "exd5")
@@ -57,12 +64,12 @@ class SimpleNotationTest(unittest.TestCase):
     def test_castling(self) -> None:
         state = board_with(
             pieces=[
-                white(PieceType.KING, "e1"),
-                white(PieceType.ROOK, "a1"),
-                white(PieceType.ROOK, "h1"),
-                black(PieceType.KING, "e8"),
+                white(PIECE_TYPE_KING, "e1"),
+                white(PIECE_TYPE_ROOK, "a1"),
+                white(PIECE_TYPE_ROOK, "h1"),
+                black(PIECE_TYPE_KING, "e8"),
             ],
-            castling_rights=CastlingRights.full(),
+            castling_rights=CastlingRightSets.full(),
         )
         self.assertEqual(san_for(state, "e1g1"), "O-O")
         self.assertEqual(san_for(state, "e1c1"), "O-O-O")
@@ -72,9 +79,9 @@ class SimpleNotationTest(unittest.TestCase):
         # under test is the promotion mark alone rather than a check as well.
         state = board_with(
             pieces=[
-                white(PieceType.PAWN, "e7"),
-                white(PieceType.KING, "a1"),
-                black(PieceType.KING, "a5"),
+                white(PIECE_TYPE_PAWN, "e7"),
+                white(PIECE_TYPE_KING, "a1"),
+                black(PIECE_TYPE_KING, "a5"),
             ]
         )
         self.assertEqual(san_for(state, "e7e8q"), "e8=Q")
@@ -83,18 +90,18 @@ class SimpleNotationTest(unittest.TestCase):
     def test_check_and_mate_are_marked(self) -> None:
         checking = board_with(
             pieces=[
-                white(PieceType.KING, "a1"),
-                white(PieceType.ROOK, "h2"),
-                black(PieceType.KING, "e8"),
+                white(PIECE_TYPE_KING, "a1"),
+                white(PIECE_TYPE_ROOK, "h2"),
+                black(PIECE_TYPE_KING, "e8"),
             ]
         )
         self.assertEqual(san_for(checking, "h2e2"), "Re2+")
         mating = board_with(
             pieces=[
-                white(PieceType.KING, "a1"),
-                white(PieceType.ROOK, "h7"),
-                white(PieceType.ROOK, "g1"),
-                black(PieceType.KING, "e8"),
+                white(PIECE_TYPE_KING, "a1"),
+                white(PIECE_TYPE_ROOK, "h7"),
+                white(PIECE_TYPE_ROOK, "g1"),
+                black(PIECE_TYPE_KING, "e8"),
             ]
         )
         self.assertEqual(san_for(mating, "g1g8"), "Rg8#")
@@ -104,10 +111,10 @@ class DisambiguationTest(unittest.TestCase):
     def test_by_file_when_the_files_differ(self) -> None:
         state = board_with(
             pieces=[
-                white(PieceType.KING, "a1"),
-                black(PieceType.KING, "a8"),
-                white(PieceType.KNIGHT, "c3"),
-                white(PieceType.KNIGHT, "g1"),
+                white(PIECE_TYPE_KING, "a1"),
+                black(PIECE_TYPE_KING, "a8"),
+                white(PIECE_TYPE_KNIGHT, "c3"),
+                white(PIECE_TYPE_KNIGHT, "g1"),
             ]
         )
         self.assertEqual(san_for(state, "c3e2"), "Nce2")
@@ -116,10 +123,10 @@ class DisambiguationTest(unittest.TestCase):
     def test_by_rank_when_the_files_match(self) -> None:
         state = board_with(
             pieces=[
-                white(PieceType.KING, "h1"),
-                black(PieceType.KING, "h8"),
-                white(PieceType.ROOK, "a1"),
-                white(PieceType.ROOK, "a5"),
+                white(PIECE_TYPE_KING, "h1"),
+                black(PIECE_TYPE_KING, "h8"),
+                white(PIECE_TYPE_ROOK, "a1"),
+                white(PIECE_TYPE_ROOK, "a5"),
             ]
         )
         self.assertEqual(san_for(state, "a1a3"), "R1a3")
@@ -128,11 +135,11 @@ class DisambiguationTest(unittest.TestCase):
     def test_by_whole_square_when_neither_alone_is_enough(self) -> None:
         state = board_with(
             pieces=[
-                white(PieceType.KING, "h1"),
-                black(PieceType.KING, "h6"),
-                white(PieceType.QUEEN, "a1"),
-                white(PieceType.QUEEN, "d1"),
-                white(PieceType.QUEEN, "a4"),
+                white(PIECE_TYPE_KING, "h1"),
+                black(PIECE_TYPE_KING, "h6"),
+                white(PIECE_TYPE_QUEEN, "a1"),
+                white(PIECE_TYPE_QUEEN, "d1"),
+                white(PIECE_TYPE_QUEEN, "a4"),
             ]
         )
         self.assertEqual(san_for(state, "a1d4"), "Qa1d4")
@@ -140,9 +147,9 @@ class DisambiguationTest(unittest.TestCase):
     def test_no_disambiguation_when_only_one_piece_can_go(self) -> None:
         state = board_with(
             pieces=[
-                white(PieceType.KING, "a1"),
-                black(PieceType.KING, "a8"),
-                white(PieceType.KNIGHT, "c3"),
+                white(PIECE_TYPE_KING, "a1"),
+                black(PIECE_TYPE_KING, "a8"),
+                white(PIECE_TYPE_KNIGHT, "c3"),
             ]
         )
         self.assertEqual(san_for(state, "c3e2"), "Ne2")

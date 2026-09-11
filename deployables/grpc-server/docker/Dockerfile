@@ -22,6 +22,8 @@ COPY idl/contracts/gen/fastapi /app/idl/contracts/gen/fastapi
 COPY packages/core /app/packages/core
 COPY packages/lobby /app/packages/lobby
 COPY packages/game /app/packages/game
+COPY packages/chess /app/packages/chess
+COPY packages/product-chess /app/packages/product-chess
 COPY deployables/grpc-server /app/deployables/grpc-server
 
 WORKDIR /app/deployables/grpc-server
@@ -47,6 +49,8 @@ COPY --chown=server:server idl/contracts/gen/fastapi /app/idl/contracts/gen/fast
 COPY --chown=server:server packages/core /app/packages/core
 COPY --chown=server:server packages/lobby /app/packages/lobby
 COPY --chown=server:server packages/game /app/packages/game
+COPY --chown=server:server packages/chess /app/packages/chess
+COPY --chown=server:server packages/product-chess /app/packages/product-chess
 COPY --chown=server:server deployables/grpc-server /app/deployables/grpc-server
 COPY deployables/grpc-server/docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh

@@ -1,11 +1,12 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, replace
 
+from idl.chess.model.move_pb2 import Move
+from idl.chess.model.piece_pb2 import Color, PieceType
+from idl.chess.model.square_pb2 import Square
+
 from chess.contracts.board_state_view import BoardStateView
-from chess.models.color import Color
-from chess.models.move import Move
-from chess.models.piece_type import PieceType
-from chess.models.square import Square
+from chess.core.squares import SquareIndex
 
 
 @dataclass(frozen=True, slots=True)
@@ -18,7 +19,8 @@ class BasePiece(ABC):
 
     It offers two generators because they differ: a pawn moves forward and attacks
     diagonally, and a king bears on squares it may not legally enter. Check
-    detection uses the attack generator.
+    detection uses the attack generator, and answers square indexes so the set
+    can be built and searched.
 
     A piece does not decide legality. Anything needing the whole board belongs to
     the rules layer.
@@ -38,7 +40,7 @@ class BasePiece(ABC):
         """
 
     @abstractmethod
-    def attacked_squares(self, state: BoardStateView) -> frozenset[Square]:
+    def attacked_squares(self, state: BoardStateView) -> frozenset[SquareIndex]:
         """
         Every square this piece bears on, including ones it defends.
         """

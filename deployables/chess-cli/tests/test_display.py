@@ -2,25 +2,24 @@ import unittest
 
 from chess.board.starting_position import StartingPosition
 from chess.engine.chess_engine import ChessEngine
-from chess.models.chess_player import ChessPlayer
-from chess.models.color import Color
 from chess.notation.coordinate_notation import CoordinateNotation
 
 from chess_cli.config_error import ConfigError
 from chess_cli.display.config import DisplayConfig, DisplayType
 from chess_cli.display.provider import DISPLAY_BUILDERS_BY_TYPE, DisplayProvider
 from chess_cli.display.text_display import TextDisplay
-from tests.settings_builder import display_config_for, display_for
+from chess_cli.player_names import BLACK_PARTICIPANT, WHITE_PARTICIPANT, PlayerNames
+from tests.settings_builder import display_config_for, display_for, settings_for
 
 ASCII_DISPLAY = display_for(use_unicode=False)
 UNICODE_DISPLAY = display_for(use_unicode=True)
 BARE_DISPLAY = display_for(use_unicode=False, show_coordinates=False)
+NAMES = PlayerNames.from_settings(settings_for().players)
 
 
 def new_game() -> ChessEngine:
     return ChessEngine.new_game(
-        white=ChessPlayer(name="Ada", color=Color.WHITE),
-        black=ChessPlayer(name="Alan", color=Color.BLACK),
+        white_participant=WHITE_PARTICIPANT, black_participant=BLACK_PARTICIPANT
     )
 
 
@@ -116,37 +115,37 @@ class TextBoardTest(unittest.TestCase):
 
 class MoveListTest(unittest.TestCase):
     def test_an_unplayed_game_has_no_move_list(self) -> None:
-        self.assertEqual(ASCII_DISPLAY.render_move_list(new_game().history), "")
+        self.assertEqual(ASCII_DISPLAY.render_move_list(new_game().turns), "")
 
     def test_moves_are_numbered_in_pairs(self) -> None:
         engine = play_all(new_game(), ("e2e4", "e7e5", "g1f3", "b8c6"))
-        self.assertEqual(ASCII_DISPLAY.render_move_list(engine.history), "1. e4 e5 2. Nf3 Nc6")
+        self.assertEqual(ASCII_DISPLAY.render_move_list(engine.turns), "1. e4 e5 2. Nf3 Nc6")
 
     def test_a_lone_white_move_is_still_numbered(self) -> None:
         engine = play_all(new_game(), ("e2e4",))
-        self.assertEqual(ASCII_DISPLAY.render_move_list(engine.history), "1. e4")
+        self.assertEqual(ASCII_DISPLAY.render_move_list(engine.turns), "1. e4")
 
 
 class StatusTest(unittest.TestCase):
     def test_a_quiet_position_says_nothing(self) -> None:
-        self.assertEqual(ASCII_DISPLAY.render_status(new_game()), "")
+        self.assertEqual(ASCII_DISPLAY.render_status(new_game(), NAMES), "")
 
     def test_check_names_the_player_who_must_answer_it(self) -> None:
         # 1. e4 d5 2. Bb5+ — the d-pawn has left, so the bishop reaches e8.
         engine = play_all(new_game(), ("e2e4", "d7d5", "f1b5"))
-        self.assertEqual(ASCII_DISPLAY.render_status(engine), "Alan is in check.")
+        self.assertEqual(ASCII_DISPLAY.render_status(engine, NAMES), "Alan is in check.")
 
     def test_checkmate_names_the_winner(self) -> None:
         engine = play_all(new_game(), ("f2f3", "e7e5", "g2g4", "d8h4"))
-        self.assertEqual(ASCII_DISPLAY.render_status(engine), "Checkmate. Alan wins. 0-1")
+        self.assertEqual(ASCII_DISPLAY.render_status(engine, NAMES), "Checkmate. Alan wins. 0-1")
 
     def test_resignation_is_described_as_such(self) -> None:
         engine = play_all(new_game(), ("e2e4",)).resign()
-        self.assertEqual(ASCII_DISPLAY.render_status(engine), "Alan resigns. Ada wins. 1-0")
+        self.assertEqual(ASCII_DISPLAY.render_status(engine, NAMES), "Alan resigns. Ada wins. 1-0")
 
     def test_a_draw_names_the_rule_that_ended_it(self) -> None:
         shuffle = ("g1f3", "g8f6", "f3g1", "f6g8")
         engine = play_all(play_all(new_game(), shuffle), shuffle)
         self.assertEqual(
-            ASCII_DISPLAY.render_status(engine), "Draw by threefold repetition. 1/2-1/2"
+            ASCII_DISPLAY.render_status(engine, NAMES), "Draw by threefold repetition. 1/2-1/2"
         )

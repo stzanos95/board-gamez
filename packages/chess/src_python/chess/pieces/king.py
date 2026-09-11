@@ -1,12 +1,13 @@
 from dataclasses import dataclass
 
+from idl.chess.model.move_pb2 import Move
+from idl.chess.model.piece_pb2 import PIECE_TYPE_KING, PieceType
+
 from chess.contracts.board_state_view import BoardStateView
-from chess.models.move import Move
-from chess.models.piece_type import PieceType
-from chess.models.square import Square
-from chess.models.vector import Vector
+from chess.core.squares import SquareIndex
 from chess.movement.direction_sets import ALL_EIGHT_DIRECTIONS
 from chess.movement.step_scanner import StepScanner
+from chess.movement.vector import Vector
 from chess.pieces.base_piece import BasePiece
 
 KING_OFFSETS: tuple[Vector, ...] = tuple(direction.vector for direction in ALL_EIGHT_DIRECTIONS)
@@ -23,7 +24,7 @@ class King(BasePiece):
 
     @property
     def piece_type(self) -> PieceType:
-        return PieceType.KING
+        return PIECE_TYPE_KING
 
     def pseudo_legal_moves(self, state: BoardStateView) -> tuple[Move, ...]:
         return StepScanner.moves_to_offsets(
@@ -34,5 +35,5 @@ class King(BasePiece):
             offsets=KING_OFFSETS,
         )
 
-    def attacked_squares(self, state: BoardStateView) -> frozenset[Square]:
+    def attacked_squares(self, state: BoardStateView) -> frozenset[SquareIndex]:
         return StepScanner.attacked_squares_at_offsets(origin=self.square, offsets=KING_OFFSETS)

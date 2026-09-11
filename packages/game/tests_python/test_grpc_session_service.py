@@ -8,9 +8,9 @@ from idl.game.model.game_type_pb2 import GameType
 from idl.game.model.participant_pb2 import Participant
 from idl.game.model.session_pb2 import SessionView
 
+from game.controller.rules_registry import RulesRegistry
 from game.controller.session_controller import SessionController
 from game.service.grpc_session_service import GrpcSessionService
-from game.service.rules_client_registry import RulesClientRegistry
 from tests_python.in_memory_session_repository import InMemorySessionRepository
 
 SESSION_ID = "t-1"
@@ -26,7 +26,7 @@ class RecordingController(SessionController):
     """
 
     def __init__(self) -> None:
-        super().__init__(repository=InMemorySessionRepository(), rules=RulesClientRegistry({}))
+        super().__init__(repository=InMemorySessionRepository(), rules=RulesRegistry({}))
         self.callers: list[str] = []
         self.created: list[tuple[str, GameType, tuple[Participant, ...]]] = []
         self.read_ids: list[str] = []

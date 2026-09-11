@@ -3,16 +3,27 @@ Saying in words where the game stands.
 """
 
 from chess.engine.chess_engine import ChessEngine
-from chess.models.game_result import GameResult
-from chess.models.game_status import GameStatus
+from idl.chess.model import game_pb2
+from idl.chess.model.game_pb2 import GameResult
 
-DRAW_DESCRIPTIONS_BY_STATUS: dict[GameStatus, str] = {
-    GameStatus.STALEMATE: "stalemate",
-    GameStatus.DRAW_BY_FIFTY_MOVE_RULE: "the fifty-move rule",
-    GameStatus.DRAW_BY_REPETITION: "threefold repetition",
-    GameStatus.DRAW_BY_INSUFFICIENT_MATERIAL: "insufficient material",
+from chess_cli.player_names import PlayerNames
+
+DrawDescriptionsByStatus = dict[game_pb2.GameStatus, str]
+ScorelinesByOutcome = dict[game_pb2.GameOutcome, str]
+
+DRAW_DESCRIPTIONS_BY_STATUS: DrawDescriptionsByStatus = {
+    game_pb2.GAME_STATUS_STALEMATE: "stalemate",
+    game_pb2.GAME_STATUS_DRAW_BY_FIFTY_MOVE_RULE: "the fifty-move rule",
+    game_pb2.GAME_STATUS_DRAW_BY_REPETITION: "threefold repetition",
+    game_pb2.GAME_STATUS_DRAW_BY_INSUFFICIENT_MATERIAL: "insufficient material",
 }
 UNKNOWN_DRAW_DESCRIPTION = "agreement"
+
+SCORELINES_BY_OUTCOME: ScorelinesByOutcome = {
+    game_pb2.GAME_OUTCOME_WHITE_WINS: "1-0",
+    game_pb2.GAME_OUTCOME_BLACK_WINS: "0-1",
+    game_pb2.GAME_OUTCOME_DRAW: "1/2-1/2",
+}
 
 
 class StatusRenderer:
@@ -21,32 +32,29 @@ class StatusRenderer:
     """
 
     @staticmethod
-    def render_status(engine: ChessEngine) -> str:
+    def render_status(engine: ChessEngine, names: PlayerNames) -> str:
         """
         Where the game stands, or an empty string when there is nothing to say.
         """
         result = engine.result
         if result is not None:
-            return StatusRenderer.render_result(result)
-        if engine.status is GameStatus.CHECK:
-            return f"{engine.active_player.name} is in check."
+            return StatusRenderer.render_result(result, names)
+        if engine.status == game_pb2.GAME_STATUS_CHECK:
+            return f"{names.get_name(engine.active_player)} is in check."
         return ""
 
     @staticmethod
-    def render_result(result: GameResult) -> str:
+    def render_result(result: GameResult, names: PlayerNames) -> str:
         """
         How the game finished, naming the winner and the scoreline.
         """
-        if result.resigning_player is not None and result.winner is not None:
+        scoreline = SCORELINES_BY_OUTCOME[result.outcome]
+        if result.HasField("resigning_player") and result.HasField("winner"):
             return (
-                f"{result.resigning_player.name} resigns. "
-                f"{result.winner.name} wins. {result.outcome.scoreline}"
+                f"{names.get_name(result.resigning_player)} resigns. "
+                f"{names.get_name(result.winner)} wins. {scoreline}"
             )
-        if result.winner is not None:
-            return f"Checkmate. {result.winner.name} wins. {result.outcome.scoreline}"
-        description = (
-            UNKNOWN_DRAW_DESCRIPTION
-            if result.status is None
-            else DRAW_DESCRIPTIONS_BY_STATUS.get(result.status, UNKNOWN_DRAW_DESCRIPTION)
-        )
-        return f"Draw by {description}. {result.outcome.scoreline}"
+        if result.HasField("winner"):
+            return f"Checkmate. {names.get_name(result.winner)} wins. {scoreline}"
+        description = DRAW_DESCRIPTIONS_BY_STATUS.get(result.status, UNKNOWN_DRAW_DESCRIPTION)
+        return f"Draw by {description}. {scoreline}"

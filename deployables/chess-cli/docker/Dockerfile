@@ -14,12 +14,13 @@ ENV UV_PROJECT_ENVIRONMENT=/opt/venv \
     UV_PYTHON_DOWNLOADS=never
 
 WORKDIR /app
+COPY idl/contracts/gen/python /app/idl/contracts/gen/python
 COPY packages/chess /app/packages/chess
 COPY deployables/chess-cli /app/deployables/chess-cli
 
 WORKDIR /app/deployables/chess-cli
 # Includes the dev group, so the same image can run the tests, the linter and the
-# type checker. The runtime itself needs nothing but the standard library.
+# type checker.
 RUN uv sync --no-install-project
 
 
@@ -36,6 +37,7 @@ ENV PYTHONUNBUFFERED=1 \
 RUN useradd --create-home --uid 1000 player
 
 COPY --from=builder --chown=player:player /opt/venv /opt/venv
+COPY --chown=player:player idl/contracts/gen/python /app/idl/contracts/gen/python
 COPY --chown=player:player packages/chess /app/packages/chess
 COPY --chown=player:player deployables/chess-cli /app/deployables/chess-cli
 COPY deployables/chess-cli/docker/entrypoint.sh /usr/local/bin/entrypoint.sh

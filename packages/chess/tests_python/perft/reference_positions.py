@@ -10,7 +10,7 @@ check evasion. The opening position reaches none of those at a workable depth.
 
 from dataclasses import dataclass
 
-from chess.models.color import Color
+from idl.chess.model.piece_pb2 import COLOR_WHITE, Color
 
 
 @dataclass(frozen=True, slots=True)
@@ -31,7 +31,7 @@ class PerftPosition:
 OPENING = PerftPosition(
     name="opening position",
     placement="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR",
-    side_to_move=Color.WHITE,
+    side_to_move=COLOR_WHITE,
     castling_text="KQkq",
     en_passant_target=None,
     node_counts={1: 20, 2: 400, 3: 8902, 4: 197281},
@@ -41,7 +41,7 @@ OPENING = PerftPosition(
 CASTLING_HEAVY = PerftPosition(
     name="castling and pins",
     placement="r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R",
-    side_to_move=Color.WHITE,
+    side_to_move=COLOR_WHITE,
     castling_text="KQkq",
     en_passant_target=None,
     node_counts={1: 48, 2: 2039, 3: 97862},
@@ -51,7 +51,7 @@ CASTLING_HEAVY = PerftPosition(
 EN_PASSANT_HEAVY = PerftPosition(
     name="en passant and promotion race",
     placement="8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8",
-    side_to_move=Color.WHITE,
+    side_to_move=COLOR_WHITE,
     castling_text="",
     en_passant_target=None,
     node_counts={1: 14, 2: 191, 3: 2812, 4: 43238},
@@ -61,7 +61,7 @@ EN_PASSANT_HEAVY = PerftPosition(
 PROMOTION_HEAVY = PerftPosition(
     name="promotions",
     placement="r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1",
-    side_to_move=Color.WHITE,
+    side_to_move=COLOR_WHITE,
     castling_text="kq",
     en_passant_target=None,
     node_counts={1: 6, 2: 264, 3: 9467},

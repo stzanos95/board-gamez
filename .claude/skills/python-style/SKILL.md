@@ -45,9 +45,11 @@ disappeared.
 
 A bare literal that carries meaning gets a name. In practice:
 
-- **Closed sets of values → an enum in its own module.** `Color`, `PieceType`,
-  `MoveKind`, `CastlingSide` — one enum per file, never nested inside another
+- **Closed sets of values → an enum in its own module.** `LogLevel`,
+  `DisplayType`, `SeatOutcome` — one enum per file, never nested inside another
   class (nesting forces callers to import the container just to read the enum).
+  A closed set the schema declares (`Color`, `PieceType`, `GameStatus`) is the
+  generated enum and is never declared again; see rule 3.
 - **An enum's base class is its value type.** `StrEnum` when the values are
   strings, `IntEnum` when they are integers, plain `Enum` when they are neither.
 - **Tuning values → a module constant.** `BOARD_SIZE = 8`,
@@ -101,6 +103,20 @@ Two consequences come with that, and both are the price of the value being real:
 **When a domain has its own nouns, those nouns become classes.** Anything passed
 between layers — function returns, internal exchanges, computed results — is a
 `@dataclass`, never a bare `dict`, `tuple`, or positional pair.
+
+**A noun the schema already names is the generated type.** `Square`, `Move`,
+`CastlingRights`, `Color` are `idl.chess.model`'s messages and enums, held and
+computed over as they are. A dataclass or enum mirroring one is a second
+definition that drifts, and it makes the engine harder to reimplement against
+the same schema in another language. Behaviour goes beside the type in a class
+of static methods, named for the plural of the noun: `Colors.opponent(color)`,
+`Squares.shifted(square, vector)`, `MoveTypes.is_capture(move_type)`,
+`CastlingRightSets.allows(rights, color, side)`. A message is not hashable, so
+a lookup keyed by one uses an index computed from it (`Squares.get_index`).
+Enum values are integers: compare them with `==`, never `is`.
+
+What stays a Python type is what the schema has no reason to name: a board
+indexed by square, a piece that generates moves, a displacement vector.
 
 ```python
 # no — which one is the origin? two same-typed values, and a transposition
@@ -178,11 +194,11 @@ once in the lowest layer that knows both sides, and use the alias wherever the
 mapping is built or held:
 
 ```python
-RulesClientsByGameType = dict[GameType, BaseRulesClient]      # yes
+RulesByGameType = dict[GameType, BaseRules]                  # yes
 
-self._clients: RulesClientsByGameType = {}                    # yes
+self._rules: RulesByGameType = {}                            # yes
 # Keys are data — a game type names the rules that play it.
-self._clients: dict[GameType, BaseRulesClient] = {}           # no — a comment where a name belongs
+self._rules: dict[GameType, BaseRules] = {}                  # no — a comment where a name belongs
 ```
 
 The alias is what says the keys are data. A comment saying so is noise that has
@@ -228,8 +244,9 @@ class ReportBackendSettings:
 Test: if you cannot point at one file that fully describes the shape an outside
 system expects, it is not modelled yet.
 
-Put meaning-bearing behaviour on the type: `status.is_terminal` beats
-`status in (GameStatus.CHECKMATE, GameStatus.STALEMATE, ...)` at every call site.
+Put meaning-bearing behaviour in one place: `GameStatuses.is_terminal(status)`
+beats `status in (GAME_STATUS_CHECKMATE, GAME_STATUS_STALEMATE, ...)` at every
+call site.
 
 ## 4. Configuration is a file parsed into a dataclass
 

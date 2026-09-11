@@ -1,0 +1,39 @@
+// A game of chess being played, as one viewer sees it.
+
+syntax = "proto3";
+
+package idl.chess.model;
+
+import "idl/chess/model/game.proto";
+import "idl/chess/model/piece.proto";
+import "idl/game/model/command_result.proto";
+
+option go_package = "boardgamez/contracts/gen/go/idl/chess/model;chessmodel";
+
+// One game of chess being played, projected for one viewer.
+//
+// The id is the id of the table the game is played at, so a table holds one
+// game at a time.
+//
+// `color` is the side the viewer plays, and is unset for someone who is not
+// playing. Which side may act next is read from the game's own state.
+//
+// `version` counts writes to the game. An action is built against the version
+// it was read at, and a session is rendered only when its version is above the
+// version showing.
+message ChessSession {
+  string id = 1;
+  ChessGame game = 2;
+  Color color = 3;
+  string last_command_id = 4;  // The command that produced this game.
+  uint64 version = 5;
+}
+
+// What happened to an action, and the game as its sender may now see it.
+//
+// The session is carried whatever the outcome, and is unset only when no game is
+// being played at the table the action named.
+message ActionResult {
+  idl.game.model.CommandOutcome outcome = 1;
+  ChessSession session = 2;
+}

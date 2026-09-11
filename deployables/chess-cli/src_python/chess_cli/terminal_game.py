@@ -9,16 +9,16 @@ from dataclasses import dataclass
 
 from chess.core.errors import ChessError, IllegalMoveError, NotationError
 from chess.engine.chess_engine import ChessEngine
-from chess.models.chess_player import ChessPlayer
-from chess.models.color import Color
-from chess.models.game_result import GameResult
 from chess.notation.coordinate_notation import CoordinateNotation
+from idl.chess.model.game_pb2 import GameResult
+from idl.chess.model.piece_pb2 import COLOR_BLACK, COLOR_WHITE, Color
 
 from chess_cli.cli_settings import CliSettings
 from chess_cli.command_parser import CommandParser
 from chess_cli.command_type import CommandType
 from chess_cli.console.base_console import BaseConsole
 from chess_cli.display.base_display import BaseDisplay
+from chess_cli.player_names import BLACK_PARTICIPANT, WHITE_PARTICIPANT, PlayerNames
 
 WELCOME_TEXT = "Chess. Type a move such as 'e2e4', or 'help' for the other commands."
 HELP_TEXT = (
@@ -35,6 +35,10 @@ GOODBYE_TEXT = "Goodbye."
 NOTHING_TO_UNDO_TEXT = "No moves have been played yet."
 NO_MOVES_YET_TEXT = "No moves have been played yet."
 MOVE_SEPARATOR = " "
+
+SideNamesByColor = dict[Color, str]
+
+SIDE_NAMES_BY_COLOR: SideNamesByColor = {COLOR_WHITE: "white", COLOR_BLACK: "black"}
 ONLY_THE_OPENING_POSITION = 1
 
 
@@ -51,15 +55,16 @@ class TerminalGame:
         Returns the result if the game finished, and None if it was abandoned.
         """
         games = [self._new_game()]
+        names = PlayerNames.from_settings(self.settings.players)
         self.console.write_line(WELCOME_TEXT)
-        self._show(games[-1])
+        self._show(games[-1], names)
 
         while True:
             engine = games[-1]
             if engine.is_over:
                 return engine.result
             try:
-                typed = self.console.read_line(self._prompt(engine))
+                typed = self.console.read_line(self._prompt(engine, names))
             except EOFError:
                 self.console.write_line(GOODBYE_TEXT)
                 return None
@@ -77,11 +82,11 @@ class TerminalGame:
                 self.console.write_line(HELP_TEXT)
                 continue
             if command.command_type is CommandType.SHOW_BOARD:
-                self._show(engine)
+                self._show(engine, names)
                 continue
             if command.command_type is CommandType.SHOW_HISTORY:
                 self.console.write_line(
-                    self.display.render_move_list(engine.history) or NO_MOVES_YET_TEXT
+                    self.display.render_move_list(engine.turns) or NO_MOVES_YET_TEXT
                 )
                 continue
             if command.command_type is CommandType.LIST_MOVES:
@@ -92,18 +97,18 @@ class TerminalGame:
                     self.console.write_line(NOTHING_TO_UNDO_TEXT)
                     continue
                 games.pop()
-                self._show(games[-1])
+                self._show(games[-1], names)
                 continue
             if command.command_type is CommandType.RESIGN:
                 games.append(engine.resign())
-                self._show(games[-1])
+                self._show(games[-1], names)
                 continue
 
             played = self._played(engine=engine, command_move_text=command.move_text)
             if played is None:
                 continue
             games.append(played)
-            self._show(played)
+            self._show(played, names)
 
     def _played(self, engine: ChessEngine, command_move_text: str | None) -> ChessEngine | None:
         """
@@ -120,17 +125,17 @@ class TerminalGame:
             return None
         return engine.play(move)
 
-    def _show(self, engine: ChessEngine) -> None:
+    def _show(self, engine: ChessEngine, names: PlayerNames) -> None:
         self.console.write_line("")
         self.console.write_line(self.display.render_board(engine.state))
-        status = self.display.render_status(engine)
+        status = self.display.render_status(engine, names)
         if status:
             self.console.write_line(status)
 
-    def _prompt(self, engine: ChessEngine) -> str:
+    def _prompt(self, engine: ChessEngine, names: PlayerNames) -> str:
         # The console appends its own suffix; naming the player is this layer's job.
-        player = engine.active_player
-        return f"{player.name} ({player.color.value}) "
+        name = names.get_name(engine.active_player)
+        return f"{name} ({SIDE_NAMES_BY_COLOR[engine.state.side_to_move]}) "
 
     def _legal_moves_text(self, engine: ChessEngine) -> str:
         return MOVE_SEPARATOR.join(
@@ -139,6 +144,5 @@ class TerminalGame:
 
     def _new_game(self) -> ChessEngine:
         return ChessEngine.new_game(
-            white=ChessPlayer(name=self.settings.players.white_name, color=Color.WHITE),
-            black=ChessPlayer(name=self.settings.players.black_name, color=Color.BLACK),
+            white_participant=WHITE_PARTICIPANT, black_participant=BLACK_PARTICIPANT
         )

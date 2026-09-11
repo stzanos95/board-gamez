@@ -49,13 +49,3 @@ game:
       port: 6379
       database: 0
       key_prefix: "board-gamez"
-  # Where each game's rules answer, one entry per hosted game. A game with no
-  # entry is not served. Plain HTTP/2 without TLS: reachable only from inside.
-  rules:
-    chess:
-      hostname: "127.0.0.1"
-      port: 50052
-      # Set together with the limits product-chess is configured with: a pair that
-      # disagree fail on whichever side is smaller.
-      max_receive_message_bytes: 4194304
-      max_send_message_bytes: 4194304

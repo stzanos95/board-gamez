@@ -11,7 +11,6 @@ mashumaro reads these annotations at runtime to build the parser, so
 from dataclasses import dataclass
 
 from game.repository.config import SessionRepositoryConfig
-from game.service.rules_config import RulesConfig
 from lobby.repository.config import TableRepositoryConfig
 from mashumaro.mixins.yaml import DataClassYAMLMixin
 
@@ -63,12 +62,10 @@ class LobbyConfig(DataClassYAMLMixin):
 @dataclass(frozen=True, slots=True)
 class GameConfig(DataClassYAMLMixin):
     """
-    What the game domain needs: somewhere to keep its sessions, and where each
-    game's rules answer.
+    What the game domain needs, which is somewhere to keep its sessions.
     """
 
     session_repository: SessionRepositoryConfig
-    rules: RulesConfig
 
 
 @dataclass(frozen=True, slots=True)

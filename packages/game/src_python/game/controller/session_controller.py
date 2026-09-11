@@ -14,8 +14,8 @@ from idl.game.model.participant_pb2 import Participant
 from idl.game.model.session_pb2 import Session, SessionView
 
 from game.adapters.session_adapters import SessionAdapters
+from game.controller.rules_registry import RulesRegistry
 from game.repository.base_session_repository import BaseSessionRepository
-from game.service.rules_client_registry import RulesClientRegistry
 
 UNSTORED_VERSION = 0
 NO_COMMAND_ID = ""
@@ -34,7 +34,7 @@ class SessionController:
     Built once at the entry point and passed to whatever serves it.
     """
 
-    def __init__(self, repository: BaseSessionRepository, rules: RulesClientRegistry) -> None:
+    def __init__(self, repository: BaseSessionRepository, rules: RulesRegistry) -> None:
         self._repository = repository
         self._rules = rules
 
@@ -58,7 +58,7 @@ class SessionController:
             return await self._get_session_view(session, player_id)
         if not SessionController._is_numbered_without_gaps(participants):
             return None
-        state = await self._rules.get_client(game_type).create_game(len(participants))
+        state = await self._rules.get_rules(game_type).create_game(len(participants))
         if state is None:
             return None
         opening = Session(
@@ -129,7 +129,7 @@ class SessionController:
                 CommandOutcome.COMMAND_OUTCOME_OUT_OF_TURN, session, player_id
             )
 
-        rules = self._rules.get_client(session.game_type)
+        rules = self._rules.get_rules(session.game_type)
         next_state = await rules.apply_action(
             session.state, Action(participant=participant, payload=action)
         )
@@ -175,7 +175,7 @@ class SessionController:
         The game projected for this player, by the rules that play it.
         """
         participant = SessionController._get_participant(session, player_id)
-        rules = self._rules.get_client(session.game_type)
+        rules = self._rules.get_rules(session.game_type)
         projected = await rules.read_view(session.state, participant)
         return SessionAdapters.session_to_session_view(session, participant, projected)
 

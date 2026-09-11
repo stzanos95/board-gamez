@@ -28,35 +28,48 @@ One directory per domain, and inside it one directory per job a message can have
 
 ```
 contracts/proto/idl/
-├── table/     a table of N players, and the game contract they play through
-│   ├── model/     seats, turn order, version
-│   ├── dto/       the WebSocket protocol
-│   └── service/   GameService — implemented once per game
-└── chess/     one game's rules
-    ├── model/     what a thing is — the library dataclass equivalent
-    ├── dto/       what an API hands out and takes in
-    ├── obj/       what a repository reads and writes
-    └── service/   what can be called
+├── core/      what every domain needs and no domain owns
+│   ├── dto/       the envelopes a socket frame and a queue message travel in
+│   └── obj/       the metadata every stored row carries
+├── identity/  who someone is
+│   └── model/
+├── lobby/     where people gather to play
+│   ├── model/     tables and seats
+│   ├── dto/       what TableService takes and hands out
+│   ├── obj/       a stored table
+│   └── service/   TableService
+├── game/      a game being played, whatever game it is
+│   ├── model/     a session, a state, an action, a result
+│   ├── dto/       what SessionService, GameSpecService and RulesService carry
+│   ├── obj/       a stored session
+│   └── service/   SessionService, GameSpecService, and RulesService — implemented once per game
+└── chess/     one game
+    ├── model/     the rules' vocabulary, and a game as one viewer sees it
+    ├── dto/       what ChessService takes and hands out
+    └── service/   ChessService — chess as a browser plays it
 ```
 
-`table` never imports `chess`. A game's state and actions reach the session layer
+`game` never imports `chess`. A game's state and actions reach the session layer
 packed into `google.protobuf.Any`, stored and relayed without being opened, which
-is what lets one server host every game. Adding a game is a `GameKind` member and
-another `GameService` implementation.
+is what lets one server host every game. Adding a game is a `GameType` member and
+another implementation of `RulesService`.
+
+`chess` imports `game`: its service answers the platform's outcomes, and its
+session is the platform's session with the game opened. The dependency runs from
+the specific domain to the generic one and never the other way.
 
 The `idl/` segment above them is the Python import root, and it earns its place
 for that reason alone — see below.
-
-Only `model/` has anything in it. The other three are documented and empty,
-waiting for the layers that will fill them: `obj/` for the repositories, `dto/`
-and `service/` for the API.
 
 The split is what keeps one change from becoming three. A stored row gains an
 index, an API response gains a field a client asked for, and neither reaches into
 the rules. What belongs in each is in `.claude/skills/modeling/`.
 
-Everything in `model/` mirrors `packages/chess/src_python/chess/models`, message
-for dataclass and enum for enum.
+Every chess type is the schema's. `packages/chess` computes over
+`idl.chess.model` messages and enums — a square, a move, a position key, a
+turn — and declares no type of its own for anything the schema names. What it
+adds is behaviour: a board indexed by square, the pieces that generate moves,
+and static lookups over the schema's values.
 
 ## Generating
 
@@ -236,11 +249,9 @@ into the package.
 
 ### OpenAPI
 
-`protoc-gen-openapi` walks services, not messages. Until
-`contracts/proto/idl/chess/service` holds a service with `google.api.http`
-annotations, this target writes a valid document with no paths in it. That is
-expected, not a failure — the wiring is in place so that adding the first service
-is one file and one regeneration.
+`protoc-gen-openapi` walks services, not messages. A service without
+`google.api.http` annotations contributes no paths; `RulesService` is one, since
+nothing outside the platform asks a game for its rules.
 
 ### Why every file declares a Go package
 
@@ -265,10 +276,14 @@ Service stubs are not generated. Adding them means pinning one more plugin in
 - **`contracts/proto` is the source of truth.** Not the Python dataclasses, not a
   TypeScript interface someone wrote by hand. If the two disagree, the schema is
   right.
-- **The generated types are the wire, not the domain.** `packages/chess` keeps
-  its own models, because they carry behaviour — `Color.opponent`,
-  `GameStatus.is_terminal`, `Square.shifted` — and a generated class carries
-  none. Converting between them is an adapter, named `<source>_to_<target>`.
+- **A type the schema declares is not declared again.** A Python enum or
+  dataclass that mirrors a message is a second definition that drifts. The
+  engine holds the generated type and puts behaviour beside it, in a class of
+  static methods: `Colors.opponent(color)`, `Squares.shifted(square, vector)`,
+  `GameStatuses.is_terminal(status)`. A message is not hashable, so a lookup
+  keyed by one uses an index computed from it (`Squares.get_index`); nothing
+  else about it differs. The one conversion left is shape: a board indexed by
+  square from the schema's list of occupied squares, and back.
 - **Never renumber a field, and never reuse a number.** Deleting one means
   `reserved 4;`, so a client on the old schema cannot silently read a new field
   as an old one. `breaking.sh` is what enforces this.

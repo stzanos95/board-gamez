@@ -7,9 +7,11 @@ is decided by applying the move and asking again on the resulting position, wher
 that square is no longer blocked.
 """
 
+from idl.chess.model.piece_pb2 import Color
+from idl.chess.model.square_pb2 import Square
+
 from chess.board.chess_board_state import ChessBoardState
-from chess.models.color import Color
-from chess.models.square import Square
+from chess.core.squares import SquareIndex, Squares
 
 
 class AttackMap:
@@ -18,13 +20,13 @@ class AttackMap:
     """
 
     @staticmethod
-    def attacked_squares_for_color(state: ChessBoardState, color: Color) -> frozenset[Square]:
+    def attacked_squares_for_color(state: ChessBoardState, color: Color) -> frozenset[SquareIndex]:
         """
-        Every square this colour bears on.
+        Every square this colour bears on, by index.
 
         Includes squares held by its own pieces, since those are defended.
         """
-        attacked: set[Square] = set()
+        attacked: set[SquareIndex] = set()
         for piece in state.pieces_of(color):
             attacked |= piece.attacked_squares(state)
         return frozenset(attacked)
@@ -37,4 +39,5 @@ class AttackMap:
         Stops at the first piece that does, so it is cheaper than building the
         whole map when only one square is in question.
         """
-        return any(square in piece.attacked_squares(state) for piece in state.pieces_of(color))
+        index = Squares.get_index(square)
+        return any(index in piece.attacked_squares(state) for piece in state.pieces_of(color))

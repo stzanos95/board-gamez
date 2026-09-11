@@ -1,7 +1,7 @@
 import unittest
 
-from chess.models.game_outcome import GameOutcome
-from chess.models.game_result import GameResult
+from idl.chess.model import game_pb2
+from idl.chess.model.game_pb2 import GameResult
 
 from chess_cli.terminal_game import (
     GOODBYE_TEXT,
@@ -27,7 +27,7 @@ class GamePlayTest(unittest.TestCase):
     def test_a_full_game_ends_in_mate(self) -> None:
         console, result = run(SCHOLARS_MATE)
         self.assertIsNotNone(result)
-        self.assertIs(require(result).outcome, GameOutcome.WHITE_WINS)
+        self.assertEqual(require(result).outcome, game_pb2.GAME_OUTCOME_WHITE_WINS)
         self.assertIn("Checkmate. Ada wins. 1-0", console.transcript)
 
     def test_the_board_is_drawn_before_the_first_move(self) -> None:
@@ -95,5 +95,5 @@ class CommandTest(unittest.TestCase):
     def test_resigning_ends_the_game(self) -> None:
         console, result = run(["e2e4", "resign"])
         self.assertIsNotNone(result)
-        self.assertIs(require(result).outcome, GameOutcome.WHITE_WINS)
+        self.assertEqual(require(result).outcome, game_pb2.GAME_OUTCOME_WHITE_WINS)
         self.assertIn("Alan resigns. Ada wins. 1-0", console.transcript)

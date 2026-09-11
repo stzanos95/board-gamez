@@ -5,9 +5,18 @@ A new piece type is a class and a registry entry. Promotion and board setup
 pick it up without change.
 """
 
-from chess.models.color import Color
-from chess.models.piece_type import PieceType
-from chess.models.square import Square
+from idl.chess.model.piece_pb2 import (
+    PIECE_TYPE_BISHOP,
+    PIECE_TYPE_KING,
+    PIECE_TYPE_KNIGHT,
+    PIECE_TYPE_PAWN,
+    PIECE_TYPE_QUEEN,
+    PIECE_TYPE_ROOK,
+    Color,
+    PieceType,
+)
+from idl.chess.model.square_pb2 import Square
+
 from chess.pieces.base_piece import BasePiece
 from chess.pieces.bishop import Bishop
 from chess.pieces.king import King
@@ -16,14 +25,15 @@ from chess.pieces.pawn import Pawn
 from chess.pieces.queen import Queen
 from chess.pieces.rook import Rook
 
-# Keys are data — a piece type names its class. This is a lookup, not a record.
-PIECE_CLASSES_BY_TYPE: dict[PieceType, type[BasePiece]] = {
-    PieceType.PAWN: Pawn,
-    PieceType.KNIGHT: Knight,
-    PieceType.BISHOP: Bishop,
-    PieceType.ROOK: Rook,
-    PieceType.QUEEN: Queen,
-    PieceType.KING: King,
+PieceClassesByType = dict[PieceType, type[BasePiece]]
+
+PIECE_CLASSES_BY_TYPE: PieceClassesByType = {
+    PIECE_TYPE_PAWN: Pawn,
+    PIECE_TYPE_KNIGHT: Knight,
+    PIECE_TYPE_BISHOP: Bishop,
+    PIECE_TYPE_ROOK: Rook,
+    PIECE_TYPE_QUEEN: Queen,
+    PIECE_TYPE_KING: King,
 }
 
 

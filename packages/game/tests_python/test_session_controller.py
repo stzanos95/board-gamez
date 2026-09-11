@@ -6,10 +6,10 @@ from idl.game.model.game_type_pb2 import GameType
 from idl.game.model.participant_pb2 import Participant
 from idl.game.model.session_pb2 import SessionView
 
+from game.controller.rules_registry import RulesRegistry
 from game.controller.session_controller import SessionController
-from game.service.rules_client_registry import RulesClientRegistry
 from tests_python.in_memory_session_repository import RefusingOnceSessionRepository
-from tests_python.scripted_rules_client import MOVE, WIN, ScriptedRulesClient
+from tests_python.scripted_rules import MOVE, WIN, ScriptedRules
 
 TABLE_ID = "t-1"
 OTHER_TABLE_ID = "t-2"
@@ -40,10 +40,10 @@ class SessionControllerTest(unittest.IsolatedAsyncioTestCase):
 
     def setUp(self) -> None:
         self.repository = RefusingOnceSessionRepository()
-        self.rules = ScriptedRulesClient(minimum=2, maximum=2)
+        self.rules = ScriptedRules(minimum=2, maximum=2)
         self.controller = SessionController(
             repository=self.repository,
-            rules=RulesClientRegistry({GameType.GAME_TYPE_CHESS: self.rules}),
+            rules=RulesRegistry({GameType.GAME_TYPE_CHESS: self.rules}),
         )
         self.commands_sent = 0
 
@@ -68,7 +68,7 @@ class SessionControllerTest(unittest.IsolatedAsyncioTestCase):
             TABLE_ID,
             player_id,
             command_id,
-            ScriptedRulesClient.word_payload(word),
+            ScriptedRules.word_payload(word),
             expected_version,
         )
 
@@ -99,7 +99,7 @@ class SessionControllerTest(unittest.IsolatedAsyncioTestCase):
         started = await self.start(player_id=SECOND_PLAYER)
 
         self.assertEqual(started.participant, SECOND_PARTICIPANT)
-        self.assertEqual(ScriptedRulesClient.view_text(started.state.payload), "0:2")
+        self.assertEqual(ScriptedRules.view_text(started.state.payload), "0:2")
 
     async def test_starting_a_game_at_a_table_already_playing_one_answers_that_game(self) -> None:
         first = await self.start(player_id=FIRST_PLAYER)
@@ -158,7 +158,7 @@ class SessionControllerTest(unittest.IsolatedAsyncioTestCase):
 
         assert seen is not None
         self.assertEqual(seen.participant, NOBODY)
-        self.assertEqual(ScriptedRulesClient.view_text(seen.state.payload), "0:0")
+        self.assertEqual(ScriptedRules.view_text(seen.state.payload), "0:0")
 
     # --- applying a command, one outcome at a time -----------------------------
 
@@ -177,7 +177,7 @@ class SessionControllerTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(result.session.version, SECOND_STORED_VERSION)
         self.assertEqual(result.session.state.participant_to_act, SECOND_PARTICIPANT)
         self.assertEqual(result.session.last_command_id, COMMAND_ID)
-        self.assertEqual(ScriptedRulesClient.view_text(result.session.state.payload), "1:1")
+        self.assertEqual(ScriptedRules.view_text(result.session.state.payload), "1:1")
 
     async def test_the_same_command_again_applies_nothing_and_answers_what_it_produced(
         self,
@@ -270,4 +270,4 @@ class SessionControllerTest(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(third.state.participant_to_act, SECOND_PARTICIPANT)
         self.assertEqual(third.version, started.version + 3)
-        self.assertEqual(ScriptedRulesClient.view_text(third.state.payload), "3:1")
+        self.assertEqual(ScriptedRules.view_text(third.state.payload), "3:1")

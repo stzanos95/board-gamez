@@ -135,24 +135,36 @@ One direction, with no exceptions.
 packages/<game>            the rules. Imports idl.<game>.model and nothing else
                            from the schema. Knows nothing about participants,
                            sessions or the platform.
-packages/product-<game>    the product. The only package that imports idl.game.
-                           Implements RulesService, converts between the
-                           platform's types and the game's, and decides what a
-                           participant number means in the game.
-deployables/product-<game> serves the product's RulesService.
+packages/product-<game>    the product. The only package that imports both
+                           `game` and `<game>`. Implements BaseRules and
+                           RulesService, converts between the platform's types
+                           and the game's, decides what a participant number
+                           means in the game, and serves the game's own
+                           service over the platform's session.
 ```
+
+There is no product process. `grpc-server` depends on the product, builds its
+rules at bringup, registers its servicers beside the platform's, and hands the
+session controller the rules in-process through `RulesRegistry`. A product
+reached over a network later is another implementation of `BaseRules`.
 
 What goes where, by the question it answers:
 
 - "Is this move legal, what is the position now, who won on the board" —
-  `packages/<game>`. Its public surface takes and answers `idl.<game>.model`
-  types; its compute types stay internal.
+  `packages/<game>`. It computes over `idl.<game>.model` types and declares no
+  type the schema already names; it may be reimplemented in another language
+  against the same schema.
 - "Which participant is white, what is `participant_to_act` after this ply, how
   does a `GameResult` read for participant 2, how is a `GameState` payload
   unpacked" — `packages/product-<game>`. Anything that names a participant, a
   session, a `GameState` or an `Action` is the product's, never the rules'.
-- The platform (`packages/game`, `grpc-server`) imports neither. Adding a game
-  is a `GameType` member, one `RulesConfig` field, and a product deployable.
+- "Which seat plays which side, who may start the game, how the platform's
+  answer reads to a player of this game" — `packages/product-<game>`, in the
+  controller behind the game's own service. It composes the platform's
+  controllers (`TableController`, `SessionController`) in-process.
+- `packages/game` imports no product. Adding a game is a `GameType` member, a
+  product package, a dependency of both deployables, and one registry entry in
+  `grpc-server`.
 
 ## SOLID decides the boundaries
 

@@ -1,10 +1,19 @@
 from dataclasses import dataclass
 
+from idl.chess.model.move_pb2 import (
+    MOVE_TYPE_CAPTURE,
+    MOVE_TYPE_DOUBLE_PAWN_PUSH,
+    MOVE_TYPE_EN_PASSANT,
+    MOVE_TYPE_PROMOTION,
+    MOVE_TYPE_PROMOTION_CAPTURE,
+    MOVE_TYPE_QUIET,
+    Move,
+)
+from idl.chess.model.piece_pb2 import PIECE_TYPE_PAWN, PieceType
+from idl.chess.model.square_pb2 import Square
+
 from chess.contracts.board_state_view import BoardStateView
-from chess.models.move import Move
-from chess.models.move_type import MoveType
-from chess.models.piece_type import PieceType
-from chess.models.square import Square
+from chess.core.squares import SquareIndex, Squares
 from chess.movement.step_scanner import StepScanner
 from chess.pieces.base_piece import BasePiece
 from chess.pieces.pawn_geometry import PAWN_PROMOTION_TYPES, PawnGeometry
@@ -22,12 +31,12 @@ class Pawn(BasePiece):
 
     @property
     def piece_type(self) -> PieceType:
-        return PieceType.PAWN
+        return PIECE_TYPE_PAWN
 
     def pseudo_legal_moves(self, state: BoardStateView) -> tuple[Move, ...]:
         return self._push_moves(state) + self._capture_moves(state)
 
-    def attacked_squares(self, state: BoardStateView) -> frozenset[Square]:
+    def attacked_squares(self, state: BoardStateView) -> frozenset[SquareIndex]:
         # A pawn bears only on its two diagonals, never on the square ahead —
         # which is why a pawn cannot give check by advancing onto a king's file.
         return StepScanner.attacked_squares_at_offsets(
@@ -39,15 +48,15 @@ class Pawn(BasePiece):
 
     def _push_moves(self, state: BoardStateView) -> tuple[Move, ...]:
         forward = PawnGeometry.forward_direction(self.color).vector
-        one_ahead = self.square.shifted(forward)
+        one_ahead = Squares.shifted(self.square, forward)
         if one_ahead is None or not state.is_empty(one_ahead):
             return ()
 
         found: list[Move] = list(self._advances_onto(one_ahead, capturing=False))
 
-        if self.square.rank is not PawnGeometry.start_rank(self.color):
+        if self.square.rank != PawnGeometry.start_rank(self.color):
             return tuple(found)
-        two_ahead = one_ahead.shifted(forward)
+        two_ahead = Squares.shifted(one_ahead, forward)
         if two_ahead is None or not state.is_empty(two_ahead):
             return tuple(found)
         found.append(
@@ -56,7 +65,7 @@ class Pawn(BasePiece):
                 destination=two_ahead,
                 moving_color=self.color,
                 moving_piece_type=self.piece_type,
-                move_type=MoveType.DOUBLE_PAWN_PUSH,
+                move_type=MOVE_TYPE_DOUBLE_PAWN_PUSH,
             )
         )
         return tuple(found)
@@ -65,7 +74,7 @@ class Pawn(BasePiece):
         found: list[Move] = []
         en_passant_target = state.en_passant_target_square()
         for direction in PawnGeometry.capture_directions(self.color):
-            target = self.square.shifted(direction.vector)
+            target = Squares.shifted(self.square, direction.vector)
             if target is None:
                 continue
             if state.holds_enemy_of(target, self.color):
@@ -79,7 +88,7 @@ class Pawn(BasePiece):
                         destination=target,
                         moving_color=self.color,
                         moving_piece_type=self.piece_type,
-                        move_type=MoveType.EN_PASSANT,
+                        move_type=MOVE_TYPE_EN_PASSANT,
                         captured_square=Square(file=target.file, rank=self.square.rank),
                     )
                 )
@@ -90,18 +99,18 @@ class Pawn(BasePiece):
         One ordinary move, or the four a player chooses between on the last rank.
         """
         captured_square = destination if capturing else None
-        if destination.rank is not PawnGeometry.promotion_rank(self.color):
+        if destination.rank != PawnGeometry.promotion_rank(self.color):
             return (
                 Move(
                     origin=self.square,
                     destination=destination,
                     moving_color=self.color,
                     moving_piece_type=self.piece_type,
-                    move_type=MoveType.CAPTURE if capturing else MoveType.QUIET,
+                    move_type=MOVE_TYPE_CAPTURE if capturing else MOVE_TYPE_QUIET,
                     captured_square=captured_square,
                 ),
             )
-        move_type = MoveType.PROMOTION_CAPTURE if capturing else MoveType.PROMOTION
+        move_type = MOVE_TYPE_PROMOTION_CAPTURE if capturing else MOVE_TYPE_PROMOTION
         return tuple(
             Move(
                 origin=self.square,

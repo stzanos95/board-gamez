@@ -5,6 +5,8 @@ description = "A two-player chess game for the terminal."
 requires-python = ">=3.13"
 dependencies = [
     "chess-game",
+    # The records the engine answers with: a turn, a player, a result.
+    "board-gamez-idl",
     # Settings are a dataclass parsed from YAML; the yaml extra brings the loader.
     "mashumaro[yaml]>=3.13",
 ]
@@ -16,6 +18,7 @@ chess = "main:main"
 # and nothing needs uv installed on the host to read this.
 [tool.uv.sources]
 chess-game = { path = "../../packages/chess", editable = true }
+board-gamez-idl = { path = "../../idl/contracts/gen/python", editable = true }
 
 [build-system]
 requires = ["hatchling"]
@@ -28,7 +31,9 @@ sources = ["src_python"]
 [dependency-groups]
 # The ruff floor matches the rev pinned in .pre-commit-config.yaml, so the
 # hook, this environment and ./infra/scripts/lint.sh format identically.
-dev = ["pytest>=8.0", "mypy>=1.11", "ruff>=0.16.6", "types-PyYAML>=6.0"]
+# protobuf ships no type information of its own, so the stubs are what keeps
+# every message here from being Any to a type checker.
+dev = ["pytest>=8.0", "mypy>=1.11", "ruff>=0.16.6", "types-PyYAML>=6.0", "types-protobuf>=5.28"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

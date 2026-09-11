@@ -33,7 +33,9 @@ convert values so that neither adjacent layer needs to know the other's types.
 | `packages/<domain>/…/controller/` | Business | Yes. This is the only layer that decides |
 | `packages/<domain>/…/repository/` | Persistence | Only about storage, never about meaning |
 | `packages/core/` | Shared utilities | No domain-specific code |
-| `packages/chess/` | Business (one game's rules) | Chess rules only. Knows nothing about tables |
+| `packages/game/` | Application, Business, Persistence | A game being played, whatever game it is. Never imports a product |
+| `packages/chess/` | Business (one game's rules) | Chess rules only. Every chess type is `idl.chess.model`'s; the package adds behaviour. Knows nothing about tables or participants |
+| `packages/product-chess/` | Application and Business (one product) | Chess as the platform hosts it. The only package importing both `game` and `chess` |
 | `idl/contracts/proto/…/model/` | Business vocabulary | Definitions of what a thing is |
 | `idl/contracts/proto/…/dto/` | Application transfer | Definitions of what crosses a boundary |
 | `idl/contracts/proto/…/obj/` | Persistence shapes | One type per stored row |
@@ -122,11 +124,17 @@ replaces it with a call.
 
 A table names a `GameType` and seats N players. A game's rules, position and
 legal moves reach the session layer as `google.protobuf.Any`, which is stored and
-relayed without being unpacked. Adding a game requires a `GameType` member and
-one service implementation. No file in `lobby` changes.
+relayed without being unpacked. Adding a game requires a `GameType` member, a
+product package, and one entry in the rules registry at bringup. No file in
+`lobby` or `game` changes.
 
-`packages/chess` performs no I/O: no printing, no reading, no storage. It is
-therefore callable from a CLI, a server, or a test.
+A game is two packages. `packages/chess` is the rules and performs no I/O: no
+printing, no reading, no storage, so it is callable from a CLI, a server, or a
+test. `packages/product-chess` implements the platform's `RulesService` over
+those rules, decides what a participant number means in chess, and serves
+`ChessService`: the same game with its state opened, so a browser plays chess
+through chess's own types. `grpc-server` holds the product's rules in-process
+and hands them to the session controller; there is no product process.
 
 ### Domains reference each other by identifier
 

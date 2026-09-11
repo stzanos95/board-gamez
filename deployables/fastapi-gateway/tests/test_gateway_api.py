@@ -1,5 +1,10 @@
 import unittest
 
+from core.protobuf.message_utils import ProtobufMessageUtils
+from idl.game.dto import command_pb2
+from idl_fastapi.google.protobuf import Any
+from idl_fastapi.idl.game.dto import ApplyCommandRequest
+
 from fastapi_gateway.gateway_api import GatewayAPI
 from fastapi_gateway.gateway_api_config import (
     ApplicationConfig,
@@ -9,6 +14,7 @@ from fastapi_gateway.gateway_api_config import (
 )
 from fastapi_gateway.gateway_clients import GatewayClients
 from fastapi_gateway.log_level import LogLevel
+from fastapi_gateway.payload_types import PayloadTypeRegistry
 
 CONFIGURED_PORT = 9091
 UPSTREAM_PORT = 50051
@@ -16,6 +22,7 @@ MESSAGE_LIMIT = 4194304
 A_LOBBY_PATH = "/internal/platform/lobby/read/table"
 A_GAME_PATH = "/internal/platform/game/apply/command"
 A_CATALOGUE_PATH = "/internal/platform/game/list/game_spec"
+A_CHESS_PATH = "/internal/product/chess/play/action"
 
 
 def application_config(root_path: str = "/api") -> ApplicationConfig:
@@ -71,8 +78,34 @@ class BringupTest(unittest.TestCase):
         self.assertIn(A_LOBBY_PATH, paths)
         self.assertIn(A_GAME_PATH, paths)
         self.assertIn(A_CATALOGUE_PATH, paths)
+        self.assertIn(A_CHESS_PATH, paths)
 
 
 class GrpcAddressTest(unittest.TestCase):
     def test_the_address_is_the_hostname_and_port(self) -> None:
         self.assertEqual(config_for().grpc.address, f"127.0.0.1:{UPSTREAM_PORT}")
+
+
+class PayloadTypeTest(unittest.TestCase):
+    def test_a_chess_action_can_be_read_from_json(self) -> None:
+        """
+        Resolving an `@type` needs the type's module imported, which is what
+        the registry is for.
+        """
+        self.assertIn("idl.chess.model.ChessAction", PayloadTypeRegistry.get_type_names())
+        request = ProtobufMessageUtils.message_from_pydantic_model(
+            ApplyCommandRequest(
+                sessionId="t-1",
+                commandId="c-1",
+                playerId="p-1",
+                action=Any.model_validate(
+                    {
+                        "@type": "type.googleapis.com/idl.chess.model.ChessAction",
+                        "resignation": {},
+                    }
+                ),
+                expectedVersion="1",
+            ),
+            command_pb2.ApplyCommandRequest,
+        )
+        self.assertEqual(request.action.type_url, "type.googleapis.com/idl.chess.model.ChessAction")

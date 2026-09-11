@@ -198,6 +198,78 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/google.rpc.Status'
+    /internal/product/chess/play/action:
+        post:
+            tags:
+                - ChessService
+            operationId: ChessService_PlayAction
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/idl.chess.dto.PlayActionRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/idl.chess.dto.PlayActionResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/google.rpc.Status'
+    /internal/product/chess/read/game:
+        post:
+            tags:
+                - ChessService
+            operationId: ChessService_ReadGame
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/idl.chess.dto.ReadGameRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/idl.chess.dto.ReadGameResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/google.rpc.Status'
+    /internal/product/chess/start/game:
+        post:
+            tags:
+                - ChessService
+            operationId: ChessService_StartGame
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/idl.chess.dto.StartGameRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/idl.chess.dto.StartGameResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/google.rpc.Status'
 components:
     schemas:
         google.protobuf.Any:
@@ -224,6 +296,521 @@ components:
                         $ref: '#/components/schemas/google.protobuf.Any'
                     description: A list of messages that carry the error details.  There is a common set of message types for APIs to use.
             description: 'The `Status` type defines a logical error model that is suitable for different programming environments, including REST APIs and RPC APIs. It is used by [gRPC](https://github.com/grpc). Each `Status` message contains three pieces of data: error code, error message, and error details. You can find out more about this error model and how to work with it in the [API Design Guide](https://cloud.google.com/apis/design/errors).'
+        idl.chess.dto.PlayActionRequest:
+            type: object
+            properties:
+                tableId:
+                    type: string
+                commandId:
+                    type: string
+                playerId:
+                    type: string
+                action:
+                    $ref: '#/components/schemas/idl.chess.model.ChessAction'
+                expectedVersion:
+                    type: string
+            description: |-
+                One thing a player does in a game.
+
+                 `command_id` is minted by the caller. Sending an action a second time applies
+                 nothing and answers the game the first one produced.
+
+                 `expected_version` is the version of the session the action was built against.
+                 An action carrying an earlier one is refused, so an action never reaches the
+                 game in a position the player who chose it had not seen.
+
+                 The acting side is not carried. It is found from `player_id`, so a request
+                 cannot act for a side its sender does not play.
+        idl.chess.dto.PlayActionResponse:
+            type: object
+            properties:
+                result:
+                    $ref: '#/components/schemas/idl.chess.model.ActionResult'
+        idl.chess.dto.ReadGameRequest:
+            type: object
+            properties:
+                tableId:
+                    type: string
+                playerId:
+                    type: string
+        idl.chess.dto.ReadGameResponse:
+            type: object
+            properties:
+                session:
+                    $ref: '#/components/schemas/idl.chess.model.ChessSession'
+        idl.chess.dto.StartGameRequest:
+            type: object
+            properties:
+                tableId:
+                    type: string
+                playerId:
+                    type: string
+            description: |-
+                Start a game at a table.
+
+                 The table's seats decide who plays which side: the first seat is White and the
+                 second is Black. A table already playing a game starts nothing and answers the
+                 game already there.
+        idl.chess.dto.StartGameResponse:
+            type: object
+            properties:
+                session:
+                    $ref: '#/components/schemas/idl.chess.model.ChessSession'
+        idl.chess.model.ActionResult:
+            type: object
+            properties:
+                outcome:
+                    enum:
+                        - COMMAND_OUTCOME_UNSPECIFIED
+                        - COMMAND_OUTCOME_APPLIED
+                        - COMMAND_OUTCOME_ALREADY_APPLIED
+                        - COMMAND_OUTCOME_SESSION_NOT_FOUND
+                        - COMMAND_OUTCOME_NOT_A_PARTICIPANT
+                        - COMMAND_OUTCOME_GAME_OVER
+                        - COMMAND_OUTCOME_VERSION_MOVED
+                        - COMMAND_OUTCOME_OUT_OF_TURN
+                        - COMMAND_OUTCOME_ILLEGAL_ACTION
+                    type: string
+                    format: enum
+                session:
+                    $ref: '#/components/schemas/idl.chess.model.ChessSession'
+            description: |-
+                What happened to an action, and the game as its sender may now see it.
+
+                 The session is carried whatever the outcome, and is unset only when no game is
+                 being played at the table the action named.
+        idl.chess.model.BoardState:
+            type: object
+            properties:
+                occupancy:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/idl.chess.model.SquareOccupant'
+                sideToMove:
+                    enum:
+                        - COLOR_UNSPECIFIED
+                        - COLOR_WHITE
+                        - COLOR_BLACK
+                    type: string
+                    format: enum
+                castlingRights:
+                    $ref: '#/components/schemas/idl.chess.model.CastlingRights'
+                enPassantTarget:
+                    $ref: '#/components/schemas/idl.chess.model.Square'
+                halfmoveClock:
+                    type: integer
+                    format: uint32
+                fullmoveNumber:
+                    type: integer
+                    format: uint32
+            description: |-
+                A complete position: pieces, side to move, castling rights, en-passant target
+                 and both clocks.
+
+                 Only occupied squares appear in occupancy, and order carries nothing.
+        idl.chess.model.CastlingRight:
+            type: object
+            properties:
+                color:
+                    enum:
+                        - COLOR_UNSPECIFIED
+                        - COLOR_WHITE
+                        - COLOR_BLACK
+                    type: string
+                    format: enum
+                side:
+                    enum:
+                        - CASTLING_SIDE_UNSPECIFIED
+                        - CASTLING_SIDE_KINGSIDE
+                        - CASTLING_SIDE_QUEENSIDE
+                    type: string
+                    format: enum
+            description: One side's claim to one of its two castles.
+        idl.chess.model.CastlingRights:
+            type: object
+            properties:
+                available:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/idl.chess.model.CastlingRight'
+            description: |-
+                Which castles remain available.
+
+                 A right survives until the king or the matching rook moves, or that rook is
+                 captured. It does not say whether the castle is legal now: that also depends
+                 on occupancy and on which squares the enemy attacks.
+
+                 The list is a set. Order carries nothing, and a right appears at most once.
+        idl.chess.model.ChessAction:
+            type: object
+            properties:
+                move:
+                    $ref: '#/components/schemas/idl.chess.model.CoordinateMove'
+                resignation:
+                    $ref: '#/components/schemas/idl.chess.model.Resignation'
+            description: 'One thing a player does: play a move, or resign.'
+        idl.chess.model.ChessGame:
+            type: object
+            properties:
+                roster:
+                    $ref: '#/components/schemas/idl.chess.model.PlayerRoster'
+                state:
+                    $ref: '#/components/schemas/idl.chess.model.BoardState'
+                history:
+                    $ref: '#/components/schemas/idl.chess.model.ChessTurnHistory'
+                legalMoves:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/idl.chess.model.Move'
+                status:
+                    enum:
+                        - GAME_STATUS_UNSPECIFIED
+                        - GAME_STATUS_IN_PROGRESS
+                        - GAME_STATUS_CHECK
+                        - GAME_STATUS_CHECKMATE
+                        - GAME_STATUS_STALEMATE
+                        - GAME_STATUS_DRAW_BY_FIFTY_MOVE_RULE
+                        - GAME_STATUS_DRAW_BY_REPETITION
+                        - GAME_STATUS_DRAW_BY_INSUFFICIENT_MATERIAL
+                    type: string
+                    format: enum
+                resigningColor:
+                    enum:
+                        - COLOR_UNSPECIFIED
+                        - COLOR_WHITE
+                        - COLOR_BLACK
+                    type: string
+                    format: enum
+                result:
+                    $ref: '#/components/schemas/idl.chess.model.GameResult'
+            description: 'A game in progress: the players, the position, and the moves played.'
+        idl.chess.model.ChessPlayer:
+            type: object
+            properties:
+                color:
+                    enum:
+                        - COLOR_UNSPECIFIED
+                        - COLOR_WHITE
+                        - COLOR_BLACK
+                    type: string
+                    format: enum
+                participant:
+                    type: integer
+                    format: uint32
+            description: |-
+                Which side one participant plays.
+
+                 A participant is known here by number and nothing else. A name is joined in by
+                 whoever draws the game.
+        idl.chess.model.ChessSession:
+            type: object
+            properties:
+                id:
+                    type: string
+                game:
+                    $ref: '#/components/schemas/idl.chess.model.ChessGame'
+                color:
+                    enum:
+                        - COLOR_UNSPECIFIED
+                        - COLOR_WHITE
+                        - COLOR_BLACK
+                    type: string
+                    format: enum
+                lastCommandId:
+                    type: string
+                version:
+                    type: string
+            description: |-
+                One game of chess being played, projected for one viewer.
+
+                 The id is the id of the table the game is played at, so a table holds one
+                 game at a time.
+
+                 `color` is the side the viewer plays, and is unset for someone who is not
+                 playing. Which side may act next is read from the game's own state.
+
+                 `version` counts writes to the game. An action is built against the version
+                 it was read at, and a session is rendered only when its version is above the
+                 version showing.
+        idl.chess.model.ChessTurn:
+            type: object
+            properties:
+                number:
+                    type: integer
+                    format: uint32
+                player:
+                    $ref: '#/components/schemas/idl.chess.model.ChessPlayer'
+                move:
+                    $ref: '#/components/schemas/idl.chess.model.Move'
+                notation:
+                    type: string
+                resultingStatus:
+                    enum:
+                        - GAME_STATUS_UNSPECIFIED
+                        - GAME_STATUS_IN_PROGRESS
+                        - GAME_STATUS_CHECK
+                        - GAME_STATUS_CHECKMATE
+                        - GAME_STATUS_STALEMATE
+                        - GAME_STATUS_DRAW_BY_FIFTY_MOVE_RULE
+                        - GAME_STATUS_DRAW_BY_REPETITION
+                        - GAME_STATUS_DRAW_BY_INSUFFICIENT_MATERIAL
+                    type: string
+                    format: enum
+            description: |-
+                One move that was played, with its written form.
+
+                 The notation is standard algebraic — "Nf3", "exd5", "O-O", "e8=Q#" — never
+                 coordinate text. It is stored because rendering it needs the position the move
+                 was played from, which a reader of the history no longer has.
+        idl.chess.model.ChessTurnHistory:
+            type: object
+            properties:
+                turns:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/idl.chess.model.ChessTurn'
+                positionKeys:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/idl.chess.model.PositionKey'
+            description: |-
+                The turns played, and the position after each of them.
+
+                 position_keys runs one ahead of turns: the opening position counts as visited
+                 before either player has moved.
+        idl.chess.model.CoordinateMove:
+            type: object
+            properties:
+                origin:
+                    $ref: '#/components/schemas/idl.chess.model.Square'
+                destination:
+                    $ref: '#/components/schemas/idl.chess.model.Square'
+                promotionType:
+                    enum:
+                        - PIECE_TYPE_UNSPECIFIED
+                        - PIECE_TYPE_PAWN
+                        - PIECE_TYPE_KNIGHT
+                        - PIECE_TYPE_BISHOP
+                        - PIECE_TYPE_ROOK
+                        - PIECE_TYPE_QUEEN
+                        - PIECE_TYPE_KING
+                    type: string
+                    format: enum
+            description: |-
+                A move as a player names it: the square left, the square reached and, for a
+                 pawn reaching the last rank, what it becomes.
+
+                 Which piece moves, whether it captures and how it castles are not carried.
+                 They are settled by matching this against the legal moves of the position.
+        idl.chess.model.GameResult:
+            type: object
+            properties:
+                outcome:
+                    enum:
+                        - GAME_OUTCOME_UNSPECIFIED
+                        - GAME_OUTCOME_WHITE_WINS
+                        - GAME_OUTCOME_BLACK_WINS
+                        - GAME_OUTCOME_DRAW
+                    type: string
+                    format: enum
+                winner:
+                    $ref: '#/components/schemas/idl.chess.model.ChessPlayer'
+                status:
+                    enum:
+                        - GAME_STATUS_UNSPECIFIED
+                        - GAME_STATUS_IN_PROGRESS
+                        - GAME_STATUS_CHECK
+                        - GAME_STATUS_CHECKMATE
+                        - GAME_STATUS_STALEMATE
+                        - GAME_STATUS_DRAW_BY_FIFTY_MOVE_RULE
+                        - GAME_STATUS_DRAW_BY_REPETITION
+                        - GAME_STATUS_DRAW_BY_INSUFFICIENT_MATERIAL
+                    type: string
+                    format: enum
+                resigningPlayer:
+                    $ref: '#/components/schemas/idl.chess.model.ChessPlayer'
+            description: |-
+                How a game finished.
+
+                 Exactly one of status and resigning_player is set. A game decided on the board
+                 carries the status that ended it; a game decided by resignation carries the
+                 player who resigned. winner is absent for a draw.
+        idl.chess.model.Move:
+            type: object
+            properties:
+                origin:
+                    $ref: '#/components/schemas/idl.chess.model.Square'
+                destination:
+                    $ref: '#/components/schemas/idl.chess.model.Square'
+                movingColor:
+                    enum:
+                        - COLOR_UNSPECIFIED
+                        - COLOR_WHITE
+                        - COLOR_BLACK
+                    type: string
+                    format: enum
+                movingPieceType:
+                    enum:
+                        - PIECE_TYPE_UNSPECIFIED
+                        - PIECE_TYPE_PAWN
+                        - PIECE_TYPE_KNIGHT
+                        - PIECE_TYPE_BISHOP
+                        - PIECE_TYPE_ROOK
+                        - PIECE_TYPE_QUEEN
+                        - PIECE_TYPE_KING
+                    type: string
+                    format: enum
+                moveType:
+                    enum:
+                        - MOVE_TYPE_UNSPECIFIED
+                        - MOVE_TYPE_QUIET
+                        - MOVE_TYPE_CAPTURE
+                        - MOVE_TYPE_DOUBLE_PAWN_PUSH
+                        - MOVE_TYPE_EN_PASSANT
+                        - MOVE_TYPE_CASTLE
+                        - MOVE_TYPE_PROMOTION
+                        - MOVE_TYPE_PROMOTION_CAPTURE
+                    type: string
+                    format: enum
+                capturedSquare:
+                    $ref: '#/components/schemas/idl.chess.model.Square'
+                promotionType:
+                    enum:
+                        - PIECE_TYPE_UNSPECIFIED
+                        - PIECE_TYPE_PAWN
+                        - PIECE_TYPE_KNIGHT
+                        - PIECE_TYPE_BISHOP
+                        - PIECE_TYPE_ROOK
+                        - PIECE_TYPE_QUEEN
+                        - PIECE_TYPE_KING
+                    type: string
+                    format: enum
+                castlingSide:
+                    enum:
+                        - CASTLING_SIDE_UNSPECIFIED
+                        - CASTLING_SIDE_KINGSIDE
+                        - CASTLING_SIDE_QUEENSIDE
+                    type: string
+                    format: enum
+                rookOrigin:
+                    $ref: '#/components/schemas/idl.chess.model.Square'
+                rookDestination:
+                    $ref: '#/components/schemas/idl.chess.model.Square'
+            description: |-
+                One move, complete enough for a board to apply without deriving anything.
+
+                 The mover is carried as colour and type.
+
+                 captured_square differs from destination for en passant. The rook fields are
+                 set only for a castle. A field that does not apply is left unset.
+        idl.chess.model.Occupant:
+            type: object
+            properties:
+                color:
+                    enum:
+                        - COLOR_UNSPECIFIED
+                        - COLOR_WHITE
+                        - COLOR_BLACK
+                    type: string
+                    format: enum
+                pieceType:
+                    enum:
+                        - PIECE_TYPE_UNSPECIFIED
+                        - PIECE_TYPE_PAWN
+                        - PIECE_TYPE_KNIGHT
+                        - PIECE_TYPE_BISHOP
+                        - PIECE_TYPE_ROOK
+                        - PIECE_TYPE_QUEEN
+                        - PIECE_TYPE_KING
+                    type: string
+                    format: enum
+            description: |-
+                Whose piece stands on a square, and what type.
+
+                 Carries no identity. Two knights of the same colour are interchangeable.
+        idl.chess.model.PlayerRoster:
+            type: object
+            properties:
+                white:
+                    $ref: '#/components/schemas/idl.chess.model.ChessPlayer'
+                black:
+                    $ref: '#/components/schemas/idl.chess.model.ChessPlayer'
+            description: |-
+                The two players, addressable by colour.
+
+                 white.color is always COLOR_WHITE, and black.color COLOR_BLACK.
+        idl.chess.model.PositionKey:
+            type: object
+            properties:
+                occupancy:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/idl.chess.model.SquareOccupant'
+                sideToMove:
+                    enum:
+                        - COLOR_UNSPECIFIED
+                        - COLOR_WHITE
+                        - COLOR_BLACK
+                    type: string
+                    format: enum
+                castlingRights:
+                    $ref: '#/components/schemas/idl.chess.model.CastlingRights'
+                enPassantTarget:
+                    $ref: '#/components/schemas/idl.chess.model.Square'
+            description: |-
+                What makes two positions the same for the repetition rule.
+
+                 The same pieces on the same squares, the same side to move, the same castling
+                 rights and the same en-passant square. The clocks are excluded: they differ
+                 between repetitions of one position.
+        idl.chess.model.Resignation:
+            type: object
+            properties: {}
+            description: Giving up the game.
+        idl.chess.model.Square:
+            type: object
+            properties:
+                file:
+                    enum:
+                        - FILE_UNSPECIFIED
+                        - FILE_A
+                        - FILE_B
+                        - FILE_C
+                        - FILE_D
+                        - FILE_E
+                        - FILE_F
+                        - FILE_G
+                        - FILE_H
+                    type: string
+                    format: enum
+                rank:
+                    enum:
+                        - RANK_UNSPECIFIED
+                        - RANK_1
+                        - RANK_2
+                        - RANK_3
+                        - RANK_4
+                        - RANK_5
+                        - RANK_6
+                        - RANK_7
+                        - RANK_8
+                    type: string
+                    format: enum
+            description: |-
+                One of the sixty-four squares, named by its file and rank.
+
+                 The algebraic spelling "e4" is derived from this, and is not carried.
+        idl.chess.model.SquareOccupant:
+            type: object
+            properties:
+                square:
+                    $ref: '#/components/schemas/idl.chess.model.Square'
+                occupant:
+                    $ref: '#/components/schemas/idl.chess.model.Occupant'
+            description: |-
+                One square and the piece standing on it.
+
+                 A position travels as a list of these.
         idl.game.dto.ApplyCommandRequest:
             type: object
             properties:
@@ -578,6 +1165,12 @@ components:
                  What every listing of tables answers with. A count, a cursor or the filter a
                  listing was answered under belongs here.
 tags:
+    - name: ChessService
+      description: |-
+        Chess as it is played at a table.
+
+         Every request and answer is chess's own type, so a caller never packs or opens
+         a payload. A game changes by playing an action and in no other way.
     - name: GameSpecService
       description: The catalogue of games, assembled from what each game answers about itself.
     - name: SessionService

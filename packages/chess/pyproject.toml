@@ -3,7 +3,14 @@ name = "chess-game"
 version = "0.1.0"
 description = "A chess engine: rules, move generation and game state, with no input or output."
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    # The records the engine holds and answers: a game, a turn, a result.
+    "board-gamez-idl",
+]
+
+# A relative path source rather than a workspace: each project here stands alone.
+[tool.uv.sources]
+board-gamez-idl = { path = "../../idl/contracts/gen/python", editable = true }
 
 [build-system]
 requires = ["hatchling"]
@@ -15,7 +22,9 @@ packages = ["src_python/chess"]
 [dependency-groups]
 # The ruff floor matches the rev pinned in .pre-commit-config.yaml, so the
 # hook, this environment and ./infra/scripts/lint.sh format identically.
-dev = ["pytest>=8.0", "mypy>=1.11", "ruff>=0.16.6"]
+# protobuf ships no type information of its own, so the stubs are what keeps
+# every message here from being Any to a type checker.
+dev = ["pytest>=8.0", "mypy>=1.11", "ruff>=0.16.6", "types-protobuf>=5.28"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests_python"]

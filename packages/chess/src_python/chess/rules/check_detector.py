@@ -2,8 +2,10 @@
 Whether a king stands under attack.
 """
 
+from idl.chess.model.piece_pb2 import Color
+
 from chess.board.chess_board_state import ChessBoardState
-from chess.models.color import Color
+from chess.core.colors import Colors
 from chess.rules.attack_map import AttackMap
 
 
@@ -24,5 +26,5 @@ class CheckDetector:
         if king_square is None:
             return False
         return AttackMap.is_square_attacked_by(
-            state=state, square=king_square, color=color.opponent
+            state=state, square=king_square, color=Colors.opponent(color)
         )

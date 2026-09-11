@@ -1,8 +1,15 @@
 import unittest
 
+from idl.chess.model.piece_pb2 import (
+    PIECE_TYPE_KING,
+    PIECE_TYPE_KNIGHT,
+    PIECE_TYPE_PAWN,
+    PIECE_TYPE_QUEEN,
+)
+
 from chess.board.starting_position import StartingPosition
 from chess.core.errors import IllegalMoveError, NotationError
-from chess.models.piece_type import PieceType
+from chess.core.squares import Squares
 from chess.notation.coordinate_notation import CoordinateNotation
 from chess.rules.legal_move_generator import LegalMoveGenerator
 from tests_python.position_builder import black, board_with, white
@@ -14,8 +21,8 @@ class CoordinateNotationTest(unittest.TestCase):
         move = CoordinateNotation.find_move(
             "e2e4", LegalMoveGenerator.moves_for_side_to_move(state)
         )
-        self.assertEqual(move.origin.algebraic, "e2")
-        self.assertEqual(move.destination.algebraic, "e4")
+        self.assertEqual(Squares.algebraic(move.origin), "e2")
+        self.assertEqual(Squares.algebraic(move.destination), "e4")
 
     def test_ignores_surrounding_space_and_case(self) -> None:
         state = StartingPosition.build_state()
@@ -39,33 +46,35 @@ class CoordinateNotationTest(unittest.TestCase):
     def test_reads_a_promotion(self) -> None:
         state = board_with(
             pieces=[
-                white(PieceType.PAWN, "e7"),
-                white(PieceType.KING, "a1"),
-                black(PieceType.KING, "a8"),
+                white(PIECE_TYPE_PAWN, "e7"),
+                white(PIECE_TYPE_KING, "a1"),
+                black(PIECE_TYPE_KING, "a8"),
             ]
         )
         move = CoordinateNotation.find_move(
             "e7e8q", LegalMoveGenerator.moves_for_side_to_move(state)
         )
-        self.assertIs(move.promotion_type, PieceType.QUEEN)
+        self.assertEqual(move.promotion_type, PIECE_TYPE_QUEEN)
 
     def test_underpromotion_is_a_different_move(self) -> None:
         state = board_with(
             pieces=[
-                white(PieceType.PAWN, "e7"),
-                white(PieceType.KING, "a1"),
-                black(PieceType.KING, "a8"),
+                white(PIECE_TYPE_PAWN, "e7"),
+                white(PIECE_TYPE_KING, "a1"),
+                black(PIECE_TYPE_KING, "a8"),
             ]
         )
         legal = LegalMoveGenerator.moves_for_side_to_move(state)
-        self.assertIs(CoordinateNotation.find_move("e7e8n", legal).promotion_type, PieceType.KNIGHT)
+        self.assertEqual(
+            CoordinateNotation.find_move("e7e8n", legal).promotion_type, PIECE_TYPE_KNIGHT
+        )
 
     def test_a_promotion_without_a_piece_says_so(self) -> None:
         state = board_with(
             pieces=[
-                white(PieceType.PAWN, "e7"),
-                white(PieceType.KING, "a1"),
-                black(PieceType.KING, "a8"),
+                white(PIECE_TYPE_PAWN, "e7"),
+                white(PIECE_TYPE_KING, "a1"),
+                black(PIECE_TYPE_KING, "a8"),
             ]
         )
         legal = LegalMoveGenerator.moves_for_side_to_move(state)

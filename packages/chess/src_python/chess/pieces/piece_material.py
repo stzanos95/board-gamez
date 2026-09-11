@@ -5,7 +5,15 @@ Used by the insufficient-material rule and for display. Nothing in this engine
 searches or evaluates.
 """
 
-from chess.models.piece_type import PieceType
+from idl.chess.model.piece_pb2 import (
+    PIECE_TYPE_BISHOP,
+    PIECE_TYPE_KING,
+    PIECE_TYPE_KNIGHT,
+    PIECE_TYPE_PAWN,
+    PIECE_TYPE_QUEEN,
+    PIECE_TYPE_ROOK,
+    PieceType,
+)
 
 PAWN_MATERIAL_VALUE = 1
 KNIGHT_MATERIAL_VALUE = 3
@@ -14,13 +22,15 @@ ROOK_MATERIAL_VALUE = 5
 QUEEN_MATERIAL_VALUE = 9
 KING_MATERIAL_VALUE = 0
 
-MATERIAL_VALUES_BY_PIECE_TYPE: dict[PieceType, int] = {
-    PieceType.PAWN: PAWN_MATERIAL_VALUE,
-    PieceType.KNIGHT: KNIGHT_MATERIAL_VALUE,
-    PieceType.BISHOP: BISHOP_MATERIAL_VALUE,
-    PieceType.ROOK: ROOK_MATERIAL_VALUE,
-    PieceType.QUEEN: QUEEN_MATERIAL_VALUE,
-    PieceType.KING: KING_MATERIAL_VALUE,
+MaterialValuesByPieceType = dict[PieceType, int]
+
+MATERIAL_VALUES_BY_PIECE_TYPE: MaterialValuesByPieceType = {
+    PIECE_TYPE_PAWN: PAWN_MATERIAL_VALUE,
+    PIECE_TYPE_KNIGHT: KNIGHT_MATERIAL_VALUE,
+    PIECE_TYPE_BISHOP: BISHOP_MATERIAL_VALUE,
+    PIECE_TYPE_ROOK: ROOK_MATERIAL_VALUE,
+    PIECE_TYPE_QUEEN: QUEEN_MATERIAL_VALUE,
+    PIECE_TYPE_KING: KING_MATERIAL_VALUE,
 }
 
 

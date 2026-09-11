@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 
 from chess.board.chess_board_state import ChessBoardState
-from chess.models.file_index import File
-from chess.models.rank_index import Rank
-from chess.models.square import Square
+from chess.core.files import ALL_FILES, Files
+from chess.core.ranks import ALL_RANKS, Ranks
+from idl.chess.model.square_pb2 import Rank, Square
 
 from chess_cli.display.piece_glyphs import PieceGlyphs
 
@@ -29,24 +29,24 @@ class BoardRenderer:
         With coordinates on, files are labelled above and below and ranks on both
         sides, so a square can be read off from whichever edge is nearer.
         """
-        ranks = [self._rank_line(state=state, rank=rank) for rank in reversed(list(Rank))]
+        ranks = [self._rank_line(state=state, rank=rank) for rank in reversed(ALL_RANKS)]
         if not self.show_coordinates:
             return "\n".join(ranks)
         file_labels = self._file_label_line()
         return "\n".join([file_labels, *ranks, file_labels])
 
     def _file_label_line(self) -> str:
-        letters = CELL_SEPARATOR.join(file.letter for file in File)
+        letters = CELL_SEPARATOR.join(Files.letter(file) for file in ALL_FILES)
         return f"{FILE_LABEL_INDENT}{letters}"
 
     def _rank_line(self, state: ChessBoardState, rank: Rank) -> str:
         cells = CELL_SEPARATOR.join(
-            self._cell(state=state, square=Square(file=file, rank=rank)) for file in File
+            self._cell(state=state, square=Square(file=file, rank=rank)) for file in ALL_FILES
         )
         if not self.show_coordinates:
             return cells
         gutter = RANK_LABEL_GUTTER
-        return f"{rank.digit}{gutter}{cells}{gutter}{rank.digit}"
+        return f"{Ranks.digit(rank)}{gutter}{cells}{gutter}{Ranks.digit(rank)}"
 
     def _cell(self, state: ChessBoardState, square: Square) -> str:
         occupant = state.occupant(square)

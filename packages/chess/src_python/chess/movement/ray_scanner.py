@@ -5,13 +5,13 @@ Bishop, rook and queen share this one implementation: travel until blocked, take
 the first enemy square, stop short of an ally.
 """
 
+from idl.chess.model.move_pb2 import MOVE_TYPE_CAPTURE, MOVE_TYPE_QUIET, Move
+from idl.chess.model.piece_pb2 import Color, PieceType
+from idl.chess.model.square_pb2 import Square
+
 from chess.contracts.board_state_view import BoardStateView
-from chess.models.color import Color
-from chess.models.direction import Direction
-from chess.models.move import Move
-from chess.models.move_type import MoveType
-from chess.models.piece_type import PieceType
-from chess.models.square import Square
+from chess.core.squares import SquareIndex, Squares
+from chess.movement.direction import Direction
 
 
 class RayScanner:
@@ -36,7 +36,7 @@ class RayScanner:
         """
         found: list[Move] = []
         for direction in directions:
-            square = origin.shifted(direction.vector)
+            square = Squares.shifted(origin, direction.vector)
             while square is not None:
                 if state.holds_ally_of(square, color):
                     break
@@ -47,13 +47,13 @@ class RayScanner:
                         destination=square,
                         moving_color=color,
                         moving_piece_type=piece_type,
-                        move_type=MoveType.CAPTURE if capturing else MoveType.QUIET,
+                        move_type=MOVE_TYPE_CAPTURE if capturing else MOVE_TYPE_QUIET,
                         captured_square=square if capturing else None,
                     )
                 )
                 if capturing:
                     break
-                square = square.shifted(direction.vector)
+                square = Squares.shifted(square, direction.vector)
         return tuple(found)
 
     @staticmethod
@@ -61,7 +61,7 @@ class RayScanner:
         state: BoardStateView,
         origin: Square,
         directions: tuple[Direction, ...],
-    ) -> frozenset[Square]:
+    ) -> frozenset[SquareIndex]:
         """
         Every square a slider bears on from here, in these directions.
 
@@ -69,12 +69,12 @@ class RayScanner:
         square is included whoever holds it. A piece defended by an ally is still
         defended, so the enemy king may not capture it.
         """
-        found: set[Square] = set()
+        found: set[SquareIndex] = set()
         for direction in directions:
-            square = origin.shifted(direction.vector)
+            square = Squares.shifted(origin, direction.vector)
             while square is not None:
-                found.add(square)
+                found.add(Squares.get_index(square))
                 if not state.is_empty(square):
                     break
-                square = square.shifted(direction.vector)
+                square = Squares.shifted(square, direction.vector)
         return frozenset(found)

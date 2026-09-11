@@ -107,6 +107,14 @@ repos:
         files: ^packages/game/
         pass_filenames: false
 
+      - id: mypy-product-chess
+        name: mypy (packages/product-chess)
+        entry: uv run --directory packages/product-chess --quiet python -m mypy
+        language: system
+        types: [python]
+        files: ^packages/product-chess/
+        pass_filenames: false
+
       - id: mypy-chess-cli
         name: mypy (deployables/chess-cli)
         entry: uv run --directory deployables/chess-cli --quiet python -m mypy

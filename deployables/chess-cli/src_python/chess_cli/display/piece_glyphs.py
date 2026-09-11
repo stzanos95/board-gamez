@@ -6,9 +6,19 @@ look rather than for a colour, because which colour uses which is configurable �
 see PieceGlyphs.glyph_for.
 """
 
-from chess.models.color import Color
-from chess.models.occupant import Occupant
-from chess.models.piece_type import PieceType
+from idl.chess.model.piece_pb2 import (
+    COLOR_WHITE,
+    PIECE_TYPE_BISHOP,
+    PIECE_TYPE_KING,
+    PIECE_TYPE_KNIGHT,
+    PIECE_TYPE_PAWN,
+    PIECE_TYPE_QUEEN,
+    PIECE_TYPE_ROOK,
+    Occupant,
+    PieceType,
+)
+
+GlyphsByPieceType = dict[PieceType, str]
 
 # A full stop sits on the baseline, which reads as bottom-aligned beside the
 # figurines. U+2219 BULLET OPERATOR sits at their height instead.
@@ -21,40 +31,40 @@ from chess.models.piece_type import PieceType
 ASCII_EMPTY_SQUARE_GLYPH = "."
 UNICODE_EMPTY_SQUARE_GLYPH = "∙"
 
-HOLLOW_UNICODE_GLYPHS_BY_PIECE_TYPE: dict[PieceType, str] = {
-    PieceType.KING: "♔",
-    PieceType.QUEEN: "♕",
-    PieceType.ROOK: "♖",
-    PieceType.BISHOP: "♗",
-    PieceType.KNIGHT: "♘",
-    PieceType.PAWN: "♙",
+HOLLOW_UNICODE_GLYPHS_BY_PIECE_TYPE: GlyphsByPieceType = {
+    PIECE_TYPE_KING: "♔",
+    PIECE_TYPE_QUEEN: "♕",
+    PIECE_TYPE_ROOK: "♖",
+    PIECE_TYPE_BISHOP: "♗",
+    PIECE_TYPE_KNIGHT: "♘",
+    PIECE_TYPE_PAWN: "♙",
 }
 
-FILLED_UNICODE_GLYPHS_BY_PIECE_TYPE: dict[PieceType, str] = {
-    PieceType.KING: "♚",
-    PieceType.QUEEN: "♛",
-    PieceType.ROOK: "♜",
-    PieceType.BISHOP: "♝",
-    PieceType.KNIGHT: "♞",
-    PieceType.PAWN: "♟",
+FILLED_UNICODE_GLYPHS_BY_PIECE_TYPE: GlyphsByPieceType = {
+    PIECE_TYPE_KING: "♚",
+    PIECE_TYPE_QUEEN: "♛",
+    PIECE_TYPE_ROOK: "♜",
+    PIECE_TYPE_BISHOP: "♝",
+    PIECE_TYPE_KNIGHT: "♞",
+    PIECE_TYPE_PAWN: "♟",
 }
 
-WHITE_ASCII_GLYPHS_BY_PIECE_TYPE: dict[PieceType, str] = {
-    PieceType.KING: "K",
-    PieceType.QUEEN: "Q",
-    PieceType.ROOK: "R",
-    PieceType.BISHOP: "B",
-    PieceType.KNIGHT: "N",
-    PieceType.PAWN: "P",
+WHITE_ASCII_GLYPHS_BY_PIECE_TYPE: GlyphsByPieceType = {
+    PIECE_TYPE_KING: "K",
+    PIECE_TYPE_QUEEN: "Q",
+    PIECE_TYPE_ROOK: "R",
+    PIECE_TYPE_BISHOP: "B",
+    PIECE_TYPE_KNIGHT: "N",
+    PIECE_TYPE_PAWN: "P",
 }
 
-BLACK_ASCII_GLYPHS_BY_PIECE_TYPE: dict[PieceType, str] = {
-    PieceType.KING: "k",
-    PieceType.QUEEN: "q",
-    PieceType.ROOK: "r",
-    PieceType.BISHOP: "b",
-    PieceType.KNIGHT: "n",
-    PieceType.PAWN: "p",
+BLACK_ASCII_GLYPHS_BY_PIECE_TYPE: GlyphsByPieceType = {
+    PIECE_TYPE_KING: "k",
+    PIECE_TYPE_QUEEN: "q",
+    PIECE_TYPE_ROOK: "r",
+    PIECE_TYPE_BISHOP: "b",
+    PIECE_TYPE_KNIGHT: "n",
+    PIECE_TYPE_PAWN: "p",
 }
 
 
@@ -88,12 +98,12 @@ class PieceGlyphs:
         if not use_unicode:
             letters = (
                 WHITE_ASCII_GLYPHS_BY_PIECE_TYPE
-                if occupant.color is Color.WHITE
+                if occupant.color == COLOR_WHITE
                 else BLACK_ASCII_GLYPHS_BY_PIECE_TYPE
             )
             return letters[occupant.piece_type]
 
-        draw_hollow = (occupant.color is Color.WHITE) == transparent_white
+        draw_hollow = (occupant.color == COLOR_WHITE) == transparent_white
         figurines = (
             HOLLOW_UNICODE_GLYPHS_BY_PIECE_TYPE
             if draw_hollow

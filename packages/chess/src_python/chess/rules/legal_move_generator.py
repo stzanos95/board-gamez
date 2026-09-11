@@ -9,9 +9,10 @@ Legality is tested by playing the move and reading the result. Pins, discovered
 checks and a king retreating along a checking ray need no special case.
 """
 
+from idl.chess.model.move_pb2 import Move
+from idl.chess.model.piece_pb2 import Color
+
 from chess.board.chess_board_state import ChessBoardState
-from chess.models.color import Color
-from chess.models.move import Move
 from chess.rules.castling_rule import CastlingRule
 from chess.rules.check_detector import CheckDetector
 

@@ -5,18 +5,26 @@ A pawn is the only piece whose geometry differs between the two sides, so each o
 these is a lookup on colour rather than a constant.
 """
 
-from chess.models.color import Color
-from chess.models.direction import Direction
-from chess.models.piece_type import PieceType
-from chess.models.rank_index import Rank
+from idl.chess.model.piece_pb2 import (
+    COLOR_WHITE,
+    PIECE_TYPE_BISHOP,
+    PIECE_TYPE_KNIGHT,
+    PIECE_TYPE_QUEEN,
+    PIECE_TYPE_ROOK,
+    Color,
+    PieceType,
+)
+from idl.chess.model.square_pb2 import RANK_1, RANK_2, RANK_7, RANK_8, Rank
+
+from chess.movement.direction import Direction
 
 # Order matters only for presentation: a queen is what a player almost always
 # wants, so it is offered first.
 PAWN_PROMOTION_TYPES: tuple[PieceType, ...] = (
-    PieceType.QUEEN,
-    PieceType.ROOK,
-    PieceType.BISHOP,
-    PieceType.KNIGHT,
+    PIECE_TYPE_QUEEN,
+    PIECE_TYPE_ROOK,
+    PIECE_TYPE_BISHOP,
+    PIECE_TYPE_KNIGHT,
 )
 
 
@@ -30,7 +38,7 @@ class PawnGeometry:
         """
         The one direction this colour's pawns advance in.
         """
-        return Direction.NORTH if color is Color.WHITE else Direction.SOUTH
+        return Direction.NORTH if color == COLOR_WHITE else Direction.SOUTH
 
     @staticmethod
     def start_rank(color: Color) -> Rank:
@@ -38,20 +46,20 @@ class PawnGeometry:
         The rank this colour's pawns begin on, and the only one they may double
         push from.
         """
-        return Rank.TWO if color is Color.WHITE else Rank.SEVEN
+        return RANK_2 if color == COLOR_WHITE else RANK_7
 
     @staticmethod
     def promotion_rank(color: Color) -> Rank:
         """
         The rank on which this colour's pawns must become another piece.
         """
-        return Rank.EIGHT if color is Color.WHITE else Rank.ONE
+        return RANK_8 if color == COLOR_WHITE else RANK_1
 
     @staticmethod
     def capture_directions(color: Color) -> tuple[Direction, ...]:
         """
         The two diagonals this colour's pawns capture along.
         """
-        if color is Color.WHITE:
+        if color == COLOR_WHITE:
             return (Direction.NORTH_WEST, Direction.NORTH_EAST)
         return (Direction.SOUTH_WEST, Direction.SOUTH_EAST)

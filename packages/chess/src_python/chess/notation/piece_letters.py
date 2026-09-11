@@ -5,22 +5,33 @@ A pawn is named by its file rather than by a letter, so its entry is the empty
 string.
 """
 
-from chess.models.piece_type import PieceType
+from idl.chess.model.piece_pb2 import (
+    PIECE_TYPE_BISHOP,
+    PIECE_TYPE_KING,
+    PIECE_TYPE_KNIGHT,
+    PIECE_TYPE_PAWN,
+    PIECE_TYPE_QUEEN,
+    PIECE_TYPE_ROOK,
+    PieceType,
+)
 
-NOTATION_LETTERS_BY_PIECE_TYPE: dict[PieceType, str] = {
-    PieceType.PAWN: "",
-    PieceType.KNIGHT: "N",
-    PieceType.BISHOP: "B",
-    PieceType.ROOK: "R",
-    PieceType.QUEEN: "Q",
-    PieceType.KING: "K",
+NotationLettersByPieceType = dict[PieceType, str]
+PieceTypesByPromotionLetter = dict[str, PieceType]
+
+NOTATION_LETTERS_BY_PIECE_TYPE: NotationLettersByPieceType = {
+    PIECE_TYPE_PAWN: "",
+    PIECE_TYPE_KNIGHT: "N",
+    PIECE_TYPE_BISHOP: "B",
+    PIECE_TYPE_ROOK: "R",
+    PIECE_TYPE_QUEEN: "Q",
+    PIECE_TYPE_KING: "K",
 }
 
-PIECE_TYPES_BY_PROMOTION_LETTER: dict[str, PieceType] = {
-    "q": PieceType.QUEEN,
-    "r": PieceType.ROOK,
-    "b": PieceType.BISHOP,
-    "n": PieceType.KNIGHT,
+PIECE_TYPES_BY_PROMOTION_LETTER: PieceTypesByPromotionLetter = {
+    "q": PIECE_TYPE_QUEEN,
+    "r": PIECE_TYPE_ROOK,
+    "b": PIECE_TYPE_BISHOP,
+    "n": PIECE_TYPE_KNIGHT,
 }
 
 

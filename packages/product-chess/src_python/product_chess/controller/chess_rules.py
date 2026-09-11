@@ -1,0 +1,73 @@
+"""
+The rules of chess, as the platform asks them.
+
+The one place that decides what a participant number means in chess: the first
+participant plays White and the second plays Black, and a game takes exactly two.
+"""
+
+from chess.adapters.game_adapters import GameAdapters
+from chess.engine.chess_engine import ChessEngine
+from chess.rules.move_matcher import MoveMatcher
+from game.controller.base_rules import BaseRules
+from google.protobuf import any_pb2
+from idl.chess.model.action_pb2 import ChessAction
+from idl.game.model.action_pb2 import Action
+from idl.game.model.game_spec_pb2 import ParticipantBounds
+from idl.game.model.game_state_pb2 import GameState
+
+from product_chess.adapters.chess_rules_adapters import ChessRulesAdapters
+
+CHESS_PARTICIPANT_COUNT = 2
+WHITE_PARTICIPANT = 1
+BLACK_PARTICIPANT = 2
+
+
+class ChessRules(BaseRules):
+    """
+    Every question the platform asks a game, answered for chess.
+
+    Every viewer is shown the whole game: chess has no hidden information.
+    """
+
+    async def create_game(self, participant_count: int) -> GameState | None:
+        if participant_count != CHESS_PARTICIPANT_COUNT:
+            return None
+        engine = ChessEngine.new_game(
+            white_participant=WHITE_PARTICIPANT, black_participant=BLACK_PARTICIPANT
+        )
+        return ChessRulesAdapters.engine_to_game_state(engine)
+
+    async def apply_action(self, state: GameState, action: Action) -> GameState | None:
+        game = ChessRulesAdapters.game_state_to_chess_game(state)
+        if game is None:
+            return None
+        engine = GameAdapters.chess_game_to_engine(game)
+        if engine.is_over or action.participant != engine.active_player.participant:
+            return None
+        chess_action = ChessRulesAdapters.action_to_chess_action(action)
+        if chess_action is None:
+            return None
+        advanced = ChessRules._get_advanced_engine(engine, chess_action)
+        if advanced is None:
+            return None
+        return ChessRulesAdapters.engine_to_game_state(advanced)
+
+    async def read_view(self, state: GameState, participant: int) -> any_pb2.Any:
+        view = any_pb2.Any()
+        view.CopyFrom(state.payload)
+        return view
+
+    async def read_bounds(self) -> ParticipantBounds:
+        return ParticipantBounds(minimum=CHESS_PARTICIPANT_COUNT, maximum=CHESS_PARTICIPANT_COUNT)
+
+    @staticmethod
+    def _get_advanced_engine(engine: ChessEngine, chess_action: ChessAction) -> ChessEngine | None:
+        """
+        The game after this action, or None when the action names no legal move.
+        """
+        if chess_action.HasField("move"):
+            move = MoveMatcher.get_legal_move(chess_action.move, engine.legal_moves)
+            return None if move is None else engine.play(move)
+        if chess_action.HasField("resignation"):
+            return engine.resign()
+        return None

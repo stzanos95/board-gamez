@@ -1,11 +1,11 @@
 import unittest
 
+import grpc
 from game.repository.config import (
     RedisSessionRepositoryConfig,
     SessionRepositoryConfig,
     SessionRepositoryType,
 )
-from game.service.rules_config import RulesConfig, RulesUpstreamConfig
 from lobby.repository.config import (
     RedisTableRepositoryConfig,
     TableRepositoryConfig,
@@ -27,7 +27,6 @@ REDIS_PORT = 6379
 REDIS_DATABASE = 0
 RECEIVE_LIMIT = 1024
 SEND_LIMIT = 2048
-CHESS_RULES_PORT = 50052
 
 
 def server_config() -> ServerConfig:
@@ -68,14 +67,6 @@ def game_config() -> GameConfig:
                 key_prefix="board-gamez-test",
             ),
         ),
-        rules=RulesConfig(
-            chess=RulesUpstreamConfig(
-                hostname="127.0.0.1",
-                port=CHESS_RULES_PORT,
-                max_receive_message_bytes=RECEIVE_LIMIT,
-                max_send_message_bytes=SEND_LIMIT,
-            )
-        ),
     )
 
 
@@ -97,3 +88,24 @@ class BringupTest(unittest.TestCase):
     def test_a_host_is_built_without_touching_the_network(self) -> None:
         host = ServiceHost(config=config_for())
         self.assertIsInstance(host, ServiceHost)
+
+
+class RegistrationTest(unittest.IsolatedAsyncioTestCase):
+    """
+    Registration builds every controller from the configuration and names every
+    service, without a store or a port being reached.
+    """
+
+    async def test_every_service_is_registered_under_its_full_name(self) -> None:
+        server = grpc.aio.server()
+        names = ServiceHost._register_services(server, lobby_config(), game_config())
+        self.assertEqual(
+            names,
+            (
+                "idl.lobby.service.TableService",
+                "idl.game.service.SessionService",
+                "idl.game.service.GameSpecService",
+                "idl.game.service.RulesService",
+                "idl.chess.service.ChessService",
+            ),
+        )

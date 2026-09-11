@@ -170,7 +170,8 @@ Every path is built the same way:
   the system; `external` faces a browser or a third party. Nothing is `external`
   yet.
 - **platform or product** — which half owns it. `platform` is what every game
-  shares; a product is one thing built on top. Nothing is a product yet.
+  shares; a product is one thing built on top. `chess` is a product:
+  `/internal/product/chess/start/game`.
 - **domain** — the directory the service lives in.
 - **method** — `upsert`, `read`, `delete`, `list` for storage. A domain verb
   (`join`, `leave`) belongs to a layer above storage, never beside it.

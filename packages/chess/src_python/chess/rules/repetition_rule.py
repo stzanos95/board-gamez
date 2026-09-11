@@ -2,7 +2,7 @@
 Draw by threefold repetition.
 """
 
-from chess.models.position_key import PositionKey
+from idl.chess.model.board_pb2 import PositionKey
 
 REPETITION_LIMIT = 3
 

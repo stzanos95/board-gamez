@@ -8,11 +8,13 @@ A move is read by matching the text against the legal moves, so the parser never
 classifies a move itself.
 """
 
+from idl.chess.model.move_pb2 import CoordinateMove, Move
+from idl.chess.model.piece_pb2 import PIECE_TYPE_UNSPECIFIED
+
 from chess.core.errors import IllegalMoveError, NotationError
-from chess.models.move import Move
-from chess.models.parsed_coordinate_move import ParsedCoordinateMove
-from chess.models.square import Square
+from chess.core.squares import Squares
 from chess.notation.piece_letters import PIECE_TYPES_BY_PROMOTION_LETTER, PieceLetters
+from chess.rules.move_matcher import MoveMatcher
 
 SQUARE_LENGTH = 2
 PLAIN_LENGTH = SQUARE_LENGTH * 2
@@ -32,10 +34,35 @@ class CoordinateNotation:
         """
         promotion = (
             ""
-            if move.promotion_type is None
+            if move.promotion_type == PIECE_TYPE_UNSPECIFIED
             else PieceLetters.promotion_letter(move.promotion_type)
         )
-        return f"{move.origin.algebraic}{move.destination.algebraic}{promotion}"
+        return f"{Squares.algebraic(move.origin)}{Squares.algebraic(move.destination)}{promotion}"
+
+    @staticmethod
+    def parse_text(text: str) -> CoordinateMove:
+        """
+        The squares and promotion the text names, without judging whether the
+        move is available.
+
+        Raises NotationError if the text is not a move.
+        """
+        wanted = CoordinateNotation._normalised(text)
+        origin = Squares.from_algebraic(wanted[:SQUARE_LENGTH])
+        destination = Squares.from_algebraic(wanted[SQUARE_LENGTH:PLAIN_LENGTH])
+        if len(wanted) == PLAIN_LENGTH:
+            return CoordinateMove(origin=origin, destination=destination)
+        letter = wanted[PLAIN_LENGTH]
+        if letter not in PIECE_TYPES_BY_PROMOTION_LETTER:
+            raise NotationError(
+                f"got promotion {letter!r}, expected one of "
+                f"{''.join(PIECE_TYPES_BY_PROMOTION_LETTER)!r}"
+            )
+        return CoordinateMove(
+            origin=origin,
+            destination=destination,
+            promotion_type=PIECE_TYPES_BY_PROMOTION_LETTER[letter],
+        )
 
     @staticmethod
     def find_move(text: str, legal_moves: tuple[Move, ...]) -> Move:
@@ -46,17 +73,17 @@ class CoordinateNotation:
         is well formed but unavailable in this position.
         """
         wanted = CoordinateNotation._normalised(text)
-        for move in legal_moves:
-            if CoordinateNotation.to_text(move) == wanted:
-                return move
+        parsed = CoordinateNotation.parse_text(wanted)
+        move = MoveMatcher.get_legal_move(parsed, legal_moves)
+        if move is not None:
+            return move
 
-        parsed = CoordinateNotation._parsed_move(wanted)
-        if parsed.promotion_type is None and any(
-            move.origin == parsed.origin and move.destination == parsed.destination
-            for move in legal_moves
+        if len(wanted) == PLAIN_LENGTH and any(
+            legal.origin == parsed.origin and legal.destination == parsed.destination
+            for legal in legal_moves
         ):
             raise IllegalMoveError(
-                f"{wanted} reaches {parsed.destination.algebraic} by promoting; "
+                f"{wanted} reaches {Squares.algebraic(parsed.destination)} by promoting; "
                 f"say which piece, as in {wanted}q"
             )
         raise IllegalMoveError(
@@ -76,25 +103,3 @@ class CoordinateNotation:
                 f"got move {text!r}, expected a move such as 'e2e4' or a promotion such as 'e7e8q'"
             )
         return stripped
-
-    @staticmethod
-    def _parsed_move(text: str) -> ParsedCoordinateMove:
-        """
-        The squares and promotion the text names, without judging whether the
-        move is available.
-        """
-        origin = Square.from_algebraic(text[:SQUARE_LENGTH])
-        destination = Square.from_algebraic(text[SQUARE_LENGTH:PLAIN_LENGTH])
-        if len(text) == PLAIN_LENGTH:
-            return ParsedCoordinateMove(origin=origin, destination=destination, promotion_type=None)
-        letter = text[PLAIN_LENGTH]
-        if letter not in PIECE_TYPES_BY_PROMOTION_LETTER:
-            raise NotationError(
-                f"got promotion {letter!r}, expected one of "
-                f"{''.join(PIECE_TYPES_BY_PROMOTION_LETTER)!r}"
-            )
-        return ParsedCoordinateMove(
-            origin=origin,
-            destination=destination,
-            promotion_type=PIECE_TYPES_BY_PROMOTION_LETTER[letter],
-        )

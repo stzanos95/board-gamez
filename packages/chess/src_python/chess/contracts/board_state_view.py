@@ -1,17 +1,15 @@
 from abc import ABC, abstractmethod
 
-from chess.models.castling_rights import CastlingRights
-from chess.models.color import Color
-from chess.models.occupant import Occupant
-from chess.models.square import Square
+from idl.chess.model.castling_pb2 import CastlingRights
+from idl.chess.model.piece_pb2 import Color, Occupant
+from idl.chess.model.square_pb2 import Square
 
 
 class BoardStateView(ABC):
     """
     The read-only face of a board. A piece is handed this, never the board.
 
-    Move generation can read occupancy through it and cannot write, and `models`
-    carries no dependency on `pieces`.
+    Move generation can read occupancy through it and cannot write.
 
     Every member is a method rather than a property. An abstract property is
     inherited as a class attribute, and a dataclass field of the same name would

@@ -5,26 +5,36 @@ Each call builds a new state. The back-rank order is the only fact worth stating
 the rest is symmetry between the two colours.
 """
 
+from idl.chess.model.piece_pb2 import (
+    COLOR_WHITE,
+    PIECE_TYPE_BISHOP,
+    PIECE_TYPE_KING,
+    PIECE_TYPE_KNIGHT,
+    PIECE_TYPE_PAWN,
+    PIECE_TYPE_QUEEN,
+    PIECE_TYPE_ROOK,
+    Color,
+    PieceType,
+)
+from idl.chess.model.square_pb2 import RANK_1, RANK_8, File, Rank, Square
+
 from chess.board.chess_board_state import ChessBoardState
-from chess.models.castling_rights import CastlingRights
-from chess.models.color import Color
-from chess.models.file_index import File
-from chess.models.piece_type import PieceType
-from chess.models.rank_index import Rank
-from chess.models.square import Square
+from chess.core.castling_rights import CastlingRightSets
+from chess.core.colors import ALL_COLORS
+from chess.core.files import ALL_FILES
 from chess.pieces.base_piece import BasePiece
 from chess.pieces.pawn_geometry import PawnGeometry
 from chess.pieces.piece_factory import PieceFactory
 
 STARTING_BACK_RANK_ORDER: tuple[PieceType, ...] = (
-    PieceType.ROOK,
-    PieceType.KNIGHT,
-    PieceType.BISHOP,
-    PieceType.QUEEN,
-    PieceType.KING,
-    PieceType.BISHOP,
-    PieceType.KNIGHT,
-    PieceType.ROOK,
+    PIECE_TYPE_ROOK,
+    PIECE_TYPE_KNIGHT,
+    PIECE_TYPE_BISHOP,
+    PIECE_TYPE_QUEEN,
+    PIECE_TYPE_KING,
+    PIECE_TYPE_BISHOP,
+    PIECE_TYPE_KNIGHT,
+    PIECE_TYPE_ROOK,
 )
 
 
@@ -42,25 +52,25 @@ class StartingPosition:
         return ChessBoardState.from_pieces(
             pieces=(
                 piece
-                for color in Color
-                for file in File
+                for color in ALL_COLORS
+                for file in ALL_FILES
                 for piece in (
                     StartingPosition._back_rank_piece(color=color, file=file),
                     StartingPosition._pawn(color=color, file=file),
                 )
             ),
-            side_to_move=Color.WHITE,
-            castling_rights=CastlingRights.full(),
+            side_to_move=COLOR_WHITE,
+            castling_rights=CastlingRightSets.full(),
         )
 
     @staticmethod
     def _back_rank_of(color: Color) -> Rank:
-        return Rank.ONE if color is Color.WHITE else Rank.EIGHT
+        return RANK_1 if color == COLOR_WHITE else RANK_8
 
     @staticmethod
     def _back_rank_piece(color: Color, file: File) -> BasePiece:
         return PieceFactory.create_piece(
-            piece_type=STARTING_BACK_RANK_ORDER[file.value],
+            piece_type=STARTING_BACK_RANK_ORDER[ALL_FILES.index(file)],
             color=color,
             square=Square(file=file, rank=StartingPosition._back_rank_of(color)),
         )
@@ -68,7 +78,7 @@ class StartingPosition:
     @staticmethod
     def _pawn(color: Color, file: File) -> BasePiece:
         return PieceFactory.create_piece(
-            piece_type=PieceType.PAWN,
+            piece_type=PIECE_TYPE_PAWN,
             color=color,
             square=Square(file=file, rank=PawnGeometry.start_rank(color)),
         )

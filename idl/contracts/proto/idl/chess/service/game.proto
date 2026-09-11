@@ -1,0 +1,37 @@
+// Starting a game of chess, reading it, and playing it.
+
+syntax = "proto3";
+
+package idl.chess.service;
+
+import "google/api/annotations.proto";
+import "idl/chess/dto/game.proto";
+
+option go_package = "boardgamez/contracts/gen/go/idl/chess/service;chessservice";
+
+// Chess as it is played at a table.
+//
+// Every request and answer is chess's own type, so a caller never packs or opens
+// a payload. A game changes by playing an action and in no other way.
+service ChessService {
+  rpc StartGame(idl.chess.dto.StartGameRequest) returns (idl.chess.dto.StartGameResponse) {
+    option (google.api.http) = {
+      post: "/internal/product/chess/start/game"
+      body: "*"
+    };
+  }
+
+  rpc ReadGame(idl.chess.dto.ReadGameRequest) returns (idl.chess.dto.ReadGameResponse) {
+    option (google.api.http) = {
+      post: "/internal/product/chess/read/game"
+      body: "*"
+    };
+  }
+
+  rpc PlayAction(idl.chess.dto.PlayActionRequest) returns (idl.chess.dto.PlayActionResponse) {
+    option (google.api.http) = {
+      post: "/internal/product/chess/play/action"
+      body: "*"
+    };
+  }
+}

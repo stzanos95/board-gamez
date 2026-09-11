@@ -3,14 +3,17 @@ The gateway: a FastAPI application and the server that runs it.
 """
 
 import asyncio
+import logging
 
 import uvicorn
 from fastapi import FastAPI
 from game.service.game_routers import GameRouters
 from lobby.service.lobby_routers import LobbyRouters
+from product_chess.service.product_chess_routers import ProductChessRouters
 
 from fastapi_gateway.gateway_api_config import ApplicationConfig, GatewayAPIConfig, ServerConfig
 from fastapi_gateway.gateway_clients import GatewayClients
+from fastapi_gateway.payload_types import PayloadTypeRegistry
 
 
 class GatewayAPI:
@@ -49,6 +52,7 @@ class GatewayAPI:
         application.include_router(LobbyRouters.table_service(clients.table))
         application.include_router(GameRouters.session_service(clients.session))
         application.include_router(GameRouters.game_spec_service(clients.game_spec))
+        application.include_router(ProductChessRouters.chess_service(clients.chess))
         return application
 
     async def _serve(self) -> None:
@@ -57,6 +61,9 @@ class GatewayAPI:
         try:
             application = GatewayAPI.build_application(self._config.application, clients)
             server = GatewayAPI._build_server(application, self._config.server)
+            logging.getLogger(self._config.application.title).info(
+                "translating %d payload types", len(PayloadTypeRegistry.get_type_names())
+            )
             await server.serve()
         finally:
             await clients.close()
