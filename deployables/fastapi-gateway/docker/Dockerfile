@@ -21,6 +21,7 @@ COPY idl/contracts/gen/python /app/idl/contracts/gen/python
 COPY idl/contracts/gen/fastapi /app/idl/contracts/gen/fastapi
 COPY packages/core /app/packages/core
 COPY packages/lobby /app/packages/lobby
+COPY packages/game /app/packages/game
 COPY deployables/fastapi-gateway /app/deployables/fastapi-gateway
 
 WORKDIR /app/deployables/fastapi-gateway
@@ -45,6 +46,7 @@ COPY --chown=gateway:gateway idl/contracts/gen/python /app/idl/contracts/gen/pyt
 COPY --chown=gateway:gateway idl/contracts/gen/fastapi /app/idl/contracts/gen/fastapi
 COPY --chown=gateway:gateway packages/core /app/packages/core
 COPY --chown=gateway:gateway packages/lobby /app/packages/lobby
+COPY --chown=gateway:gateway packages/game /app/packages/game
 COPY --chown=gateway:gateway deployables/fastapi-gateway /app/deployables/fastapi-gateway
 COPY deployables/fastapi-gateway/docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh

@@ -7,6 +7,7 @@ dependencies = [
     # The servicers this process serves, ready made. A domain package owns its
     # implementation and its registration; the server only registers them.
     "lobby",
+    "game",
     # The channel arguments both ends of a call are tuned with.
     "core",
     "grpcio>=1.68.1",
@@ -19,6 +20,7 @@ dependencies = [
 # Relative path sources rather than a workspace: each project here stands alone.
 [tool.uv.sources]
 lobby = { path = "../../packages/lobby", editable = true }
+game = { path = "../../packages/game", editable = true }
 core = { path = "../../packages/core", editable = true }
 
 [project.scripts]

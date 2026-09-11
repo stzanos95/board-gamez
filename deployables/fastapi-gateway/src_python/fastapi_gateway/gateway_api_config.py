@@ -51,9 +51,9 @@ class ServerConfig(DataClassYAMLMixin):
 @dataclass(frozen=True, slots=True)
 class GrpcConfig(DataClassYAMLMixin):
     """
-    Where one internal service answers, and what a call to it may carry.
+    Where the internal gRPC server answers, and what a call to it may carry.
 
-    Plain HTTP/2 without TLS: these are reachable only from inside.
+    Plain HTTP/2 without TLS: it is reachable only from inside.
 
     The message limits are the caller's half of a pair. A server that accepts
     more than a client will receive fails on whichever side is smaller, so these
@@ -74,15 +74,6 @@ class GrpcConfig(DataClassYAMLMixin):
 
 
 @dataclass(frozen=True, slots=True)
-class UpstreamsConfig(DataClassYAMLMixin):
-    """
-    Every internal service this gateway calls, one field per domain.
-    """
-
-    lobby: GrpcConfig
-
-
-@dataclass(frozen=True, slots=True)
 class GatewayAPIConfig(DataClassYAMLMixin):
     """
     Everything the gateway needs to start.
@@ -90,4 +81,4 @@ class GatewayAPIConfig(DataClassYAMLMixin):
 
     application: ApplicationConfig
     server: ServerConfig
-    upstreams: UpstreamsConfig
+    grpc: GrpcConfig

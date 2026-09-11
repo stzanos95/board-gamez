@@ -139,6 +139,7 @@ class TableAdapters:
             game_type=table.game_type,
             status=table.status,
             seats=table.seats,
+            player_ids=table.player_ids,
         )
 
     @staticmethod
@@ -149,6 +150,7 @@ class TableAdapters:
             status=stored.status,
             seats=stored.seats,
             version=stored.metadata.version,
+            player_ids=stored.player_ids,
         )
 
     @staticmethod

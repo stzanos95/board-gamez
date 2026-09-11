@@ -22,18 +22,20 @@ TABLE_STATUS_FINISHED: TableStatus
 TABLE_STATUS_ABANDONED: TableStatus
 
 class Table(_message.Message):
-    __slots__ = ("id", "game_type", "status", "seats", "version")
+    __slots__ = ("id", "game_type", "status", "seats", "version", "player_ids")
     ID_FIELD_NUMBER: _ClassVar[int]
     GAME_TYPE_FIELD_NUMBER: _ClassVar[int]
     STATUS_FIELD_NUMBER: _ClassVar[int]
     SEATS_FIELD_NUMBER: _ClassVar[int]
     VERSION_FIELD_NUMBER: _ClassVar[int]
+    PLAYER_IDS_FIELD_NUMBER: _ClassVar[int]
     id: str
     game_type: _game_type_pb2.GameType
     status: TableStatus
     seats: _containers.RepeatedCompositeFieldContainer[_seat_pb2.Seat]
     version: int
-    def __init__(self, id: _Optional[str] = ..., game_type: _Optional[_Union[_game_type_pb2.GameType, str]] = ..., status: _Optional[_Union[TableStatus, str]] = ..., seats: _Optional[_Iterable[_Union[_seat_pb2.Seat, _Mapping]]] = ..., version: _Optional[int] = ...) -> None: ...
+    player_ids: _containers.RepeatedScalarFieldContainer[str]
+    def __init__(self, id: _Optional[str] = ..., game_type: _Optional[_Union[_game_type_pb2.GameType, str]] = ..., status: _Optional[_Union[TableStatus, str]] = ..., seats: _Optional[_Iterable[_Union[_seat_pb2.Seat, _Mapping]]] = ..., version: _Optional[int] = ..., player_ids: _Optional[_Iterable[str]] = ...) -> None: ...
 
 class TableCollection(_message.Message):
     __slots__ = ("table_items",)

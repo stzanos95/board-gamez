@@ -4,6 +4,8 @@ syntax = "proto3";
 
 package idl.game.model;
 
+import "idl/game/model/session.proto";
+
 option go_package = "boardgamez/contracts/gen/go/idl/game/model;gamemodel";
 
 // Every way a command ends.
@@ -22,4 +24,13 @@ enum CommandOutcome {
   COMMAND_OUTCOME_VERSION_MOVED = 6;
   COMMAND_OUTCOME_OUT_OF_TURN = 7;
   COMMAND_OUTCOME_ILLEGAL_ACTION = 8;
+}
+
+// What happened to a command, and the game as its sender may now see it.
+//
+// The session is carried whatever the outcome, and is unset only when no game
+// is stored under the id the command named.
+message CommandResult {
+  CommandOutcome outcome = 1;
+  SessionView session = 2;
 }

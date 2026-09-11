@@ -20,7 +20,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file idl/lobby/obj/table.proto.
  */
 export const file_idl_lobby_obj_table: GenFile = /*@__PURE__*/
-  fileDesc("ChlpZGwvbG9iYnkvb2JqL3RhYmxlLnByb3RvEg1pZGwubG9iYnkub2JqIrsBCghUYWJsZU9iahIuCghtZXRhZGF0YRgBIAEoCzIcLmlkbC5jb3JlLm9iai5PYmplY3RNZXRhZGF0YRIrCglnYW1lX3R5cGUYAiABKA4yGC5pZGwuZ2FtZS5tb2RlbC5HYW1lVHlwZRIsCgZzdGF0dXMYAyABKA4yHC5pZGwubG9iYnkubW9kZWwuVGFibGVTdGF0dXMSJAoFc2VhdHMYBCADKAsyFS5pZGwubG9iYnkubW9kZWwuU2VhdEI0WjJib2FyZGdhbWV6L2NvbnRyYWN0cy9nZW4vZ28vaWRsL2xvYmJ5L29iajtsb2JieW9iamIGcHJvdG8z", [file_idl_core_obj_object_metadata, file_idl_game_model_game_type, file_idl_lobby_model_seat, file_idl_lobby_model_table]);
+  fileDesc("ChlpZGwvbG9iYnkvb2JqL3RhYmxlLnByb3RvEg1pZGwubG9iYnkub2JqIs8BCghUYWJsZU9iahIuCghtZXRhZGF0YRgBIAEoCzIcLmlkbC5jb3JlLm9iai5PYmplY3RNZXRhZGF0YRIrCglnYW1lX3R5cGUYAiABKA4yGC5pZGwuZ2FtZS5tb2RlbC5HYW1lVHlwZRIsCgZzdGF0dXMYAyABKA4yHC5pZGwubG9iYnkubW9kZWwuVGFibGVTdGF0dXMSJAoFc2VhdHMYBCADKAsyFS5pZGwubG9iYnkubW9kZWwuU2VhdBISCgpwbGF5ZXJfaWRzGAUgAygJQjRaMmJvYXJkZ2FtZXovY29udHJhY3RzL2dlbi9nby9pZGwvbG9iYnkvb2JqO2xvYmJ5b2JqYgZwcm90bzM", [file_idl_core_obj_object_metadata, file_idl_game_model_game_type, file_idl_lobby_model_seat, file_idl_lobby_model_table]);
 
 /**
  * One stored table.
@@ -56,6 +56,11 @@ export type TableObj = Message<"idl.lobby.obj.TableObj"> & {
    * @generated from field: repeated idl.lobby.model.Seat seats = 4;
    */
   seats: Seat[];
+
+  /**
+   * @generated from field: repeated string player_ids = 5;
+   */
+  playerIds: string[];
 };
 
 /**

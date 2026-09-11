@@ -17,11 +17,18 @@
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+IDL_PYTHON_DIR="$REPO_ROOT/idl/contracts/gen/python"
+IDL_FASTAPI_DIR="$REPO_ROOT/idl/contracts/gen/fastapi"
+CORE_DIR="$REPO_ROOT/packages/core"
 ENGINE_DIR="$REPO_ROOT/packages/chess"
 LOBBY_DIR="$REPO_ROOT/packages/lobby"
+GAME_DIR="$REPO_ROOT/packages/game"
 APP_DIR="$REPO_ROOT/deployables/chess-cli"
+SERVER_DIR="$REPO_ROOT/deployables/grpc-server"
 GATEWAY_DIR="$REPO_ROOT/deployables/fastapi-gateway"
 INFRA_DIR="$REPO_ROOT/infra"
+DEV_VENV_DIR="$REPO_ROOT/.dev-venv"
+DEV_VENV_PYTHON="$DEV_VENV_DIR/bin/python"
 
 UV_INSTALL_URL="https://astral.sh/uv/install.sh"
 USER_BIN_DIR="$HOME/.local/bin"
@@ -224,10 +231,80 @@ ensure_project_environments() {
         warn "skipping — uv is not available"
         return 0
     fi
+    ensure_project_environment "$CORE_DIR" "packages/core"
     ensure_project_environment "$ENGINE_DIR" "packages/chess"
     ensure_project_environment "$LOBBY_DIR" "packages/lobby"
+    ensure_project_environment "$GAME_DIR" "packages/game"
     ensure_project_environment "$APP_DIR" "deployables/chess-cli"
+    ensure_project_environment "$SERVER_DIR" "deployables/grpc-server"
     ensure_project_environment "$GATEWAY_DIR" "deployables/fastapi-gateway"
+}
+
+# --- one environment for the editor -----------------------------------------
+
+# Each project has an environment of its own, and that is what the hooks and the
+# scripts use. An editor holds one interpreter at a time, so following an import
+# from one project into another needs an environment holding every project.
+# This one does, installed editable, so a definition resolves to the file in the
+# checkout rather than to a copy.
+#
+# Everything is installed in one command on purpose: the projects depend on each
+# other by name, and none of those names is on an index, so they resolve only
+# because the same command provides them.
+DEV_VENV_PROJECTS=(
+    "$IDL_PYTHON_DIR"
+    "$IDL_FASTAPI_DIR"
+    "$CORE_DIR"
+    "$ENGINE_DIR"
+    "$LOBBY_DIR"
+    "$GAME_DIR"
+    "$APP_DIR"
+    "$SERVER_DIR"
+    "$GATEWAY_DIR"
+)
+# ruff is pinned to the rev in .pre-commit-config.yaml, so the editor and the
+# hook format identically.
+DEV_VENV_TOOLS=(
+    "pytest>=9.1.1"
+    "mypy>=2.3.1"
+    "ruff==0.16.6"
+    "types-protobuf>=5.28"
+    "types-grpcio>=1.83"
+    "types-grpcio-reflection>=1.0"
+)
+
+ensure_dev_venv() {
+    step "Editor environment"
+    if ! command -v uv >/dev/null 2>&1; then
+        warn "skipping — uv is not available"
+        return 0
+    fi
+
+    local had_venv=0
+    [ -x "$DEV_VENV_PYTHON" ] && had_venv=1
+    if [ "$had_venv" -eq 0 ] && ! uv venv --quiet --python "3.$MINIMUM_PYTHON_MINOR" "$DEV_VENV_DIR"; then
+        fail "could not create $DEV_VENV_DIR"
+        return 1
+    fi
+
+    local install_arguments=()
+    local project
+    for project in "${DEV_VENV_PROJECTS[@]}"; do
+        install_arguments+=(--editable "$project")
+    done
+    # Idempotent: uv changes only what differs from what is asked for.
+    if ! uv pip install --quiet --python "$DEV_VENV_PYTHON" \
+        "${install_arguments[@]}" "${DEV_VENV_TOOLS[@]}"; then
+        fail "could not install the projects into $DEV_VENV_DIR"
+        return 1
+    fi
+
+    if [ "$had_venv" -eq 0 ]; then
+        changed "created .dev-venv with every project installed editable"
+    else
+        already ".dev-venv"
+    fi
+    note "point the editor at $DEV_VENV_PYTHON"
 }
 
 # --- git hooks -------------------------------------------------------------
@@ -460,6 +537,9 @@ summarise() {
     echo "  Commits are checked for you — ruff on commit, mypy on push:"
     echo "      pre-commit run --all-files"
     echo
+    echo "  Every project in one environment, for the editor:"
+    echo "      $DEV_VENV_PYTHON"
+    echo
     if [ "$DOCKER_USABLE" -eq 1 ]; then
         echo "  Play in the container, or serve the gateway from one:"
         echo "      ./infra/scripts/play.sh"
@@ -485,6 +565,7 @@ main() {
     report_environment
     ensure_uv || true
     ensure_project_environments || true
+    ensure_dev_venv || true
     ensure_git_hooks || true
     ensure_docker
     ensure_infra_env_file

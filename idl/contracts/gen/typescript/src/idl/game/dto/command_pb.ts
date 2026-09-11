@@ -8,17 +8,15 @@ import type { GenFile, GenMessage } from "@bufbuild/protobuf/codegenv1";
 import { fileDesc, messageDesc } from "@bufbuild/protobuf/codegenv1";
 import type { Any } from "@bufbuild/protobuf/wkt";
 import { file_google_protobuf_any } from "@bufbuild/protobuf/wkt";
-import type { CommandOutcome } from "../model/command_outcome_pb";
-import { file_idl_game_model_command_outcome } from "../model/command_outcome_pb";
-import type { SessionView } from "../model/session_pb";
-import { file_idl_game_model_session } from "../model/session_pb";
+import type { CommandResult } from "../model/command_result_pb";
+import { file_idl_game_model_command_result } from "../model/command_result_pb";
 import type { Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file idl/game/dto/command.proto.
  */
 export const file_idl_game_dto_command: GenFile = /*@__PURE__*/
-  fileDesc("ChppZGwvZ2FtZS9kdG8vY29tbWFuZC5wcm90bxIMaWRsLmdhbWUuZHRvIn0KE0FwcGx5Q29tbWFuZFJlcXVlc3QSEgoKc2Vzc2lvbl9pZBgBIAEoCRISCgpjb21tYW5kX2lkGAIgASgJEiQKBmFjdGlvbhgDIAEoCzIULmdvb2dsZS5wcm90b2J1Zi5BbnkSGAoQZXhwZWN0ZWRfdmVyc2lvbhgEIAEoBCJ1ChRBcHBseUNvbW1hbmRSZXNwb25zZRIvCgdvdXRjb21lGAEgASgOMh4uaWRsLmdhbWUubW9kZWwuQ29tbWFuZE91dGNvbWUSLAoHc2Vzc2lvbhgCIAEoCzIbLmlkbC5nYW1lLm1vZGVsLlNlc3Npb25WaWV3QjJaMGJvYXJkZ2FtZXovY29udHJhY3RzL2dlbi9nby9pZGwvZ2FtZS9kdG87Z2FtZWR0b2IGcHJvdG8z", [file_google_protobuf_any, file_idl_game_model_command_outcome, file_idl_game_model_session]);
+  fileDesc("ChppZGwvZ2FtZS9kdG8vY29tbWFuZC5wcm90bxIMaWRsLmdhbWUuZHRvIpABChNBcHBseUNvbW1hbmRSZXF1ZXN0EhIKCnNlc3Npb25faWQYASABKAkSEgoKY29tbWFuZF9pZBgCIAEoCRIRCglwbGF5ZXJfaWQYAyABKAkSJAoGYWN0aW9uGAQgASgLMhQuZ29vZ2xlLnByb3RvYnVmLkFueRIYChBleHBlY3RlZF92ZXJzaW9uGAUgASgEIkUKFEFwcGx5Q29tbWFuZFJlc3BvbnNlEi0KBnJlc3VsdBgBIAEoCzIdLmlkbC5nYW1lLm1vZGVsLkNvbW1hbmRSZXN1bHRCMlowYm9hcmRnYW1lei9jb250cmFjdHMvZ2VuL2dvL2lkbC9nYW1lL2R0bztnYW1lZHRvYgZwcm90bzM", [file_google_protobuf_any, file_idl_game_model_command_result]);
 
 /**
  * One thing a player does in a game.
@@ -30,8 +28,8 @@ export const file_idl_game_dto_command: GenFile = /*@__PURE__*/
  * command carrying an earlier one is refused, so an action never reaches a game
  * in a state the player who chose it had not seen.
  *
- * Who is acting is not carried. It is taken from the caller and matched to a
- * participant, so a request cannot act as somebody else.
+ * The acting participant is not carried. It is found from `player_id`, so a
+ * request cannot name a participant its sender is not.
  *
  * @generated from message idl.game.dto.ApplyCommandRequest
  */
@@ -47,14 +45,19 @@ export type ApplyCommandRequest = Message<"idl.game.dto.ApplyCommandRequest"> & 
   commandId: string;
 
   /**
+   * @generated from field: string player_id = 3;
+   */
+  playerId: string;
+
+  /**
    * The game's own action type.
    *
-   * @generated from field: google.protobuf.Any action = 3;
+   * @generated from field: google.protobuf.Any action = 4;
    */
   action?: Any;
 
   /**
-   * @generated from field: uint64 expected_version = 4;
+   * @generated from field: uint64 expected_version = 5;
    */
   expectedVersion: bigint;
 };
@@ -67,23 +70,13 @@ export const ApplyCommandRequestSchema: GenMessage<ApplyCommandRequest> = /*@__P
   messageDesc(file_idl_game_dto_command, 0);
 
 /**
- * What happened to the command, and the game as it now stands.
- *
- * The session is answered whatever the outcome, projected for whoever sent the
- * command, and is unset only when no game is stored under the id.
- *
  * @generated from message idl.game.dto.ApplyCommandResponse
  */
 export type ApplyCommandResponse = Message<"idl.game.dto.ApplyCommandResponse"> & {
   /**
-   * @generated from field: idl.game.model.CommandOutcome outcome = 1;
+   * @generated from field: idl.game.model.CommandResult result = 1;
    */
-  outcome: CommandOutcome;
-
-  /**
-   * @generated from field: idl.game.model.SessionView session = 2;
-   */
-  session?: SessionView;
+  result?: CommandResult;
 };
 
 /**

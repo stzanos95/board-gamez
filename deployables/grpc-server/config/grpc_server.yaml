@@ -38,3 +38,24 @@ lobby:
       # Begins every key this repository writes, so one instance can hold more
       # than one deployment.
       key_prefix: "board-gamez"
+
+game:
+  # Where games being played are kept. `repository` selects, and the section it
+  # names must be present.
+  session_repository:
+    repository: redis
+    redis_config:
+      host: "127.0.0.1"
+      port: 6379
+      database: 0
+      key_prefix: "board-gamez"
+  # Where each game's rules answer, one entry per hosted game. A game with no
+  # entry is not served. Plain HTTP/2 without TLS: reachable only from inside.
+  rules:
+    chess:
+      hostname: "127.0.0.1"
+      port: 50052
+      # Set together with the limits product-chess is configured with: a pair that
+      # disagree fail on whichever side is smaller.
+      max_receive_message_bytes: 4194304
+      max_send_message_bytes: 4194304

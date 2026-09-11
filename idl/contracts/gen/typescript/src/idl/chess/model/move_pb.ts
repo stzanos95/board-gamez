@@ -18,16 +18,18 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file idl/chess/model/move.proto.
  */
 export const file_idl_chess_model_move: GenFile = /*@__PURE__*/
-  fileDesc("ChppZGwvY2hlc3MvbW9kZWwvbW92ZS5wcm90bxIPaWRsLmNoZXNzLm1vZGVsIqEBChRQYXJzZWRDb29yZGluYXRlTW92ZRInCgZvcmlnaW4YASABKAsyFy5pZGwuY2hlc3MubW9kZWwuU3F1YXJlEiwKC2Rlc3RpbmF0aW9uGAIgASgLMhcuaWRsLmNoZXNzLm1vZGVsLlNxdWFyZRIyCg5wcm9tb3Rpb25fdHlwZRgDIAEoDjIaLmlkbC5jaGVzcy5tb2RlbC5QaWVjZVR5cGUi7QMKBE1vdmUSJwoGb3JpZ2luGAEgASgLMhcuaWRsLmNoZXNzLm1vZGVsLlNxdWFyZRIsCgtkZXN0aW5hdGlvbhgCIAEoCzIXLmlkbC5jaGVzcy5tb2RlbC5TcXVhcmUSLAoMbW92aW5nX2NvbG9yGAMgASgOMhYuaWRsLmNoZXNzLm1vZGVsLkNvbG9yEjUKEW1vdmluZ19waWVjZV90eXBlGAQgASgOMhouaWRsLmNoZXNzLm1vZGVsLlBpZWNlVHlwZRIsCgltb3ZlX3R5cGUYBSABKA4yGS5pZGwuY2hlc3MubW9kZWwuTW92ZVR5cGUSMAoPY2FwdHVyZWRfc3F1YXJlGAYgASgLMhcuaWRsLmNoZXNzLm1vZGVsLlNxdWFyZRIyCg5wcm9tb3Rpb25fdHlwZRgHIAEoDjIaLmlkbC5jaGVzcy5tb2RlbC5QaWVjZVR5cGUSNAoNY2FzdGxpbmdfc2lkZRgIIAEoDjIdLmlkbC5jaGVzcy5tb2RlbC5DYXN0bGluZ1NpZGUSLAoLcm9va19vcmlnaW4YCSABKAsyFy5pZGwuY2hlc3MubW9kZWwuU3F1YXJlEjEKEHJvb2tfZGVzdGluYXRpb24YCiABKAsyFy5pZGwuY2hlc3MubW9kZWwuU3F1YXJlKtsBCghNb3ZlVHlwZRIZChVNT1ZFX1RZUEVfVU5TUEVDSUZJRUQQABITCg9NT1ZFX1RZUEVfUVVJRVQQARIVChFNT1ZFX1RZUEVfQ0FQVFVSRRACEh4KGk1PVkVfVFlQRV9ET1VCTEVfUEFXTl9QVVNIEAMSGAoUTU9WRV9UWVBFX0VOX1BBU1NBTlQQBBIUChBNT1ZFX1RZUEVfQ0FTVExFEAUSFwoTTU9WRV9UWVBFX1BST01PVElPThAGEh8KG01PVkVfVFlQRV9QUk9NT1RJT05fQ0FQVFVSRRAHQjhaNmJvYXJkZ2FtZXovY29udHJhY3RzL2dlbi9nby9pZGwvY2hlc3MvbW9kZWw7Y2hlc3Ntb2RlbGIGcHJvdG8z", [file_idl_chess_model_castling, file_idl_chess_model_piece, file_idl_chess_model_square]);
+  fileDesc("ChppZGwvY2hlc3MvbW9kZWwvbW92ZS5wcm90bxIPaWRsLmNoZXNzLm1vZGVsIpsBCg5Db29yZGluYXRlTW92ZRInCgZvcmlnaW4YASABKAsyFy5pZGwuY2hlc3MubW9kZWwuU3F1YXJlEiwKC2Rlc3RpbmF0aW9uGAIgASgLMhcuaWRsLmNoZXNzLm1vZGVsLlNxdWFyZRIyCg5wcm9tb3Rpb25fdHlwZRgDIAEoDjIaLmlkbC5jaGVzcy5tb2RlbC5QaWVjZVR5cGUi7QMKBE1vdmUSJwoGb3JpZ2luGAEgASgLMhcuaWRsLmNoZXNzLm1vZGVsLlNxdWFyZRIsCgtkZXN0aW5hdGlvbhgCIAEoCzIXLmlkbC5jaGVzcy5tb2RlbC5TcXVhcmUSLAoMbW92aW5nX2NvbG9yGAMgASgOMhYuaWRsLmNoZXNzLm1vZGVsLkNvbG9yEjUKEW1vdmluZ19waWVjZV90eXBlGAQgASgOMhouaWRsLmNoZXNzLm1vZGVsLlBpZWNlVHlwZRIsCgltb3ZlX3R5cGUYBSABKA4yGS5pZGwuY2hlc3MubW9kZWwuTW92ZVR5cGUSMAoPY2FwdHVyZWRfc3F1YXJlGAYgASgLMhcuaWRsLmNoZXNzLm1vZGVsLlNxdWFyZRIyCg5wcm9tb3Rpb25fdHlwZRgHIAEoDjIaLmlkbC5jaGVzcy5tb2RlbC5QaWVjZVR5cGUSNAoNY2FzdGxpbmdfc2lkZRgIIAEoDjIdLmlkbC5jaGVzcy5tb2RlbC5DYXN0bGluZ1NpZGUSLAoLcm9va19vcmlnaW4YCSABKAsyFy5pZGwuY2hlc3MubW9kZWwuU3F1YXJlEjEKEHJvb2tfZGVzdGluYXRpb24YCiABKAsyFy5pZGwuY2hlc3MubW9kZWwuU3F1YXJlKtsBCghNb3ZlVHlwZRIZChVNT1ZFX1RZUEVfVU5TUEVDSUZJRUQQABITCg9NT1ZFX1RZUEVfUVVJRVQQARIVChFNT1ZFX1RZUEVfQ0FQVFVSRRACEh4KGk1PVkVfVFlQRV9ET1VCTEVfUEFXTl9QVVNIEAMSGAoUTU9WRV9UWVBFX0VOX1BBU1NBTlQQBBIUChBNT1ZFX1RZUEVfQ0FTVExFEAUSFwoTTU9WRV9UWVBFX1BST01PVElPThAGEh8KG01PVkVfVFlQRV9QUk9NT1RJT05fQ0FQVFVSRRAHQjhaNmJvYXJkZ2FtZXovY29udHJhY3RzL2dlbi9nby9pZGwvY2hlc3MvbW9kZWw7Y2hlc3Ntb2RlbGIGcHJvdG8z", [file_idl_chess_model_castling, file_idl_chess_model_piece, file_idl_chess_model_square]);
 
 /**
- * A coordinate move after parsing, before it is matched against the position.
+ * A move as a player names it: the square left, the square reached and, for a
+ * pawn reaching the last rank, what it becomes.
  *
- * Two squares and, for a pawn reaching the last rank, what it becomes.
+ * Which piece moves, whether it captures and how it castles are not carried.
+ * They are settled by matching this against the legal moves of the position.
  *
- * @generated from message idl.chess.model.ParsedCoordinateMove
+ * @generated from message idl.chess.model.CoordinateMove
  */
-export type ParsedCoordinateMove = Message<"idl.chess.model.ParsedCoordinateMove"> & {
+export type CoordinateMove = Message<"idl.chess.model.CoordinateMove"> & {
   /**
    * @generated from field: idl.chess.model.Square origin = 1;
    */
@@ -45,10 +47,10 @@ export type ParsedCoordinateMove = Message<"idl.chess.model.ParsedCoordinateMove
 };
 
 /**
- * Describes the message idl.chess.model.ParsedCoordinateMove.
- * Use `create(ParsedCoordinateMoveSchema)` to create a new message.
+ * Describes the message idl.chess.model.CoordinateMove.
+ * Use `create(CoordinateMoveSchema)` to create a new message.
  */
-export const ParsedCoordinateMoveSchema: GenMessage<ParsedCoordinateMove> = /*@__PURE__*/
+export const CoordinateMoveSchema: GenMessage<CoordinateMove> = /*@__PURE__*/
   messageDesc(file_idl_chess_model_move, 0);
 
 /**

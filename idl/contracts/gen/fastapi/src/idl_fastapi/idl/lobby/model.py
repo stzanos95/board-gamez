@@ -33,11 +33,16 @@ class Seat(BaseModel):
 
 class Table(BaseModel):
     """
-    A table and the seats around it.
+    A table, the people at it, and the seats around it.
 
      Holds no game state and no rules. A table names a game and who is playing it;
-     starting one hands that roster to the game, and everything after that is the
-     game's.
+     starting one hands the seated roster to the game, and everything after that
+     is the game's.
+
+     Joining a table and taking a seat are two different things. Anyone may join,
+     and there is no limit on how many have. A seat is taken only by someone who
+     asks for that seat, so nothing ever chooses a seat on a player's behalf. A
+     player in a seat is also in `player_ids`; leaving the table vacates the seat.
     """
 
     model_config = ConfigDict(
@@ -52,6 +57,7 @@ class Table(BaseModel):
     )
     seats: list[Seat] | None = None
     version: str | None = None
+    player_ids: list[str] | None = Field(default=None, alias='playerIds')
 
 
 class TableCollection(BaseModel):

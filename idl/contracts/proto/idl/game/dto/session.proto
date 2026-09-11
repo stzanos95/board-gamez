@@ -19,20 +19,20 @@ option go_package = "boardgamez/contracts/gen/go/idl/game/dto;gamedto";
 // seat becomes a participant number.
 message CreateSessionRequest {
   string table_id = 1;
-  idl.game.model.GameType game_type = 2;
-  repeated idl.game.model.Participant participants = 3;
+  string player_id = 2;  // Who is asking; the view answered is projected for them.
+  idl.game.model.GameType game_type = 3;
+  repeated idl.game.model.Participant participants = 4;
 }
 
-// The game, projected for whoever asked.
 message CreateSessionResponse {
   idl.game.model.SessionView session = 1;  // Unset when the game does not take this roster.
 }
 
 message ReadSessionRequest {
   string session_id = 1;
+  string player_id = 2;  // Who is asking; the view answered is projected for them.
 }
 
-// The game, projected for whoever asked.
 message ReadSessionResponse {
   idl.game.model.SessionView session = 1;  // Unset when no game is stored under that id.
 }

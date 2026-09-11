@@ -27,7 +27,7 @@ from idl.chess.model import piece_pb2 as idl_dot_chess_dot_model_dot_piece__pb2
 from idl.chess.model import square_pb2 as idl_dot_chess_dot_model_dot_square__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1aidl/chess/model/move.proto\x12\x0fidl.chess.model\x1a\x1eidl/chess/model/castling.proto\x1a\x1bidl/chess/model/piece.proto\x1a\x1cidl/chess/model/square.proto\"\xa1\x01\n\x14ParsedCoordinateMove\x12\'\n\x06origin\x18\x01 \x01(\x0b\x32\x17.idl.chess.model.Square\x12,\n\x0b\x64\x65stination\x18\x02 \x01(\x0b\x32\x17.idl.chess.model.Square\x12\x32\n\x0epromotion_type\x18\x03 \x01(\x0e\x32\x1a.idl.chess.model.PieceType\"\xed\x03\n\x04Move\x12\'\n\x06origin\x18\x01 \x01(\x0b\x32\x17.idl.chess.model.Square\x12,\n\x0b\x64\x65stination\x18\x02 \x01(\x0b\x32\x17.idl.chess.model.Square\x12,\n\x0cmoving_color\x18\x03 \x01(\x0e\x32\x16.idl.chess.model.Color\x12\x35\n\x11moving_piece_type\x18\x04 \x01(\x0e\x32\x1a.idl.chess.model.PieceType\x12,\n\tmove_type\x18\x05 \x01(\x0e\x32\x19.idl.chess.model.MoveType\x12\x30\n\x0f\x63\x61ptured_square\x18\x06 \x01(\x0b\x32\x17.idl.chess.model.Square\x12\x32\n\x0epromotion_type\x18\x07 \x01(\x0e\x32\x1a.idl.chess.model.PieceType\x12\x34\n\rcastling_side\x18\x08 \x01(\x0e\x32\x1d.idl.chess.model.CastlingSide\x12,\n\x0brook_origin\x18\t \x01(\x0b\x32\x17.idl.chess.model.Square\x12\x31\n\x10rook_destination\x18\n \x01(\x0b\x32\x17.idl.chess.model.Square*\xdb\x01\n\x08MoveType\x12\x19\n\x15MOVE_TYPE_UNSPECIFIED\x10\x00\x12\x13\n\x0fMOVE_TYPE_QUIET\x10\x01\x12\x15\n\x11MOVE_TYPE_CAPTURE\x10\x02\x12\x1e\n\x1aMOVE_TYPE_DOUBLE_PAWN_PUSH\x10\x03\x12\x18\n\x14MOVE_TYPE_EN_PASSANT\x10\x04\x12\x14\n\x10MOVE_TYPE_CASTLE\x10\x05\x12\x17\n\x13MOVE_TYPE_PROMOTION\x10\x06\x12\x1f\n\x1bMOVE_TYPE_PROMOTION_CAPTURE\x10\x07\x42\x38Z6boardgamez/contracts/gen/go/idl/chess/model;chessmodelb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1aidl/chess/model/move.proto\x12\x0fidl.chess.model\x1a\x1eidl/chess/model/castling.proto\x1a\x1bidl/chess/model/piece.proto\x1a\x1cidl/chess/model/square.proto\"\x9b\x01\n\x0e\x43oordinateMove\x12\'\n\x06origin\x18\x01 \x01(\x0b\x32\x17.idl.chess.model.Square\x12,\n\x0b\x64\x65stination\x18\x02 \x01(\x0b\x32\x17.idl.chess.model.Square\x12\x32\n\x0epromotion_type\x18\x03 \x01(\x0e\x32\x1a.idl.chess.model.PieceType\"\xed\x03\n\x04Move\x12\'\n\x06origin\x18\x01 \x01(\x0b\x32\x17.idl.chess.model.Square\x12,\n\x0b\x64\x65stination\x18\x02 \x01(\x0b\x32\x17.idl.chess.model.Square\x12,\n\x0cmoving_color\x18\x03 \x01(\x0e\x32\x16.idl.chess.model.Color\x12\x35\n\x11moving_piece_type\x18\x04 \x01(\x0e\x32\x1a.idl.chess.model.PieceType\x12,\n\tmove_type\x18\x05 \x01(\x0e\x32\x19.idl.chess.model.MoveType\x12\x30\n\x0f\x63\x61ptured_square\x18\x06 \x01(\x0b\x32\x17.idl.chess.model.Square\x12\x32\n\x0epromotion_type\x18\x07 \x01(\x0e\x32\x1a.idl.chess.model.PieceType\x12\x34\n\rcastling_side\x18\x08 \x01(\x0e\x32\x1d.idl.chess.model.CastlingSide\x12,\n\x0brook_origin\x18\t \x01(\x0b\x32\x17.idl.chess.model.Square\x12\x31\n\x10rook_destination\x18\n \x01(\x0b\x32\x17.idl.chess.model.Square*\xdb\x01\n\x08MoveType\x12\x19\n\x15MOVE_TYPE_UNSPECIFIED\x10\x00\x12\x13\n\x0fMOVE_TYPE_QUIET\x10\x01\x12\x15\n\x11MOVE_TYPE_CAPTURE\x10\x02\x12\x1e\n\x1aMOVE_TYPE_DOUBLE_PAWN_PUSH\x10\x03\x12\x18\n\x14MOVE_TYPE_EN_PASSANT\x10\x04\x12\x14\n\x10MOVE_TYPE_CASTLE\x10\x05\x12\x17\n\x13MOVE_TYPE_PROMOTION\x10\x06\x12\x1f\n\x1bMOVE_TYPE_PROMOTION_CAPTURE\x10\x07\x42\x38Z6boardgamez/contracts/gen/go/idl/chess/model;chessmodelb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -35,10 +35,10 @@ _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'idl.chess.model.move_pb2', 
 if not _descriptor._USE_C_DESCRIPTORS:
   _globals['DESCRIPTOR']._loaded_options = None
   _globals['DESCRIPTOR']._serialized_options = b'Z6boardgamez/contracts/gen/go/idl/chess/model;chessmodel'
-  _globals['_MOVETYPE']._serialized_start=799
-  _globals['_MOVETYPE']._serialized_end=1018
-  _globals['_PARSEDCOORDINATEMOVE']._serialized_start=139
-  _globals['_PARSEDCOORDINATEMOVE']._serialized_end=300
-  _globals['_MOVE']._serialized_start=303
-  _globals['_MOVE']._serialized_end=796
+  _globals['_MOVETYPE']._serialized_start=793
+  _globals['_MOVETYPE']._serialized_end=1012
+  _globals['_COORDINATEMOVE']._serialized_start=139
+  _globals['_COORDINATEMOVE']._serialized_end=294
+  _globals['_MOVE']._serialized_start=297
+  _globals['_MOVE']._serialized_end=790
 # @@protoc_insertion_point(module_scope)

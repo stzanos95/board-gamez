@@ -1,0 +1,20 @@
+// What a player does on their turn.
+
+syntax = "proto3";
+
+package idl.chess.model;
+
+import "idl/chess/model/move.proto";
+
+option go_package = "boardgamez/contracts/gen/go/idl/chess/model;chessmodel";
+
+// Giving up the game.
+message Resignation {}
+
+// One thing a player does: play a move, or resign.
+message ChessAction {
+  oneof kind {
+    CoordinateMove move = 1;
+    Resignation resignation = 2;
+  }
+}

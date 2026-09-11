@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState, type ReactElement } from "react";
 
 import type { NewTableInput } from "../../lobby/use_create_table";
 import { useCreateTable } from "../../lobby/use_create_table";
-import { useTakeAnySeat } from "../../lobby/use_seat_actions";
+import { useJoinTable } from "../../lobby/use_table_actions";
 import { useTables } from "../../lobby/use_tables";
 import { LoadingPanel, PanelMessage } from "../common/PanelMessage";
 import { CreateTableDialog } from "./CreateTableDialog";
@@ -18,22 +18,22 @@ export type LobbyScreenProps = {
 /**
  * Every table, and the way into one.
  *
- * A player who is already seated somewhere is sent to that table: reaching this
- * list means they left it, or reloaded the page, and either way the table is
- * where they belong.
+ * A player who is already at a table is sent to it: reaching this list means
+ * they left it, or reloaded the page, and either way the table is where they
+ * belong.
  */
 export function LobbyScreen(props: LobbyScreenProps): ReactElement {
   const { onEnterTable } = props;
-  const { summaries, seatedTableId, isLoading, isRefreshing, error, refresh } = useTables();
+  const { summaries, joinedTableId, isLoading, isRefreshing, error, refresh } = useTables();
   const { run: createTable, isPending: isCreating, problem: createProblem } = useCreateTable();
-  const { run: joinTable, pendingInput: joiningTableId, problem: joinProblem } = useTakeAnySeat();
+  const { run: joinTable, pendingInput: joiningTableId, problem: joinProblem } = useJoinTable();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
 
   useEffect(() => {
-    if (seatedTableId !== null) {
-      onEnterTable(seatedTableId);
+    if (joinedTableId !== null) {
+      onEnterTable(joinedTableId);
     }
-  }, [seatedTableId, onEnterTable]);
+  }, [joinedTableId, onEnterTable]);
 
   const handleOpenCreate = useCallback(() => setIsCreateOpen(true), []);
   const handleCloseCreate = useCallback(() => setIsCreateOpen(false), []);

@@ -1,4 +1,4 @@
-import { GameType } from "@board-gamez/idl/lobby/model/game_type_pb";
+import { GameType } from "@board-gamez/idl/game/model/game_type_pb";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import { memo, type ComponentType, type ReactElement } from "react";

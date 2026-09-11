@@ -139,3 +139,20 @@ class SessionView(BaseModel):
     state: GameState | None = None
     last_command_id: str | None = Field(default=None, alias='lastCommandId')
     version: str | None = None
+
+
+class CommandResult(BaseModel):
+    """
+    What happened to a command, and the game as its sender may now see it.
+
+     The session is carried whatever the outcome, and is unset only when no game
+     is stored under the id the command named.
+    """
+
+    model_config = ConfigDict(
+        populate_by_name=True,
+    )
+    outcome: Literal['COMMAND_OUTCOME_UNSPECIFIED', 'COMMAND_OUTCOME_APPLIED', 'COMMAND_OUTCOME_ALREADY_APPLIED', 'COMMAND_OUTCOME_SESSION_NOT_FOUND', 'COMMAND_OUTCOME_NOT_A_PARTICIPANT', 'COMMAND_OUTCOME_GAME_OVER', 'COMMAND_OUTCOME_VERSION_MOVED', 'COMMAND_OUTCOME_OUT_OF_TURN', 'COMMAND_OUTCOME_ILLEGAL_ACTION'] | None = (
+        None
+    )
+    session: SessionView | None = None

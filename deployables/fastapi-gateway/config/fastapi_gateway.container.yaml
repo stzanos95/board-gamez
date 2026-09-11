@@ -17,9 +17,12 @@ server:
   proxy_headers: true
   forwarded_allow_ips: "127.0.0.1"
 
-upstreams:
-  lobby:
-    hostname: "grpc-server"
-    port: 50051
-    max_receive_message_bytes: 4194304
-    max_send_message_bytes: 4194304
+grpc:
+  # The internal gRPC server this gateway calls. Plain HTTP/2 without TLS: it is
+  # reachable only from inside.
+  hostname: "grpc-server"
+  port: 50051
+  # Set together with the limits grpc-server is configured with: a pair that
+  # disagree fail on whichever side is smaller.
+  max_receive_message_bytes: 4194304
+  max_send_message_bytes: 4194304

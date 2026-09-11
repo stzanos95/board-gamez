@@ -23,11 +23,10 @@ _sym_db = _symbol_database.Default()
 
 
 from google.protobuf import any_pb2 as google_dot_protobuf_dot_any__pb2
-from idl.game.model import command_outcome_pb2 as idl_dot_game_dot_model_dot_command__outcome__pb2
-from idl.game.model import session_pb2 as idl_dot_game_dot_model_dot_session__pb2
+from idl.game.model import command_result_pb2 as idl_dot_game_dot_model_dot_command__result__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1aidl/game/dto/command.proto\x12\x0cidl.game.dto\x1a\x19google/protobuf/any.proto\x1a$idl/game/model/command_outcome.proto\x1a\x1cidl/game/model/session.proto\"}\n\x13\x41pplyCommandRequest\x12\x12\n\nsession_id\x18\x01 \x01(\t\x12\x12\n\ncommand_id\x18\x02 \x01(\t\x12$\n\x06\x61\x63tion\x18\x03 \x01(\x0b\x32\x14.google.protobuf.Any\x12\x18\n\x10\x65xpected_version\x18\x04 \x01(\x04\"u\n\x14\x41pplyCommandResponse\x12/\n\x07outcome\x18\x01 \x01(\x0e\x32\x1e.idl.game.model.CommandOutcome\x12,\n\x07session\x18\x02 \x01(\x0b\x32\x1b.idl.game.model.SessionViewB2Z0boardgamez/contracts/gen/go/idl/game/dto;gamedtob\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1aidl/game/dto/command.proto\x12\x0cidl.game.dto\x1a\x19google/protobuf/any.proto\x1a#idl/game/model/command_result.proto\"\x90\x01\n\x13\x41pplyCommandRequest\x12\x12\n\nsession_id\x18\x01 \x01(\t\x12\x12\n\ncommand_id\x18\x02 \x01(\t\x12\x11\n\tplayer_id\x18\x03 \x01(\t\x12$\n\x06\x61\x63tion\x18\x04 \x01(\x0b\x32\x14.google.protobuf.Any\x12\x18\n\x10\x65xpected_version\x18\x05 \x01(\x04\"E\n\x14\x41pplyCommandResponse\x12-\n\x06result\x18\x01 \x01(\x0b\x32\x1d.idl.game.model.CommandResultB2Z0boardgamez/contracts/gen/go/idl/game/dto;gamedtob\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -35,8 +34,8 @@ _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'idl.game.dto.command_pb2', 
 if not _descriptor._USE_C_DESCRIPTORS:
   _globals['DESCRIPTOR']._loaded_options = None
   _globals['DESCRIPTOR']._serialized_options = b'Z0boardgamez/contracts/gen/go/idl/game/dto;gamedto'
-  _globals['_APPLYCOMMANDREQUEST']._serialized_start=139
-  _globals['_APPLYCOMMANDREQUEST']._serialized_end=264
-  _globals['_APPLYCOMMANDRESPONSE']._serialized_start=266
-  _globals['_APPLYCOMMANDRESPONSE']._serialized_end=383
+  _globals['_APPLYCOMMANDREQUEST']._serialized_start=109
+  _globals['_APPLYCOMMANDREQUEST']._serialized_end=253
+  _globals['_APPLYCOMMANDRESPONSE']._serialized_start=255
+  _globals['_APPLYCOMMANDRESPONSE']._serialized_end=324
 # @@protoc_insertion_point(module_scope)

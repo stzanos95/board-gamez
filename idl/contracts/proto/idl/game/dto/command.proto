@@ -5,8 +5,7 @@ syntax = "proto3";
 package idl.game.dto;
 
 import "google/protobuf/any.proto";
-import "idl/game/model/command_outcome.proto";
-import "idl/game/model/session.proto";
+import "idl/game/model/command_result.proto";
 
 option go_package = "boardgamez/contracts/gen/go/idl/game/dto;gamedto";
 
@@ -19,20 +18,16 @@ option go_package = "boardgamez/contracts/gen/go/idl/game/dto;gamedto";
 // command carrying an earlier one is refused, so an action never reaches a game
 // in a state the player who chose it had not seen.
 //
-// Who is acting is not carried. It is taken from the caller and matched to a
-// participant, so a request cannot act as somebody else.
+// The acting participant is not carried. It is found from `player_id`, so a
+// request cannot name a participant its sender is not.
 message ApplyCommandRequest {
   string session_id = 1;
   string command_id = 2;
-  google.protobuf.Any action = 3;  // The game's own action type.
-  uint64 expected_version = 4;
+  string player_id = 3;
+  google.protobuf.Any action = 4;  // The game's own action type.
+  uint64 expected_version = 5;
 }
 
-// What happened to the command, and the game as it now stands.
-//
-// The session is answered whatever the outcome, projected for whoever sent the
-// command, and is unset only when no game is stored under the id.
 message ApplyCommandResponse {
-  idl.game.model.CommandOutcome outcome = 1;
-  idl.game.model.SessionView session = 2;
+  idl.game.model.CommandResult result = 1;
 }

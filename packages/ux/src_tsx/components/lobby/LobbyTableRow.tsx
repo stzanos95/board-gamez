@@ -54,9 +54,9 @@ export const LobbyTableRow = memo(function LobbyTableRow(
       size="small"
       variant="contained"
       onClick={handleJoinClick}
-      disabled={isBusy || !summary.canTakeSeat}
+      disabled={isBusy || !summary.canJoin}
     >
-      {summary.isFull ? "Full" : "Join"}
+      Join
     </Button>
   );
 

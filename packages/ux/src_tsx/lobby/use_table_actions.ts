@@ -4,10 +4,15 @@ import { useCallback, useMemo } from "react";
 
 import { usePlayer } from "../identity/player_context";
 import { useTableGateway } from "../runtime/app_services";
-import { seatWriteProblem } from "./seat_write_problem";
-import { writeSeatChange, type SeatWrite } from "./seat_writer";
+import { tableWriteProblem } from "./table_write_problem";
+import { writeTableChange, type TableWrite } from "./table_writer";
 import { tableQueryKeys } from "./table_queries";
-import { withPlayerRemoved, withPlayerSeated, withPlayerSeatedAnywhere } from "./table_intents";
+import {
+  withPlayerJoined,
+  withPlayerLeft,
+  withPlayerSeated,
+  withPlayerStood,
+} from "./table_intents";
 
 export type TakeSeatInput = {
   readonly tableId: string;
@@ -15,12 +20,12 @@ export type TakeSeatInput = {
 };
 
 /**
- * A seat change in progress.
+ * A change to a table in progress.
  *
  * `problem` covers both a refusal the lobby made and a call that never
  * arrived, because a player has the same thing to do about either.
  */
-export type SeatAction<Input> = {
+export type TableAction<Input> = {
   readonly run: (input: Input) => void;
   readonly isPending: boolean;
   readonly pendingInput: Input | null;
@@ -28,14 +33,43 @@ export type SeatAction<Input> = {
   readonly dismissProblem: () => void;
 };
 
-export function useTakeSeat(): SeatAction<TakeSeatInput> {
+/**
+ * Join a table without taking a seat.
+ */
+export function useJoinTable(): TableAction<string> {
+  const gateway = useTableGateway();
+  const queryClient = useQueryClient();
+  const { player } = usePlayer();
+
+  const joinTable = useCallback(
+    (tableId: string) =>
+      writeTableChange(gateway, tableId, (table: Table) => withPlayerJoined(table, player.id)),
+    [gateway, player.id],
+  );
+
+  const mutation = useMutation({
+    mutationFn: joinTable,
+    onSuccess: (write: TableWrite) => adoptTableWrite(queryClient, write),
+  });
+
+  return useTableAction({
+    run: mutation.mutate,
+    isPending: mutation.isPending,
+    input: mutation.variables,
+    write: mutation.data,
+    error: mutation.error,
+    dismissProblem: mutation.reset,
+  });
+}
+
+export function useTakeSeat(): TableAction<TakeSeatInput> {
   const gateway = useTableGateway();
   const queryClient = useQueryClient();
   const { player } = usePlayer();
 
   const takeSeat = useCallback(
     (input: TakeSeatInput) =>
-      writeSeatChange(gateway, input.tableId, (table: Table) =>
+      writeTableChange(gateway, input.tableId, (table: Table) =>
         withPlayerSeated(table, player.id, input.seatNumber),
       ),
     [gateway, player.id],
@@ -43,10 +77,10 @@ export function useTakeSeat(): SeatAction<TakeSeatInput> {
 
   const mutation = useMutation({
     mutationFn: takeSeat,
-    onSuccess: (write: SeatWrite) => adoptSeatWrite(queryClient, write),
+    onSuccess: (write: TableWrite) => adoptTableWrite(queryClient, write),
   });
 
-  return useSeatAction({
+  return useTableAction({
     run: mutation.mutate,
     isPending: mutation.isPending,
     input: mutation.variables,
@@ -57,28 +91,25 @@ export function useTakeSeat(): SeatAction<TakeSeatInput> {
 }
 
 /**
- * Take whichever seat is open, chosen against the table as it stands when the
- * write is built.
+ * Give up the seat and stay at the table.
  */
-export function useTakeAnySeat(): SeatAction<string> {
+export function useStandUp(): TableAction<string> {
   const gateway = useTableGateway();
   const queryClient = useQueryClient();
   const { player } = usePlayer();
 
-  const takeAnySeat = useCallback(
+  const standUp = useCallback(
     (tableId: string) =>
-      writeSeatChange(gateway, tableId, (table: Table) =>
-        withPlayerSeatedAnywhere(table, player.id),
-      ),
+      writeTableChange(gateway, tableId, (table: Table) => withPlayerStood(table, player.id)),
     [gateway, player.id],
   );
 
   const mutation = useMutation({
-    mutationFn: takeAnySeat,
-    onSuccess: (write: SeatWrite) => adoptSeatWrite(queryClient, write),
+    mutationFn: standUp,
+    onSuccess: (write: TableWrite) => adoptTableWrite(queryClient, write),
   });
 
-  return useSeatAction({
+  return useTableAction({
     run: mutation.mutate,
     isPending: mutation.isPending,
     input: mutation.variables,
@@ -88,23 +119,26 @@ export function useTakeAnySeat(): SeatAction<string> {
   });
 }
 
-export function useLeaveSeat(): SeatAction<string> {
+/**
+ * Leave the table, giving up a seat on the way out.
+ */
+export function useLeaveTable(): TableAction<string> {
   const gateway = useTableGateway();
   const queryClient = useQueryClient();
   const { player } = usePlayer();
 
-  const leaveSeat = useCallback(
+  const leaveTable = useCallback(
     (tableId: string) =>
-      writeSeatChange(gateway, tableId, (table: Table) => withPlayerRemoved(table, player.id)),
+      writeTableChange(gateway, tableId, (table: Table) => withPlayerLeft(table, player.id)),
     [gateway, player.id],
   );
 
   const mutation = useMutation({
-    mutationFn: leaveSeat,
-    onSuccess: (write: SeatWrite) => adoptSeatWrite(queryClient, write),
+    mutationFn: leaveTable,
+    onSuccess: (write: TableWrite) => adoptTableWrite(queryClient, write),
   });
 
-  return useSeatAction({
+  return useTableAction({
     run: mutation.mutate,
     isPending: mutation.isPending,
     input: mutation.variables,
@@ -123,7 +157,7 @@ export function useLeaveSeat(): SeatAction<string> {
  * row would send them back to the table they just left. The refetch that follows
  * is for everyone else's changes.
  */
-function adoptSeatWrite(queryClient: QueryClient, write: SeatWrite): void {
+function adoptTableWrite(queryClient: QueryClient, write: TableWrite): void {
   if (write.kind !== "written") {
     return;
   }
@@ -138,25 +172,25 @@ function adoptSeatWrite(queryClient: QueryClient, write: SeatWrite): void {
 }
 
 /**
- * The parts of a mutation a seat action is built from.
+ * The parts of a mutation a table action is built from.
  */
-type SeatMutation<Input> = {
+type TableMutation<Input> = {
   readonly run: (input: Input) => void;
   readonly isPending: boolean;
   readonly input: Input | undefined;
-  readonly write: SeatWrite | undefined;
+  readonly write: TableWrite | undefined;
   readonly error: Error | null;
   readonly dismissProblem: () => void;
 };
 
-function useSeatAction<Input>(mutation: SeatMutation<Input>): SeatAction<Input> {
+function useTableAction<Input>(mutation: TableMutation<Input>): TableAction<Input> {
   const { run, isPending, input, write, error, dismissProblem } = mutation;
 
   const problem = useMemo(() => {
     if (error !== null) {
       return error.message;
     }
-    return write === undefined ? null : seatWriteProblem(write);
+    return write === undefined ? null : tableWriteProblem(write);
   }, [error, write]);
 
   return {

@@ -21,6 +21,7 @@ COPY idl/contracts/gen/python /app/idl/contracts/gen/python
 COPY idl/contracts/gen/fastapi /app/idl/contracts/gen/fastapi
 COPY packages/core /app/packages/core
 COPY packages/lobby /app/packages/lobby
+COPY packages/game /app/packages/game
 COPY deployables/grpc-server /app/deployables/grpc-server
 
 WORKDIR /app/deployables/grpc-server
@@ -45,6 +46,7 @@ COPY --chown=server:server idl/contracts/gen/python /app/idl/contracts/gen/pytho
 COPY --chown=server:server idl/contracts/gen/fastapi /app/idl/contracts/gen/fastapi
 COPY --chown=server:server packages/core /app/packages/core
 COPY --chown=server:server packages/lobby /app/packages/lobby
+COPY --chown=server:server packages/game /app/packages/game
 COPY --chown=server:server deployables/grpc-server /app/deployables/grpc-server
 COPY deployables/grpc-server/docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh

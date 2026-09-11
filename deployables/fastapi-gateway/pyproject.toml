@@ -7,7 +7,8 @@ dependencies = [
     # The routers this gateway serves, ready made. A domain package owns its
     # paths, its adapter and its binding; the gateway only includes them.
     "lobby",
-    # The channel arguments an upstream call is tuned with.
+    "game",
+    # The channel arguments an upstream call is tuned with, and who is calling.
     "core",
     "fastapi>=0.141.1",
     # No [standard] extra: it brings a websocket stack and an HTTP/2 client this
@@ -20,6 +21,7 @@ dependencies = [
 # Relative path sources rather than a workspace: each project here stands alone.
 [tool.uv.sources]
 lobby = { path = "../../packages/lobby", editable = true }
+game = { path = "../../packages/game", editable = true }
 core = { path = "../../packages/core", editable = true }
 
 [project.scripts]

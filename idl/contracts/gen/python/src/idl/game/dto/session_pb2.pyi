@@ -9,14 +9,16 @@ from typing import ClassVar as _ClassVar, Iterable as _Iterable, Mapping as _Map
 DESCRIPTOR: _descriptor.FileDescriptor
 
 class CreateSessionRequest(_message.Message):
-    __slots__ = ("table_id", "game_type", "participants")
+    __slots__ = ("table_id", "player_id", "game_type", "participants")
     TABLE_ID_FIELD_NUMBER: _ClassVar[int]
+    PLAYER_ID_FIELD_NUMBER: _ClassVar[int]
     GAME_TYPE_FIELD_NUMBER: _ClassVar[int]
     PARTICIPANTS_FIELD_NUMBER: _ClassVar[int]
     table_id: str
+    player_id: str
     game_type: _game_type_pb2.GameType
     participants: _containers.RepeatedCompositeFieldContainer[_participant_pb2.Participant]
-    def __init__(self, table_id: _Optional[str] = ..., game_type: _Optional[_Union[_game_type_pb2.GameType, str]] = ..., participants: _Optional[_Iterable[_Union[_participant_pb2.Participant, _Mapping]]] = ...) -> None: ...
+    def __init__(self, table_id: _Optional[str] = ..., player_id: _Optional[str] = ..., game_type: _Optional[_Union[_game_type_pb2.GameType, str]] = ..., participants: _Optional[_Iterable[_Union[_participant_pb2.Participant, _Mapping]]] = ...) -> None: ...
 
 class CreateSessionResponse(_message.Message):
     __slots__ = ("session",)
@@ -25,10 +27,12 @@ class CreateSessionResponse(_message.Message):
     def __init__(self, session: _Optional[_Union[_session_pb2.SessionView, _Mapping]] = ...) -> None: ...
 
 class ReadSessionRequest(_message.Message):
-    __slots__ = ("session_id",)
+    __slots__ = ("session_id", "player_id")
     SESSION_ID_FIELD_NUMBER: _ClassVar[int]
+    PLAYER_ID_FIELD_NUMBER: _ClassVar[int]
     session_id: str
-    def __init__(self, session_id: _Optional[str] = ...) -> None: ...
+    player_id: str
+    def __init__(self, session_id: _Optional[str] = ..., player_id: _Optional[str] = ...) -> None: ...
 
 class ReadSessionResponse(_message.Message):
     __slots__ = ("session",)

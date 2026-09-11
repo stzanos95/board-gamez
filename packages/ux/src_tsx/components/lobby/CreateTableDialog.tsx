@@ -1,4 +1,4 @@
-import { GameType } from "@board-gamez/idl/lobby/model/game_type_pb";
+import { GameType } from "@board-gamez/idl/game/model/game_type_pb";
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";

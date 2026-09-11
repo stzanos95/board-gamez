@@ -26,4 +26,5 @@ message TableObj {
   idl.game.model.GameType game_type = 2;
   idl.lobby.model.TableStatus status = 3;
   repeated idl.lobby.model.Seat seats = 4;
+  repeated string player_ids = 5;
 }

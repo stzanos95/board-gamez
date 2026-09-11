@@ -40,12 +40,12 @@ GAME_OUTCOME_BLACK_WINS: GameOutcome
 GAME_OUTCOME_DRAW: GameOutcome
 
 class ChessPlayer(_message.Message):
-    __slots__ = ("name", "color")
-    NAME_FIELD_NUMBER: _ClassVar[int]
+    __slots__ = ("color", "participant")
     COLOR_FIELD_NUMBER: _ClassVar[int]
-    name: str
+    PARTICIPANT_FIELD_NUMBER: _ClassVar[int]
     color: _piece_pb2.Color
-    def __init__(self, name: _Optional[str] = ..., color: _Optional[_Union[_piece_pb2.Color, str]] = ...) -> None: ...
+    participant: int
+    def __init__(self, color: _Optional[_Union[_piece_pb2.Color, str]] = ..., participant: _Optional[int] = ...) -> None: ...
 
 class PlayerRoster(_message.Message):
     __slots__ = ("white", "black")

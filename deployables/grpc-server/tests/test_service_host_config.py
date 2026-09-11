@@ -1,6 +1,7 @@
 import unittest
 from pathlib import Path
 
+from game.repository.config import SessionRepositoryType
 from lobby.repository.config import TableRepositoryType
 
 from grpc_server.log_level import LogLevel
@@ -31,7 +32,22 @@ lobby:
       port: 6379
       database: 0
       key_prefix: "board-gamez-test"
+game:
+  session_repository:
+    repository: redis
+    redis_config:
+      host: "127.0.0.1"
+      port: 6379
+      database: 0
+      key_prefix: "board-gamez-test"
+  rules:
+    chess:
+      hostname: "127.0.0.1"
+      port: 50052
+      max_receive_message_bytes: 1024
+      max_send_message_bytes: 2048
 """
+CHESS_RULES_PORT = 50052
 
 
 class ReadingSettingsTest(unittest.TestCase):
@@ -42,6 +58,8 @@ class ReadingSettingsTest(unittest.TestCase):
         self.assertTrue(config.server.reflection)
         self.assertIs(config.lobby.table_repository.repository, TableRepositoryType.REDIS)
         self.assertIsNotNone(config.lobby.table_repository.redis_config)
+        self.assertIs(config.game.session_repository.repository, SessionRepositoryType.REDIS)
+        self.assertIsNotNone(config.game.rules.chess)
 
     def test_reads_every_field(self) -> None:
         config = ServiceHostConfig.from_yaml(COMPLETE_CONFIG)
@@ -52,6 +70,8 @@ class ReadingSettingsTest(unittest.TestCase):
         self.assertEqual(config.server.graceful_shutdown_seconds, 3)
         self.assertFalse(config.server.reflection)
         self.assertIs(config.lobby.table_repository.repository, TableRepositoryType.REDIS)
+        assert config.game.rules.chess is not None
+        self.assertEqual(config.game.rules.chess.port, CHESS_RULES_PORT)
 
 
 class LogLevelTest(unittest.TestCase):

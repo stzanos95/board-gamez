@@ -16,14 +16,19 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file idl/lobby/model/table.proto.
  */
 export const file_idl_lobby_model_table: GenFile = /*@__PURE__*/
-  fileDesc("ChtpZGwvbG9iYnkvbW9kZWwvdGFibGUucHJvdG8SD2lkbC5sb2JieS5tb2RlbCKlAQoFVGFibGUSCgoCaWQYASABKAkSKwoJZ2FtZV90eXBlGAIgASgOMhguaWRsLmdhbWUubW9kZWwuR2FtZVR5cGUSLAoGc3RhdHVzGAMgASgOMhwuaWRsLmxvYmJ5Lm1vZGVsLlRhYmxlU3RhdHVzEiQKBXNlYXRzGAQgAygLMhUuaWRsLmxvYmJ5Lm1vZGVsLlNlYXQSDwoHdmVyc2lvbhgFIAEoBCI+Cg9UYWJsZUNvbGxlY3Rpb24SKwoLdGFibGVfaXRlbXMYASADKAsyFi5pZGwubG9iYnkubW9kZWwuVGFibGUqmgEKC1RhYmxlU3RhdHVzEhwKGFRBQkxFX1NUQVRVU19VTlNQRUNJRklFRBAAEhgKFFRBQkxFX1NUQVRVU19XQUlUSU5HEAESHAoYVEFCTEVfU1RBVFVTX0lOX1BST0dSRVNTEAISGQoVVEFCTEVfU1RBVFVTX0ZJTklTSEVEEAMSGgoWVEFCTEVfU1RBVFVTX0FCQU5ET05FRBAEQjhaNmJvYXJkZ2FtZXovY29udHJhY3RzL2dlbi9nby9pZGwvbG9iYnkvbW9kZWw7bG9iYnltb2RlbGIGcHJvdG8z", [file_idl_game_model_game_type, file_idl_lobby_model_seat]);
+  fileDesc("ChtpZGwvbG9iYnkvbW9kZWwvdGFibGUucHJvdG8SD2lkbC5sb2JieS5tb2RlbCK5AQoFVGFibGUSCgoCaWQYASABKAkSKwoJZ2FtZV90eXBlGAIgASgOMhguaWRsLmdhbWUubW9kZWwuR2FtZVR5cGUSLAoGc3RhdHVzGAMgASgOMhwuaWRsLmxvYmJ5Lm1vZGVsLlRhYmxlU3RhdHVzEiQKBXNlYXRzGAQgAygLMhUuaWRsLmxvYmJ5Lm1vZGVsLlNlYXQSDwoHdmVyc2lvbhgFIAEoBBISCgpwbGF5ZXJfaWRzGAYgAygJIj4KD1RhYmxlQ29sbGVjdGlvbhIrCgt0YWJsZV9pdGVtcxgBIAMoCzIWLmlkbC5sb2JieS5tb2RlbC5UYWJsZSqaAQoLVGFibGVTdGF0dXMSHAoYVEFCTEVfU1RBVFVTX1VOU1BFQ0lGSUVEEAASGAoUVEFCTEVfU1RBVFVTX1dBSVRJTkcQARIcChhUQUJMRV9TVEFUVVNfSU5fUFJPR1JFU1MQAhIZChVUQUJMRV9TVEFUVVNfRklOSVNIRUQQAxIaChZUQUJMRV9TVEFUVVNfQUJBTkRPTkVEEARCOFo2Ym9hcmRnYW1lei9jb250cmFjdHMvZ2VuL2dvL2lkbC9sb2JieS9tb2RlbDtsb2JieW1vZGVsYgZwcm90bzM", [file_idl_game_model_game_type, file_idl_lobby_model_seat]);
 
 /**
- * A table and the seats around it.
+ * A table, the people at it, and the seats around it.
  *
  * Holds no game state and no rules. A table names a game and who is playing it;
- * starting one hands that roster to the game, and everything after that is the
- * game's.
+ * starting one hands the seated roster to the game, and everything after that
+ * is the game's.
+ *
+ * Joining a table and taking a seat are two different things. Anyone may join,
+ * and there is no limit on how many have. A seat is taken only by someone who
+ * asks for that seat, so nothing ever chooses a seat on a player's behalf. A
+ * player in a seat is also in `player_ids`; leaving the table vacates the seat.
  *
  * @generated from message idl.lobby.model.Table
  */
@@ -56,6 +61,13 @@ export type Table = Message<"idl.lobby.model.Table"> & {
    * @generated from field: uint64 version = 5;
    */
   version: bigint;
+
+  /**
+   * Everyone at the table, seated or not.
+   *
+   * @generated from field: repeated string player_ids = 6;
+   */
+  playerIds: string[];
 };
 
 /**

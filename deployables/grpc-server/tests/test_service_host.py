@@ -1,5 +1,11 @@
 import unittest
 
+from game.repository.config import (
+    RedisSessionRepositoryConfig,
+    SessionRepositoryConfig,
+    SessionRepositoryType,
+)
+from game.service.rules_config import RulesConfig, RulesUpstreamConfig
 from lobby.repository.config import (
     RedisTableRepositoryConfig,
     TableRepositoryConfig,
@@ -10,6 +16,7 @@ from grpc_server.log_level import LogLevel
 from grpc_server.service_host import ServiceHost
 from grpc_server.service_host_config import (
     ApplicationConfig,
+    GameConfig,
     LobbyConfig,
     ServerConfig,
     ServiceHostConfig,
@@ -20,6 +27,7 @@ REDIS_PORT = 6379
 REDIS_DATABASE = 0
 RECEIVE_LIMIT = 1024
 SEND_LIMIT = 2048
+CHESS_RULES_PORT = 50052
 
 
 def server_config() -> ServerConfig:
@@ -49,11 +57,34 @@ def lobby_config() -> LobbyConfig:
     )
 
 
+def game_config() -> GameConfig:
+    return GameConfig(
+        session_repository=SessionRepositoryConfig(
+            repository=SessionRepositoryType.REDIS,
+            redis_config=RedisSessionRepositoryConfig(
+                host="127.0.0.1",
+                port=REDIS_PORT,
+                database=REDIS_DATABASE,
+                key_prefix="board-gamez-test",
+            ),
+        ),
+        rules=RulesConfig(
+            chess=RulesUpstreamConfig(
+                hostname="127.0.0.1",
+                port=CHESS_RULES_PORT,
+                max_receive_message_bytes=RECEIVE_LIMIT,
+                max_send_message_bytes=SEND_LIMIT,
+            )
+        ),
+    )
+
+
 def config_for() -> ServiceHostConfig:
     return ServiceHostConfig(
         application=ApplicationConfig(name="test server", version="9.9.9"),
         server=server_config(),
         lobby=lobby_config(),
+        game=game_config(),
     )
 
 

@@ -22,8 +22,8 @@ class ApplyCommandRequest(BaseModel):
      command carrying an earlier one is refused, so an action never reaches a game
      in a state the player who chose it had not seen.
 
-     Who is acting is not carried. It is taken from the caller and matched to a
-     participant, so a request cannot act as somebody else.
+     The acting participant is not carried. It is found from `player_id`, so a
+     request cannot name a participant its sender is not.
     """
 
     model_config = ConfigDict(
@@ -31,6 +31,7 @@ class ApplyCommandRequest(BaseModel):
     )
     session_id: str | None = Field(default=None, alias='sessionId')
     command_id: str | None = Field(default=None, alias='commandId')
+    player_id: str | None = Field(default=None, alias='playerId')
     action: protobuf.Any | None = None
     expected_version: str | None = Field(default=None, alias='expectedVersion')
 
@@ -46,6 +47,7 @@ class ReadSessionRequest(BaseModel):
         populate_by_name=True,
     )
     session_id: str | None = Field(default=None, alias='sessionId')
+    player_id: str | None = Field(default=None, alias='playerId')
 
 
 class CreateSessionRequest(BaseModel):
@@ -63,34 +65,14 @@ class CreateSessionRequest(BaseModel):
         populate_by_name=True,
     )
     table_id: str | None = Field(default=None, alias='tableId')
+    player_id: str | None = Field(default=None, alias='playerId')
     game_type: Literal['GAME_TYPE_UNSPECIFIED', 'GAME_TYPE_CHESS'] | None = Field(
         default=None, alias='gameType'
     )
     participants: list[model.Participant] | None = None
 
 
-class ApplyCommandResponse(BaseModel):
-    """
-    What happened to the command, and the game as it now stands.
-
-     The session is answered whatever the outcome, projected for whoever sent the
-     command, and is unset only when no game is stored under the id.
-    """
-
-    model_config = ConfigDict(
-        populate_by_name=True,
-    )
-    outcome: Literal['COMMAND_OUTCOME_UNSPECIFIED', 'COMMAND_OUTCOME_APPLIED', 'COMMAND_OUTCOME_ALREADY_APPLIED', 'COMMAND_OUTCOME_SESSION_NOT_FOUND', 'COMMAND_OUTCOME_NOT_A_PARTICIPANT', 'COMMAND_OUTCOME_GAME_OVER', 'COMMAND_OUTCOME_VERSION_MOVED', 'COMMAND_OUTCOME_OUT_OF_TURN', 'COMMAND_OUTCOME_ILLEGAL_ACTION'] | None = (
-        None
-    )
-    session: model.SessionView | None = None
-
-
 class CreateSessionResponse(BaseModel):
-    """
-    The game, projected for whoever asked.
-    """
-
     model_config = ConfigDict(
         populate_by_name=True,
     )
@@ -105,11 +87,14 @@ class ListGameSpecResponse(BaseModel):
 
 
 class ReadSessionResponse(BaseModel):
-    """
-    The game, projected for whoever asked.
-    """
-
     model_config = ConfigDict(
         populate_by_name=True,
     )
     session: model.SessionView | None = None
+
+
+class ApplyCommandResponse(BaseModel):
+    model_config = ConfigDict(
+        populate_by_name=True,
+    )
+    result: model.CommandResult | None = None

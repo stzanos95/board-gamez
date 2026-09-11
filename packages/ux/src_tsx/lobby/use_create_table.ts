@@ -1,4 +1,4 @@
-import type { GameType } from "@board-gamez/idl/lobby/model/game_type_pb";
+import type { GameType } from "@board-gamez/idl/game/model/game_type_pb";
 import type { Table } from "@board-gamez/idl/lobby/model/table_pb";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
@@ -22,7 +22,7 @@ export type CreateTableAction = {
 };
 
 /**
- * Open a table, with this player in the first seat.
+ * Open a table, with this player at it and every seat open.
  *
  * The stored table is written into both caches, so the list is correct before a
  * refetch lands and the host is carried to their table without waiting for one.

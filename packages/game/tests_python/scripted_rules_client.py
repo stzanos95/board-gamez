@@ -1,0 +1,136 @@
+"""
+A game whose rules are simple enough to script.
+
+The position is a count of the actions applied. An action is a word: MOVE is
+always legal and passes the turn to the next participant, WIN ends the game with
+the acting participant winning, and anything else is illegal. The view a
+participant gets names both the position and the participant, so a test can see
+that projection happened for the right one.
+"""
+
+from dataclasses import dataclass
+
+from google.protobuf import any_pb2
+from google.protobuf.wrappers_pb2 import StringValue, UInt32Value
+from idl.game.model.action_pb2 import Action
+from idl.game.model.game_result_pb2 import GameResult, ParticipantOutcome, ParticipantResult
+from idl.game.model.game_spec_pb2 import ParticipantBounds
+from idl.game.model.game_state_pb2 import GameState
+
+from game.service.base_rules_client import BaseRulesClient
+
+MOVE = "move"
+WIN = "win"
+OPENING_POSITION = 0
+FIRST_PARTICIPANT = 1
+NOBODY = 0
+VIEW_SEPARATOR = ":"
+PARTICIPANT_COUNT_RADIX = 100
+
+
+@dataclass(frozen=True, slots=True)
+class ScriptedPosition:
+    """
+    Where a scripted game stands: how many actions were applied, and how many
+    are playing.
+    """
+
+    position: int
+    participant_count: int
+
+
+class ScriptedRulesClient(BaseRulesClient):
+    """
+    Rules that a test can predict, for a game of a configurable size.
+    """
+
+    def __init__(self, minimum: int, maximum: int) -> None:
+        self._bounds = ParticipantBounds(minimum=minimum, maximum=maximum)
+        self.opened = False
+        self.closed = False
+
+    async def open(self) -> None:
+        self.opened = True
+
+    async def close(self) -> None:
+        self.closed = True
+
+    async def create_game(self, participant_count: int) -> GameState | None:
+        if not self._bounds.minimum <= participant_count <= self._bounds.maximum:
+            return None
+        return GameState(
+            payload=ScriptedRulesClient.position_payload(OPENING_POSITION, participant_count),
+            participant_to_act=FIRST_PARTICIPANT,
+        )
+
+    async def apply_action(self, state: GameState, action: Action) -> GameState | None:
+        word = StringValue()
+        if not action.payload.Unpack(word):
+            return None
+        standing = ScriptedRulesClient._unpack_position(state.payload)
+        advanced = ScriptedRulesClient.position_payload(
+            standing.position + 1, standing.participant_count
+        )
+        if word.value == MOVE:
+            following = action.participant % standing.participant_count + FIRST_PARTICIPANT
+            return GameState(payload=advanced, participant_to_act=following)
+        if word.value == WIN:
+            return GameState(
+                payload=advanced,
+                participant_to_act=NOBODY,
+                result=GameResult(
+                    participant_items=[
+                        ParticipantResult(
+                            participant=number,
+                            outcome=(
+                                ParticipantOutcome.PARTICIPANT_OUTCOME_WON
+                                if number == action.participant
+                                else ParticipantOutcome.PARTICIPANT_OUTCOME_LOST
+                            ),
+                        )
+                        for number in range(FIRST_PARTICIPANT, standing.participant_count + 1)
+                    ]
+                ),
+            )
+        return None
+
+    async def read_view(self, state: GameState, participant: int) -> any_pb2.Any:
+        standing = ScriptedRulesClient._unpack_position(state.payload)
+        return ScriptedRulesClient.word_payload(f"{standing.position}{VIEW_SEPARATOR}{participant}")
+
+    async def read_bounds(self) -> ParticipantBounds:
+        return self._bounds
+
+    @staticmethod
+    def word_payload(word: str) -> any_pb2.Any:
+        """
+        An action, or a view, packed the way a client of this game packs one.
+        """
+        packed = any_pb2.Any()
+        packed.Pack(StringValue(value=word))
+        return packed
+
+    @staticmethod
+    def view_text(view: any_pb2.Any) -> str:
+        """
+        The word a view carries.
+        """
+        word = StringValue()
+        assert view.Unpack(word)
+        return word.value
+
+    @staticmethod
+    def position_payload(position: int, participant_count: int) -> any_pb2.Any:
+        """
+        The position and the size of the game, packed as one number each.
+        """
+        packed = any_pb2.Any()
+        packed.Pack(UInt32Value(value=position * PARTICIPANT_COUNT_RADIX + participant_count))
+        return packed
+
+    @staticmethod
+    def _unpack_position(payload: any_pb2.Any) -> ScriptedPosition:
+        number = UInt32Value()
+        assert payload.Unpack(number)
+        position, participant_count = divmod(number.value, PARTICIPANT_COUNT_RADIX)
+        return ScriptedPosition(position=position, participant_count=participant_count)

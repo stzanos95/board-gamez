@@ -5,7 +5,7 @@ import Typography from "@mui/material/Typography";
 import { useCallback, useEffect, type ReactElement } from "react";
 
 import { useDeleteTable } from "../../lobby/use_delete_table";
-import { useLeaveSeat, useTakeSeat } from "../../lobby/use_seat_actions";
+import { useLeaveTable, useStandUp, useTakeSeat } from "../../lobby/use_table_actions";
 import { useTable } from "../../lobby/use_table";
 import { GameArtwork } from "../common/GameArtwork";
 import { LoadingPanel, PanelMessage } from "../common/PanelMessage";
@@ -25,30 +25,32 @@ export type TableScreenProps = {
 };
 
 /**
- * The table this player is sitting at.
+ * The table this player is at.
  *
- * Reached by taking a seat, and left by giving one up. A player who is not
- * seated here is sent back to the list, so this screen only ever shows a table
- * its viewer is at.
+ * Reached by joining, and left by leaving. Sitting down and standing up happen
+ * here without leaving. A player who is not at this table is sent back to the
+ * list, so this screen only ever shows a table its viewer is at.
  */
 export function TableScreen(props: TableScreenProps): ReactElement {
   const { tableId, onLeft } = props;
   const { summary, seats, isLoading, isMissing, error } = useTable(tableId);
   const { run: takeSeat, pendingInput: takingSeat, problem: takeProblem } = useTakeSeat();
-  const { run: leaveSeat, isPending: isLeaving, problem: leaveProblem } = useLeaveSeat();
+  const { run: standUp, isPending: isStandingUp, problem: standProblem } = useStandUp();
+  const { run: leaveTable, isPending: isLeaving, problem: leaveProblem } = useLeaveTable();
   const { run: deleteTable, isPending: isClosing, problem: closeProblem } = useDeleteTable();
 
   const handleTakeSeat = useCallback(
     (seatNumber: number) => takeSeat({ tableId, seatNumber }),
     [takeSeat, tableId],
   );
-  const handleLeaveSeat = useCallback(() => leaveSeat(tableId), [leaveSeat, tableId]);
+  const handleStandUp = useCallback(() => standUp(tableId), [standUp, tableId]);
+  const handleLeave = useCallback(() => leaveTable(tableId), [leaveTable, tableId]);
   const handleClose = useCallback(
     () => deleteTable(tableId, onLeft),
     [deleteTable, tableId, onLeft],
   );
 
-  const hasLeft = summary !== null && !summary.isSeated;
+  const hasLeft = summary !== null && !summary.isAtTable;
   useEffect(() => {
     if (hasLeft) {
       onLeft();
@@ -56,7 +58,11 @@ export function TableScreen(props: TableScreenProps): ReactElement {
   }, [hasLeft, onLeft]);
 
   const problem =
-    takeProblem ?? leaveProblem ?? closeProblem ?? (error === null ? null : error.message);
+    takeProblem ??
+    standProblem ??
+    leaveProblem ??
+    closeProblem ??
+    (error === null ? null : error.message);
 
   const problemPanel =
     problem === null ? null : (
@@ -69,11 +75,18 @@ export function TableScreen(props: TableScreenProps): ReactElement {
         <Stack>
           <Typography variant="h1">{summary.name}</Typography>
           <Typography variant="caption" color="text.secondary">
-            {summary.gameLabel} · {summary.seatsLabel} seated
+            {summary.gameLabel} · {summary.seatsLabel} seated · {summary.playerCount} at the table
           </Typography>
         </Stack>
         <TableStatusChip status={summary.status} />
       </Stack>
+    );
+
+  const leaveButton =
+    summary === null ? null : (
+      <Button variant="outlined" onClick={handleLeave} disabled={isLeaving}>
+        Leave table
+      </Button>
     );
 
   const closeButton =
@@ -94,11 +107,14 @@ export function TableScreen(props: TableScreenProps): ReactElement {
               seats={seats}
               canTakeSeat={summary.canTakeSeat}
               busySeatNumber={takingSeat?.seatNumber ?? null}
-              isLeaving={isLeaving}
+              isStandingUp={isStandingUp}
               onTakeSeat={handleTakeSeat}
-              onLeaveSeat={handleLeaveSeat}
+              onStandUp={handleStandUp}
             />
-            <Stack direction="row">{closeButton}</Stack>
+            <Stack direction="row" spacing={1}>
+              {leaveButton}
+              {closeButton}
+            </Stack>
           </Stack>
           <GameArtwork gameType={summary.gameType} />
         </Box>

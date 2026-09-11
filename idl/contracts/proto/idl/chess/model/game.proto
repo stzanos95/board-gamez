@@ -35,10 +35,13 @@ enum GameOutcome {
   GAME_OUTCOME_DRAW = 3;
 }
 
-// Who is playing, and which side they have.
+// Which side one participant plays.
+//
+// A participant is known here by number and nothing else. A name is joined in by
+// whoever draws the game.
 message ChessPlayer {
-  string name = 1;
-  Color color = 2;
+  Color color = 1;
+  uint32 participant = 2;
 }
 
 // The two players, addressable by colour.

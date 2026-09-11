@@ -26,10 +26,12 @@ enum MoveType {
   MOVE_TYPE_PROMOTION_CAPTURE = 7;
 }
 
-// A coordinate move after parsing, before it is matched against the position.
+// A move as a player names it: the square left, the square reached and, for a
+// pawn reaching the last rank, what it becomes.
 //
-// Two squares and, for a pawn reaching the last rank, what it becomes.
-message ParsedCoordinateMove {
+// Which piece moves, whether it captures and how it castles are not carried.
+// They are settled by matching this against the legal moves of the position.
+message CoordinateMove {
   Square origin = 1;
   Square destination = 2;
   PieceType promotion_type = 3;

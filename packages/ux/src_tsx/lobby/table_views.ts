@@ -1,10 +1,10 @@
-import type { GameType } from "@board-gamez/idl/lobby/model/game_type_pb";
+import type { GameType } from "@board-gamez/idl/game/model/game_type_pb";
 import { SeatStatus, type Seat } from "@board-gamez/idl/lobby/model/seat_pb";
 import { TableStatus, type Table } from "@board-gamez/idl/lobby/model/table_pb";
 
 import { shortIdentifier } from "../format/short_identifier";
 import { GAME_TYPE_LABELS } from "./table_labels";
-import { seatOf } from "./table_intents";
+import { isAcceptingPlayers, isAtTable, seatOf } from "./table_intents";
 
 /**
  * Tables and seats, in the shape a component draws them.
@@ -41,8 +41,11 @@ export type TableSummaryView = {
   readonly seatCount: number;
   readonly occupiedCount: number;
   readonly openCount: number;
+  readonly playerCount: number;
+  readonly isAtTable: boolean;
   readonly isSeated: boolean;
   readonly isFull: boolean;
+  readonly canJoin: boolean;
   readonly canTakeSeat: boolean;
 };
 
@@ -57,6 +60,7 @@ export function toSeatViews(
 export function toTableSummaryView(table: Table, viewerId: string): TableSummaryView {
   const seatCount = table.seats.length;
   const occupiedCount = table.seats.filter(isOccupied).length;
+  const atTable = isAtTable(table, viewerId);
   const isSeated = seatOf(table, viewerId) !== null;
   const isFull = occupiedCount >= seatCount;
 
@@ -71,8 +75,11 @@ export function toTableSummaryView(table: Table, viewerId: string): TableSummary
     seatCount,
     occupiedCount,
     openCount: seatCount - occupiedCount,
+    playerCount: table.playerIds.length,
+    isAtTable: atTable,
     isSeated,
     isFull,
+    canJoin: isAcceptingPlayers(table) && !atTable,
     canTakeSeat: table.status === TableStatus.WAITING && !isSeated && !isFull,
   };
 }

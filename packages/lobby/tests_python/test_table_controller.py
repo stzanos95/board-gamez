@@ -1,6 +1,6 @@
 import unittest
 
-from idl.lobby.model.game_type_pb2 import GameType
+from idl.game.model.game_type_pb2 import GameType
 from idl.lobby.model.seat_pb2 import Seat, SeatStatus
 from idl.lobby.model.table_pb2 import Table, TableStatus
 

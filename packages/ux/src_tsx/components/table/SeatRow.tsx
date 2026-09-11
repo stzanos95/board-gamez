@@ -18,7 +18,7 @@ export type SeatRowProps = {
   readonly isBusy: boolean;
   readonly canTakeSeat: boolean;
   readonly onTakeSeat: (seatNumber: number) => void;
-  readonly onLeaveSeat: () => void;
+  readonly onStandUp: () => void;
 };
 
 /**
@@ -28,7 +28,7 @@ export type SeatRowProps = {
  * open, a taken and your own seat are told apart.
  */
 export const SeatRow = memo(function SeatRow(props: SeatRowProps): ReactElement {
-  const { seat, isBusy, canTakeSeat, onTakeSeat, onLeaveSeat } = props;
+  const { seat, isBusy, canTakeSeat, onTakeSeat, onStandUp } = props;
 
   const handleTakeSeatClick = useCallback(() => onTakeSeat(seat.number), [onTakeSeat, seat.number]);
 
@@ -45,8 +45,8 @@ export const SeatRow = memo(function SeatRow(props: SeatRowProps): ReactElement 
   );
 
   const action = seat.isMine ? (
-    <Button size="small" variant="outlined" color="warning" onClick={onLeaveSeat} disabled={isBusy}>
-      Leave
+    <Button size="small" variant="outlined" color="warning" onClick={onStandUp} disabled={isBusy}>
+      Stand up
     </Button>
   ) : (
     <Button

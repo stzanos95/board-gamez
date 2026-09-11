@@ -1,4 +1,4 @@
-import { GameType } from "@board-gamez/idl/lobby/model/game_type_pb";
+import { GameType } from "@board-gamez/idl/game/model/game_type_pb";
 import { SeatStatus } from "@board-gamez/idl/lobby/model/seat_pb";
 import { TableStatus } from "@board-gamez/idl/lobby/model/table_pb";
 

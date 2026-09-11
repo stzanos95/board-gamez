@@ -27,7 +27,7 @@ MOVE_TYPE_CASTLE: MoveType
 MOVE_TYPE_PROMOTION: MoveType
 MOVE_TYPE_PROMOTION_CAPTURE: MoveType
 
-class ParsedCoordinateMove(_message.Message):
+class CoordinateMove(_message.Message):
     __slots__ = ("origin", "destination", "promotion_type")
     ORIGIN_FIELD_NUMBER: _ClassVar[int]
     DESTINATION_FIELD_NUMBER: _ClassVar[int]

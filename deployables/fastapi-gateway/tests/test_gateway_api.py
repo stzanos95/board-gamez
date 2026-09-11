@@ -1,21 +1,21 @@
 import unittest
 
-from lobby.service.grpc_table_client import GrpcTableClient
-
 from fastapi_gateway.gateway_api import GatewayAPI
 from fastapi_gateway.gateway_api_config import (
     ApplicationConfig,
     GatewayAPIConfig,
     GrpcConfig,
     ServerConfig,
-    UpstreamsConfig,
 )
+from fastapi_gateway.gateway_clients import GatewayClients
 from fastapi_gateway.log_level import LogLevel
 
 CONFIGURED_PORT = 9091
 UPSTREAM_PORT = 50051
 MESSAGE_LIMIT = 4194304
 A_LOBBY_PATH = "/internal/platform/lobby/read/table"
+A_GAME_PATH = "/internal/platform/game/apply/command"
+A_CATALOGUE_PATH = "/internal/platform/game/list/game_spec"
 
 
 def application_config(root_path: str = "/api") -> ApplicationConfig:
@@ -33,13 +33,11 @@ def config_for() -> GatewayAPIConfig:
             proxy_headers=True,
             forwarded_allow_ips="10.0.0.1",
         ),
-        upstreams=UpstreamsConfig(
-            lobby=GrpcConfig(
-                hostname="127.0.0.1",
-                port=UPSTREAM_PORT,
-                max_receive_message_bytes=MESSAGE_LIMIT,
-                max_send_message_bytes=MESSAGE_LIMIT,
-            )
+        grpc=GrpcConfig(
+            hostname="127.0.0.1",
+            port=UPSTREAM_PORT,
+            max_receive_message_bytes=MESSAGE_LIMIT,
+            max_send_message_bytes=MESSAGE_LIMIT,
         ),
     )
 
@@ -54,7 +52,9 @@ class BringupTest(unittest.TestCase):
         self.assertIsInstance(GatewayAPI(config=config_for()), GatewayAPI)
 
     def test_the_application_is_named_by_the_configuration(self) -> None:
-        application = GatewayAPI.build_application(application_config(), GrpcTableClient())
+        application = GatewayAPI.build_application(
+            application_config(), GatewayClients.unconnected()
+        )
         self.assertEqual(application.title, "test gateway")
         self.assertEqual(application.version, "9.9.9")
         self.assertEqual(application.root_path, "/api")
@@ -64,10 +64,15 @@ class BringupTest(unittest.TestCase):
         The document is what the application publishes. An included router is
         held unexpanded in `routes` until a request is matched against it.
         """
-        application = GatewayAPI.build_application(application_config(), GrpcTableClient())
-        self.assertIn(A_LOBBY_PATH, application.openapi()["paths"])
+        application = GatewayAPI.build_application(
+            application_config(), GatewayClients.unconnected()
+        )
+        paths = application.openapi()["paths"]
+        self.assertIn(A_LOBBY_PATH, paths)
+        self.assertIn(A_GAME_PATH, paths)
+        self.assertIn(A_CATALOGUE_PATH, paths)
 
 
-class UpstreamTest(unittest.TestCase):
-    def test_an_upstream_address_is_its_hostname_and_port(self) -> None:
-        self.assertEqual(config_for().upstreams.lobby.address, f"127.0.0.1:{UPSTREAM_PORT}")
+class GrpcAddressTest(unittest.TestCase):
+    def test_the_address_is_the_hostname_and_port(self) -> None:
+        self.assertEqual(config_for().grpc.address, f"127.0.0.1:{UPSTREAM_PORT}")

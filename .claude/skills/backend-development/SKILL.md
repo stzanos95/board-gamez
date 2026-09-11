@@ -72,6 +72,11 @@ The rules. Every validation, every refusal, every ordering decision.
   business layer couples the rules to a transport and stops a second transport
   from reusing them.
 - Speaks the domain's own types: `model`, never `dto`, never `obj`.
+- **What it answers with is a type from the schema's `model/`.** An outcome
+  and the view that goes with it is `idl.game.model.CommandResult`, and the
+  response carries it. A dataclass declared beside the controller to carry an
+  answer is a model that has not been written down, and a second definition
+  of something the schema already says.
 - Holds its collaborators, received in `__init__`. It does not construct them and
   does not reach for a provider part-way down a call.
 - Is typed against a repository's base class, never a concrete store.
@@ -123,6 +128,31 @@ One direction, with no exceptions.
 - `packages/core` is imported by anything and imports no domain.
 - A generic layer never imports a specific one. The session layer carries a
   game's state as `google.protobuf.Any` and never unpacks it.
+
+### A game is two packages, and the line between them is the platform contract
+
+```
+packages/<game>            the rules. Imports idl.<game>.model and nothing else
+                           from the schema. Knows nothing about participants,
+                           sessions or the platform.
+packages/product-<game>    the product. The only package that imports idl.game.
+                           Implements RulesService, converts between the
+                           platform's types and the game's, and decides what a
+                           participant number means in the game.
+deployables/product-<game> serves the product's RulesService.
+```
+
+What goes where, by the question it answers:
+
+- "Is this move legal, what is the position now, who won on the board" —
+  `packages/<game>`. Its public surface takes and answers `idl.<game>.model`
+  types; its compute types stay internal.
+- "Which participant is white, what is `participant_to_act` after this ply, how
+  does a `GameResult` read for participant 2, how is a `GameState` payload
+  unpacked" — `packages/product-<game>`. Anything that names a participant, a
+  session, a `GameState` or an `Action` is the product's, never the rules'.
+- The platform (`packages/game`, `grpc-server`) imports neither. Adding a game
+  is a `GameType` member, one `RulesConfig` field, and a product deployable.
 
 ## SOLID decides the boundaries
 

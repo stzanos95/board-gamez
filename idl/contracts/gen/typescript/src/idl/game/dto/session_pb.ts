@@ -18,7 +18,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file idl/game/dto/session.proto.
  */
 export const file_idl_game_dto_session: GenFile = /*@__PURE__*/
-  fileDesc("ChppZGwvZ2FtZS9kdG8vc2Vzc2lvbi5wcm90bxIMaWRsLmdhbWUuZHRvIogBChRDcmVhdGVTZXNzaW9uUmVxdWVzdBIQCgh0YWJsZV9pZBgBIAEoCRIrCglnYW1lX3R5cGUYAiABKA4yGC5pZGwuZ2FtZS5tb2RlbC5HYW1lVHlwZRIxCgxwYXJ0aWNpcGFudHMYAyADKAsyGy5pZGwuZ2FtZS5tb2RlbC5QYXJ0aWNpcGFudCJFChVDcmVhdGVTZXNzaW9uUmVzcG9uc2USLAoHc2Vzc2lvbhgBIAEoCzIbLmlkbC5nYW1lLm1vZGVsLlNlc3Npb25WaWV3IigKElJlYWRTZXNzaW9uUmVxdWVzdBISCgpzZXNzaW9uX2lkGAEgASgJIkMKE1JlYWRTZXNzaW9uUmVzcG9uc2USLAoHc2Vzc2lvbhgBIAEoCzIbLmlkbC5nYW1lLm1vZGVsLlNlc3Npb25WaWV3QjJaMGJvYXJkZ2FtZXovY29udHJhY3RzL2dlbi9nby9pZGwvZ2FtZS9kdG87Z2FtZWR0b2IGcHJvdG8z", [file_idl_game_model_game_type, file_idl_game_model_participant, file_idl_game_model_session]);
+  fileDesc("ChppZGwvZ2FtZS9kdG8vc2Vzc2lvbi5wcm90bxIMaWRsLmdhbWUuZHRvIpsBChRDcmVhdGVTZXNzaW9uUmVxdWVzdBIQCgh0YWJsZV9pZBgBIAEoCRIRCglwbGF5ZXJfaWQYAiABKAkSKwoJZ2FtZV90eXBlGAMgASgOMhguaWRsLmdhbWUubW9kZWwuR2FtZVR5cGUSMQoMcGFydGljaXBhbnRzGAQgAygLMhsuaWRsLmdhbWUubW9kZWwuUGFydGljaXBhbnQiRQoVQ3JlYXRlU2Vzc2lvblJlc3BvbnNlEiwKB3Nlc3Npb24YASABKAsyGy5pZGwuZ2FtZS5tb2RlbC5TZXNzaW9uVmlldyI7ChJSZWFkU2Vzc2lvblJlcXVlc3QSEgoKc2Vzc2lvbl9pZBgBIAEoCRIRCglwbGF5ZXJfaWQYAiABKAkiQwoTUmVhZFNlc3Npb25SZXNwb25zZRIsCgdzZXNzaW9uGAEgASgLMhsuaWRsLmdhbWUubW9kZWwuU2Vzc2lvblZpZXdCMlowYm9hcmRnYW1lei9jb250cmFjdHMvZ2VuL2dvL2lkbC9nYW1lL2R0bztnYW1lZHRvYgZwcm90bzM", [file_idl_game_model_game_type, file_idl_game_model_participant, file_idl_game_model_session]);
 
 /**
  * Start a game at a table.
@@ -38,12 +38,19 @@ export type CreateSessionRequest = Message<"idl.game.dto.CreateSessionRequest"> 
   tableId: string;
 
   /**
-   * @generated from field: idl.game.model.GameType game_type = 2;
+   * Who is asking; the view answered is projected for them.
+   *
+   * @generated from field: string player_id = 2;
+   */
+  playerId: string;
+
+  /**
+   * @generated from field: idl.game.model.GameType game_type = 3;
    */
   gameType: GameType;
 
   /**
-   * @generated from field: repeated idl.game.model.Participant participants = 3;
+   * @generated from field: repeated idl.game.model.Participant participants = 4;
    */
   participants: Participant[];
 };
@@ -56,8 +63,6 @@ export const CreateSessionRequestSchema: GenMessage<CreateSessionRequest> = /*@_
   messageDesc(file_idl_game_dto_session, 0);
 
 /**
- * The game, projected for whoever asked.
- *
  * @generated from message idl.game.dto.CreateSessionResponse
  */
 export type CreateSessionResponse = Message<"idl.game.dto.CreateSessionResponse"> & {
@@ -84,6 +89,13 @@ export type ReadSessionRequest = Message<"idl.game.dto.ReadSessionRequest"> & {
    * @generated from field: string session_id = 1;
    */
   sessionId: string;
+
+  /**
+   * Who is asking; the view answered is projected for them.
+   *
+   * @generated from field: string player_id = 2;
+   */
+  playerId: string;
 };
 
 /**
@@ -94,8 +106,6 @@ export const ReadSessionRequestSchema: GenMessage<ReadSessionRequest> = /*@__PUR
   messageDesc(file_idl_game_dto_session, 2);
 
 /**
- * The game, projected for whoever asked.
- *
  * @generated from message idl.game.dto.ReadSessionResponse
  */
 export type ReadSessionResponse = Message<"idl.game.dto.ReadSessionResponse"> & {

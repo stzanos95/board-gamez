@@ -9,10 +9,10 @@ import { toTableSummaryView, type TableSummaryView } from "./table_views";
 export type TablesView = {
   readonly summaries: readonly TableSummaryView[];
   /**
-   * The table this player is seated at, or null when they are seated nowhere.
-   * A seated player belongs in the table view, not in the list.
+   * The table this player is at, seated or not, or null when they are at none.
+   * A player at a table belongs in the table view, not in the list.
    */
-  readonly seatedTableId: string | null;
+  readonly joinedTableId: string | null;
   readonly isLoading: boolean;
   readonly isRefreshing: boolean;
   readonly error: Error | null;
@@ -44,8 +44,8 @@ export function useTables(): TablesView {
     [tables, player.id],
   );
 
-  const seatedTableId = useMemo(
-    () => summaries.find((summary: TableSummaryView) => summary.isSeated)?.id ?? null,
+  const joinedTableId = useMemo(
+    () => summaries.find((summary: TableSummaryView) => summary.isAtTable)?.id ?? null,
     [summaries],
   );
 
@@ -55,7 +55,7 @@ export function useTables(): TablesView {
 
   return {
     summaries,
-    seatedTableId,
+    joinedTableId,
     isLoading: query.isPending,
     isRefreshing: query.isFetching && !query.isPending,
     error: query.error,

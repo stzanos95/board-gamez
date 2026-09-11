@@ -173,8 +173,20 @@ to carry a fixed set of known fields. Assembling
 `{"status": ..., "winner": ...}` to hand back from a function means the
 dataclass is missing.
 
-Where a `dict` is the right answer, say so in the docstring, so it reads as a
-contract rather than an oversight.
+Where a `dict` is the right answer, **name its shape with a type alias**, defined
+once in the lowest layer that knows both sides, and use the alias wherever the
+mapping is built or held:
+
+```python
+RulesClientsByGameType = dict[GameType, BaseRulesClient]      # yes
+
+self._clients: RulesClientsByGameType = {}                    # yes
+# Keys are data — a game type names the rules that play it.
+self._clients: dict[GameType, BaseRulesClient] = {}           # no — a comment where a name belongs
+```
+
+The alias is what says the keys are data. A comment saying so is noise that has
+to be repeated at every dict.
 
 ### Third-party shapes get modelled too
 
@@ -407,6 +419,11 @@ from chess.models.castling_geometry import WHITE_KINGSIDE_CASTLING  # yes
 - **A method says what it returns or decides**, and the class supplies the
   subject: `AttackMap.is_square_attacked_by`, not `AttackMap.is_attacked_by`;
   `RayScanner.moves_along_rays`, not `RayScanner.moves`.
+- **A lookup is `get_<thing>`.** `registry.get_client(game_type)`,
+  `controller._get_participant(session, player_id)`,
+  `registry.get_game_types()`. Never `client_for`, `participant_of`,
+  `view_for`: a preposition says nothing about what comes back, and it reads
+  differently at every call site.
 - **A parameter names the thing, not its container.** `state: ChessBoardState`,
   not `board`, once the type says state.
 

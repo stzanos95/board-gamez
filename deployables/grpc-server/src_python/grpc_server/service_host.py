@@ -8,12 +8,23 @@ import signal
 
 import grpc
 from core.grpc.channel_options import ChannelOptions
+from game.controller.game_spec_controller import GameSpecController
+from game.controller.session_controller import SessionController
+from game.repository.provider import SessionRepositoryProvider
+from game.service.game_servicers import GameServicers
+from game.service.rules_client_provider import RulesClientProvider
+from game.service.rules_client_registry import RulesClientRegistry
 from grpc_reflection.v1alpha import reflection
 from lobby.controller.table_controller import TableController
 from lobby.repository.provider import TableRepositoryProvider
 from lobby.service.lobby_servicers import LobbyServicers
 
-from grpc_server.service_host_config import LobbyConfig, ServerConfig, ServiceHostConfig
+from grpc_server.service_host_config import (
+    GameConfig,
+    LobbyConfig,
+    ServerConfig,
+    ServiceHostConfig,
+)
 
 SHUTDOWN_SIGNALS = (signal.SIGINT, signal.SIGTERM)
 LOG_FORMAT = "%(asctime)s %(levelname)s %(name)s %(message)s"
@@ -35,6 +46,7 @@ class ServiceHost:
         self._application = config.application
         self._server = config.server
         self._lobby = config.lobby
+        self._game = config.game
 
     def start(self) -> None:
         """
@@ -52,18 +64,25 @@ class ServiceHost:
         started one.
         """
         server = ServiceHost._build_server(self._server)
-        service_names = ServiceHost._register_services(server, self._lobby)
-        if self._server.reflection:
-            reflection.enable_server_reflection([*service_names, reflection.SERVICE_NAME], server)
-        address = ServiceHost._address(self._server)
-        server.add_insecure_port(address)
+        rules = RulesClientProvider(self._game.rules).get_rules_client_registry()
+        await rules.open_all()
+        try:
+            service_names = ServiceHost._register_services(server, self._lobby, self._game, rules)
+            if self._server.reflection:
+                reflection.enable_server_reflection(
+                    [*service_names, reflection.SERVICE_NAME], server
+                )
+            address = ServiceHost._address(self._server)
+            server.add_insecure_port(address)
 
-        await server.start()
-        logging.getLogger(self._application.name).info(
-            "serving %d services on %s", len(service_names), address
-        )
-        await ServiceHost._wait_for_shutdown()
-        await server.stop(self._server.graceful_shutdown_seconds)
+            await server.start()
+            logging.getLogger(self._application.name).info(
+                "serving %d services on %s", len(service_names), address
+            )
+            await ServiceHost._wait_for_shutdown()
+            await server.stop(self._server.graceful_shutdown_seconds)
+        finally:
+            await rules.close_all()
 
     @staticmethod
     def _build_server(config: ServerConfig) -> grpc.aio.Server:
@@ -77,16 +96,28 @@ class ServiceHost:
         )
 
     @staticmethod
-    def _register_services(server: grpc.aio.Server, lobby: LobbyConfig) -> tuple[str, ...]:
+    def _register_services(
+        server: grpc.aio.Server, lobby: LobbyConfig, game: GameConfig, rules: RulesClientRegistry
+    ) -> tuple[str, ...]:
         """
         Every servicer this process serves, and the names it serves them under.
 
         Each controller and everything it depends on is built here, from the
         configuration. Adding a domain is a dependency and one more line.
+
+        The rules clients are opened by the caller: a channel belongs to the
+        running event loop, and closing it belongs beside opening it.
         """
         table_repository = TableRepositoryProvider.get_table_repository(lobby.table_repository)
+        session_repository = SessionRepositoryProvider.get_session_repository(
+            game.session_repository
+        )
         return (
             LobbyServicers.add_table_service(server, TableController(repository=table_repository)),
+            GameServicers.add_session_service(
+                server, SessionController(repository=session_repository, rules=rules)
+            ),
+            GameServicers.add_game_spec_service(server, GameSpecController(rules=rules)),
         )
 
     @staticmethod

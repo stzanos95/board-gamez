@@ -27,7 +27,7 @@ from idl.game.model import participant_pb2 as idl_dot_game_dot_model_dot_partici
 from idl.game.model import session_pb2 as idl_dot_game_dot_model_dot_session__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1aidl/game/dto/session.proto\x12\x0cidl.game.dto\x1a\x1eidl/game/model/game_type.proto\x1a idl/game/model/participant.proto\x1a\x1cidl/game/model/session.proto\"\x88\x01\n\x14\x43reateSessionRequest\x12\x10\n\x08table_id\x18\x01 \x01(\t\x12+\n\tgame_type\x18\x02 \x01(\x0e\x32\x18.idl.game.model.GameType\x12\x31\n\x0cparticipants\x18\x03 \x03(\x0b\x32\x1b.idl.game.model.Participant\"E\n\x15\x43reateSessionResponse\x12,\n\x07session\x18\x01 \x01(\x0b\x32\x1b.idl.game.model.SessionView\"(\n\x12ReadSessionRequest\x12\x12\n\nsession_id\x18\x01 \x01(\t\"C\n\x13ReadSessionResponse\x12,\n\x07session\x18\x01 \x01(\x0b\x32\x1b.idl.game.model.SessionViewB2Z0boardgamez/contracts/gen/go/idl/game/dto;gamedtob\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1aidl/game/dto/session.proto\x12\x0cidl.game.dto\x1a\x1eidl/game/model/game_type.proto\x1a idl/game/model/participant.proto\x1a\x1cidl/game/model/session.proto\"\x9b\x01\n\x14\x43reateSessionRequest\x12\x10\n\x08table_id\x18\x01 \x01(\t\x12\x11\n\tplayer_id\x18\x02 \x01(\t\x12+\n\tgame_type\x18\x03 \x01(\x0e\x32\x18.idl.game.model.GameType\x12\x31\n\x0cparticipants\x18\x04 \x03(\x0b\x32\x1b.idl.game.model.Participant\"E\n\x15\x43reateSessionResponse\x12,\n\x07session\x18\x01 \x01(\x0b\x32\x1b.idl.game.model.SessionView\";\n\x12ReadSessionRequest\x12\x12\n\nsession_id\x18\x01 \x01(\t\x12\x11\n\tplayer_id\x18\x02 \x01(\t\"C\n\x13ReadSessionResponse\x12,\n\x07session\x18\x01 \x01(\x0b\x32\x1b.idl.game.model.SessionViewB2Z0boardgamez/contracts/gen/go/idl/game/dto;gamedtob\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -36,11 +36,11 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['DESCRIPTOR']._loaded_options = None
   _globals['DESCRIPTOR']._serialized_options = b'Z0boardgamez/contracts/gen/go/idl/game/dto;gamedto'
   _globals['_CREATESESSIONREQUEST']._serialized_start=141
-  _globals['_CREATESESSIONREQUEST']._serialized_end=277
-  _globals['_CREATESESSIONRESPONSE']._serialized_start=279
-  _globals['_CREATESESSIONRESPONSE']._serialized_end=348
-  _globals['_READSESSIONREQUEST']._serialized_start=350
-  _globals['_READSESSIONREQUEST']._serialized_end=390
-  _globals['_READSESSIONRESPONSE']._serialized_start=392
-  _globals['_READSESSIONRESPONSE']._serialized_end=459
+  _globals['_CREATESESSIONREQUEST']._serialized_end=296
+  _globals['_CREATESESSIONRESPONSE']._serialized_start=298
+  _globals['_CREATESESSIONRESPONSE']._serialized_end=367
+  _globals['_READSESSIONREQUEST']._serialized_start=369
+  _globals['_READSESSIONREQUEST']._serialized_end=428
+  _globals['_READSESSIONRESPONSE']._serialized_start=430
+  _globals['_READSESSIONRESPONSE']._serialized_end=497
 # @@protoc_insertion_point(module_scope)

@@ -231,6 +231,8 @@ components:
                     type: string
                 commandId:
                     type: string
+                playerId:
+                    type: string
                 action:
                     $ref: '#/components/schemas/google.protobuf.Any'
                 expectedVersion:
@@ -245,35 +247,19 @@ components:
                  command carrying an earlier one is refused, so an action never reaches a game
                  in a state the player who chose it had not seen.
 
-                 Who is acting is not carried. It is taken from the caller and matched to a
-                 participant, so a request cannot act as somebody else.
+                 The acting participant is not carried. It is found from `player_id`, so a
+                 request cannot name a participant its sender is not.
         idl.game.dto.ApplyCommandResponse:
             type: object
             properties:
-                outcome:
-                    enum:
-                        - COMMAND_OUTCOME_UNSPECIFIED
-                        - COMMAND_OUTCOME_APPLIED
-                        - COMMAND_OUTCOME_ALREADY_APPLIED
-                        - COMMAND_OUTCOME_SESSION_NOT_FOUND
-                        - COMMAND_OUTCOME_NOT_A_PARTICIPANT
-                        - COMMAND_OUTCOME_GAME_OVER
-                        - COMMAND_OUTCOME_VERSION_MOVED
-                        - COMMAND_OUTCOME_OUT_OF_TURN
-                        - COMMAND_OUTCOME_ILLEGAL_ACTION
-                    type: string
-                    format: enum
-                session:
-                    $ref: '#/components/schemas/idl.game.model.SessionView'
-            description: |-
-                What happened to the command, and the game as it now stands.
-
-                 The session is answered whatever the outcome, projected for whoever sent the
-                 command, and is unset only when no game is stored under the id.
+                result:
+                    $ref: '#/components/schemas/idl.game.model.CommandResult'
         idl.game.dto.CreateSessionRequest:
             type: object
             properties:
                 tableId:
+                    type: string
+                playerId:
                     type: string
                 gameType:
                     enum:
@@ -298,7 +284,6 @@ components:
             properties:
                 session:
                     $ref: '#/components/schemas/idl.game.model.SessionView'
-            description: The game, projected for whoever asked.
         idl.game.dto.ListGameSpecRequest:
             type: object
             properties: {}
@@ -312,12 +297,36 @@ components:
             properties:
                 sessionId:
                     type: string
+                playerId:
+                    type: string
         idl.game.dto.ReadSessionResponse:
             type: object
             properties:
                 session:
                     $ref: '#/components/schemas/idl.game.model.SessionView'
-            description: The game, projected for whoever asked.
+        idl.game.model.CommandResult:
+            type: object
+            properties:
+                outcome:
+                    enum:
+                        - COMMAND_OUTCOME_UNSPECIFIED
+                        - COMMAND_OUTCOME_APPLIED
+                        - COMMAND_OUTCOME_ALREADY_APPLIED
+                        - COMMAND_OUTCOME_SESSION_NOT_FOUND
+                        - COMMAND_OUTCOME_NOT_A_PARTICIPANT
+                        - COMMAND_OUTCOME_GAME_OVER
+                        - COMMAND_OUTCOME_VERSION_MOVED
+                        - COMMAND_OUTCOME_OUT_OF_TURN
+                        - COMMAND_OUTCOME_ILLEGAL_ACTION
+                    type: string
+                    format: enum
+                session:
+                    $ref: '#/components/schemas/idl.game.model.SessionView'
+            description: |-
+                What happened to a command, and the game as its sender may now see it.
+
+                 The session is carried whatever the outcome, and is unset only when no game
+                 is stored under the id the command named.
         idl.game.model.GameResult:
             type: object
             properties:
@@ -541,12 +550,21 @@ components:
                         $ref: '#/components/schemas/idl.lobby.model.Seat'
                 version:
                     type: string
+                playerIds:
+                    type: array
+                    items:
+                        type: string
             description: |-
-                A table and the seats around it.
+                A table, the people at it, and the seats around it.
 
                  Holds no game state and no rules. A table names a game and who is playing it;
-                 starting one hands that roster to the game, and everything after that is the
-                 game's.
+                 starting one hands the seated roster to the game, and everything after that
+                 is the game's.
+
+                 Joining a table and taking a seat are two different things. Anyone may join,
+                 and there is no limit on how many have. A seat is taken only by someone who
+                 asks for that seat, so nothing ever chooses a seat on a player's behalf. A
+                 player in a seat is also in `player_ids`; leaving the table vacates the seat.
         idl.lobby.model.TableCollection:
             type: object
             properties:

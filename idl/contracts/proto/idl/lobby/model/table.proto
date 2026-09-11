@@ -20,17 +20,23 @@ enum TableStatus {
   TABLE_STATUS_ABANDONED = 4;
 }
 
-// A table and the seats around it.
+// A table, the people at it, and the seats around it.
 //
 // Holds no game state and no rules. A table names a game and who is playing it;
-// starting one hands that roster to the game, and everything after that is the
-// game's.
+// starting one hands the seated roster to the game, and everything after that
+// is the game's.
+//
+// Joining a table and taking a seat are two different things. Anyone may join,
+// and there is no limit on how many have. A seat is taken only by someone who
+// asks for that seat, so nothing ever chooses a seat on a player's behalf. A
+// player in a seat is also in `player_ids`; leaving the table vacates the seat.
 message Table {
   string id = 1;
   idl.game.model.GameType game_type = 2;
   TableStatus status = 3;
   repeated Seat seats = 4;  // Fixed in count at creation.
   uint64 version = 5;       // Send back what you read; 0 if never stored.
+  repeated string player_ids = 6;  // Everyone at the table, seated or not.
 }
 
 // Many tables.
