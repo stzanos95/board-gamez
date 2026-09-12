@@ -1,6 +1,6 @@
 ---
 name: adding-a-game
-description: Every file a new game touches, in the order they are written, with the chess file to copy beside each one. Load before adding a game to the platform — a new GameType, a rules package, a product package, the entries in both deployables, and the screens in the browser. Covers the design questions a game answers before its schema is written and which BaseRules method each answer lands in, the names a game takes in each language, the schema it declares, the two packages, the one file per deployable, the build and check wiring, the five browser records, and the tests each layer carries.
+description: Every file a new game touches, in the order they are written, with the chess file to copy beside each one. Load before adding a game to the platform — a new GameType, a rules package, a product package, the entries in both deployables, and the screens in the browser. Covers the platform review that comes first and pauses for the user, the design questions a game answers before its schema is written and which BaseRules method each answer lands in, the names a game takes in each language, the schema it declares, the two packages, the one file per deployable, the build and check wiring, the five browser records, and the tests each layer carries.
 ---
 
 # Adding a game
@@ -9,14 +9,74 @@ These rules address whoever writes the code, a developer or an assistant. A
 step a rule leaves to "the user" — running the generator, committing — is the
 developer's own when they work alone.
 
-A game is added, never wired in. `packages/game` and `packages/lobby` do not
-change. Every step below is a new file or an entry in a list that exists for
-this purpose, and chess is the reference: each row names the chess file to
-read before writing the same file for the new game.
+A game is added, never wired in. For a game the platform already knows how to
+host, `packages/game` and `packages/lobby` do not change, and every step from
+section 1 on is a new file or an entry in a list that exists for this
+purpose. Chess is the reference: each row names the chess file to read before
+writing the same file for the new game. Section 0 is where a game that needs
+more than the platform has says so, before anything is written.
 
 The skills that govern each step still apply and are loaded first: `modeling`
 for the schema, `python-style` and `backend-development` for the packages and
 deployables, `typescript-style` and `frontend-development` for the browser.
+
+## 0. Review the platform and the mechanics, then pause
+
+Before the design questions are answered, the assistant reads the platform's
+contracts and the rules packages that exist, and answers two questions in the
+reply. It then stops and waits for the user. Nothing under section 1 is
+started until the user has answered, because a platform change decided
+quietly inside a game's package is the thing this skill exists to prevent.
+
+**Does the game need something the platform does not have?** The platform is
+what `BaseRules`, `BaseSeating`, `GameState`, `ParticipantStateKind`, the
+events in `game/model/event.proto` and `lobby/model/event.proto`, and the
+flow through `SeatController` and `SessionController` can express. Walk the
+game's rules against each and name every gap. What the platform has today:
+
+| The platform can | The platform cannot, today |
+| ---------------- | -------------------------- |
+| Seat a fixed number or a range of participants, each with a role or none | Seat teams, or a participant who joins mid-game |
+| Name one or several participants to act on a state | Order the several, or resolve two acting at once by anything but version |
+| Hide information by projecting a view per participant | Hide information from the store, or hold a secret nobody may read |
+| Draw chance from a seed the platform mints | Draw chance a participant supplies, such as a physical roll |
+| Expire a state on a deadline it carries | Run a clock per participant, or pause one |
+| Withdraw a participant in or out of turn | Replace a participant, or let one return |
+| Say how each participant came out: won, lost, drawn | Carry a score, a ranking, or a game of several rounds |
+| Say what everyone may see of each participant, as a kind in `ParticipantStateKind` | Say a state only some may see, or a state that names another participant |
+| Finish the table when the game has a result, and retire it when the last player leaves | Start the next round at the same table |
+
+A gap is closed in the platform, never worked around in the product: a new
+`BaseRules` method, a field on `GameState`, a kind in `ParticipantStateKind`,
+an event, a step in a lobby flow. Each is a schema change, so each is argued
+under `modeling` before it is written.
+
+**Does the game's engine need a mechanic another game has, or one a later
+game will?** A rules package computes over its own schema, and `python-style`
+prefers a second copy to an early abstraction. The exception it names is a
+subtle, correctness-critical algorithm, and games are full of them: a shuffle
+that replays from a seed, a turn order that skips and reverses, a deal, a
+dice roll, a draw pile that refills from a discard pile, a tally over a hand.
+For each mechanic the game needs, say which of three it is:
+
+- **Present in another rules package.** Name the file. The mechanic moves to
+  a package both games import — beneath both rules packages, depending on
+  `board-gamez-idl` and nothing else, and never `core`, which holds nothing a
+  domain owns — and both packages call it. Moving it is a change to the other
+  game's package, so it is proposed, not done.
+- **New, and shareable.** Say what a second game would call it for. It is
+  written in the new game's package, in a module a later move will lift
+  whole, and the reply says so. `packages/uno/src_python/uno/deck/split_mix.py`
+  and `shuffler.py` are the standing example: a seeded shuffle written for
+  UNO, to be lifted when a second game shuffles.
+- **New, and the game's own.** It stays in the game's package.
+
+The reply lists every gap and every mechanic, each in three lines: what it
+is, why the game cannot be built well without it — what would be copied,
+what would drift, what the product would have to decide that is not its to
+decide — and how it would be done: the messages, the methods, the package.
+Then the assistant hands back. A game with no gap and no shared mechanic says
+that in one line, and still waits.
 
 ## 1. Answer the design questions first
 
@@ -234,6 +294,7 @@ product's service; `curl http://127.0.0.1:8080/openapi.json` shows its paths.
 
 ## Checklist
 
+- [ ] Every platform gap and every shared mechanic in section 0 is named, explained and answered by the user, before section 1
 - [ ] Every design question in section 1 is answered in writing, before the schema
 - [ ] The names in section 2 are used as given, in every language
 - [ ] `<Game>Service` declares the six RPCs under `/internal/product/<game>/`
