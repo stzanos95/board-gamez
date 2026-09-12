@@ -1,14 +1,17 @@
 import type { GameType } from "@board-gamez/idl/game/model/game_type_pb";
+import type { SeatResult } from "@board-gamez/idl/lobby/model/seat_result_pb";
+import { SeatOutcome } from "@board-gamez/idl/lobby/model/seat_result_pb";
 import type { Table } from "@board-gamez/idl/lobby/model/table_pb";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 
 import { usePlayer } from "../identity/player_context";
 import { useTableGateway } from "../runtime/app_services";
+import { invalidateAfterWrite } from "../transport/query_invalidation";
+import { SEAT_OUTCOME_PROBLEMS } from "./seat_labels";
 import { tableQueryKeys } from "./table_queries";
-import { newTable } from "./table_intents";
 
-const REFUSED_MESSAGE = "The lobby refused the new table. Try again.";
+const UNANSWERED_MESSAGE = "The lobby did not answer the new table. Try again.";
 
 export type NewTableInput = {
   readonly gameType: GameType;
@@ -24,8 +27,9 @@ export type CreateTableAction = {
 /**
  * Open a table, with this player at it and every seat open.
  *
- * The stored table is written into both caches, so the list is correct before a
- * refetch lands and the host is carried to their table without waiting for one.
+ * The table the lobby answers is written into both caches, so the list is
+ * correct before a refetch lands and the opener is carried to their table
+ * without waiting for one.
  */
 export function useCreateTable(): CreateTableAction {
   const gateway = useTableGateway();
@@ -33,31 +37,42 @@ export function useCreateTable(): CreateTableAction {
   const { player } = usePlayer();
 
   const createTable = useCallback(
-    (input: NewTableInput) =>
-      gateway.upsert(newTable(input.gameType, input.seatCount, player.id)),
+    (input: NewTableInput) => gateway.createTable(input.gameType, input.seatCount, player.id),
     [gateway, player.id],
   );
 
   const onCreated = useCallback(
-    (stored: Table | null) => {
-      if (stored === null) {
+    (result: SeatResult | null) => {
+      if (result?.outcome !== SeatOutcome.CREATED || result.table === undefined) {
         return;
       }
+      const stored = result.table;
       queryClient.setQueryData(tableQueryKeys.detail(stored.id), stored);
       queryClient.setQueryData(
         tableQueryKeys.list(),
         (cached: readonly Table[] | undefined) => [...(cached ?? []), stored],
       );
-      void queryClient.invalidateQueries({ queryKey: tableQueryKeys.list() });
+      invalidateAfterWrite(queryClient, tableQueryKeys.list());
     },
     [queryClient],
   );
 
   const mutation = useMutation({ mutationFn: createTable, onSuccess: onCreated });
 
+  const { error, data: result } = mutation;
+  const problem = useMemo(() => {
+    if (error !== null) {
+      return error.message;
+    }
+    if (result === undefined) {
+      return null;
+    }
+    return result === null ? UNANSWERED_MESSAGE : SEAT_OUTCOME_PROBLEMS[result.outcome];
+  }, [error, result]);
+
   return {
     run: mutation.mutate,
     isPending: mutation.isPending,
-    problem: mutation.error?.message ?? (mutation.data === null ? REFUSED_MESSAGE : null),
+    problem,
   };
 }

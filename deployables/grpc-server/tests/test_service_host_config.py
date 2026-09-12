@@ -1,6 +1,7 @@
 import unittest
 from pathlib import Path
 
+from core.queue.config import QueueType
 from game.repository.config import SessionRepositoryType
 from lobby.repository.config import TableRepositoryType
 
@@ -40,6 +41,13 @@ game:
       port: 6379
       database: 0
       key_prefix: "board-gamez-test"
+queue:
+  queue: redis
+  redis_config:
+    host: "127.0.0.1"
+    port: 6379
+    database: 0
+    channel_prefix: "gamez-test"
 """
 
 
@@ -52,6 +60,7 @@ class ReadingSettingsTest(unittest.TestCase):
         self.assertIs(config.lobby.table_repository.repository, TableRepositoryType.REDIS)
         self.assertIsNotNone(config.lobby.table_repository.redis_config)
         self.assertIs(config.game.session_repository.repository, SessionRepositoryType.REDIS)
+        self.assertIs(config.queue.queue, QueueType.REDIS)
 
     def test_reads_every_field(self) -> None:
         config = ServiceHostConfig.from_yaml(COMPLETE_CONFIG)

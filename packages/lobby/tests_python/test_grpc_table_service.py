@@ -4,12 +4,12 @@ from idl.lobby.dto.table_pb2 import (
     DeleteTableRequest,
     ListTableRequest,
     ReadTableRequest,
-    UpsertTableRequest,
 )
 from idl.lobby.model.table_pb2 import Table, TableCollection
 
 from lobby.controller.table_controller import TableController
 from lobby.service.grpc_table_service import GrpcTableService
+from tests_python.in_memory_queue_publisher import InMemoryQueuePublisher
 from tests_python.in_memory_table_repository import InMemoryTableRepository
 
 TABLE_ID = "t-1"
@@ -24,15 +24,12 @@ class RecordingController(TableController):
     """
 
     def __init__(self) -> None:
-        super().__init__(repository=InMemoryTableRepository())
-        self.upserted: list[Table] = []
+        super().__init__(
+            repository=InMemoryTableRepository(), queue_publisher=InMemoryQueuePublisher()
+        )
         self.read_ids: list[str] = []
         self.deleted: list[tuple[str, int]] = []
         self.stored: Table | None = None
-
-    async def upsert_table(self, table: Table) -> Table:
-        self.upserted.append(table)
-        return table
 
     async def read_table(self, table_id: str) -> Table | None:
         self.read_ids.append(table_id)
@@ -50,19 +47,6 @@ class UnpackingTest(unittest.IsolatedAsyncioTestCase):
     The servicer decides nothing. It hands the controller the arguments an
     operation takes, and packs what comes back into the schema's response.
     """
-
-    async def test_an_upsert_reaches_the_controller_as_a_table(self) -> None:
-        controller = RecordingController()
-        service = GrpcTableService(controller=controller)
-        table = Table(id=TABLE_ID)
-
-        response = await service.UpsertTable(
-            UpsertTableRequest(table=table),
-            context=None,  # type: ignore[arg-type]
-        )
-
-        self.assertEqual(controller.upserted, [table])
-        self.assertEqual(response.table.id, TABLE_ID)
 
     async def test_a_read_reaches_the_controller_as_an_id(self) -> None:
         controller = RecordingController()

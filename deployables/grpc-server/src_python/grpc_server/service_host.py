@@ -8,6 +8,8 @@ import signal
 
 import grpc
 from core.grpc.channel_options import ChannelOptions
+from core.queue.base_queue_publisher import BaseQueuePublisher
+from core.queue.provider import QueueProvider
 from game.controller.game_spec_controller import GameSpecController
 from game.controller.rules_registry import RulesRegistry
 from game.controller.session_controller import SessionController
@@ -53,6 +55,7 @@ class ServiceHost:
         self._server = config.server
         self._lobby = config.lobby
         self._game = config.game
+        self._queue = config.queue
 
     def start(self) -> None:
         """
@@ -70,7 +73,10 @@ class ServiceHost:
         started one.
         """
         server = ServiceHost._build_server(self._server)
-        service_names = ServiceHost._register_services(server, self._lobby, self._game)
+        queue_publisher = QueueProvider.get_publisher(self._queue)
+        service_names = ServiceHost._register_services(
+            server, self._lobby, self._game, queue_publisher
+        )
         if self._server.reflection:
             reflection.enable_server_reflection([*service_names, reflection.SERVICE_NAME], server)
         address = ServiceHost._address(self._server)
@@ -82,6 +88,7 @@ class ServiceHost:
         )
         await ServiceHost._wait_for_shutdown()
         await server.stop(self._server.graceful_shutdown_seconds)
+        await queue_publisher.close()
 
     @staticmethod
     def _build_server(config: ServerConfig) -> grpc.aio.Server:
@@ -96,14 +103,18 @@ class ServiceHost:
 
     @staticmethod
     def _register_services(
-        server: grpc.aio.Server, lobby: LobbyConfig, game: GameConfig
+        server: grpc.aio.Server,
+        lobby: LobbyConfig,
+        game: GameConfig,
+        queue_publisher: BaseQueuePublisher,
     ) -> tuple[str, ...]:
         """
         Every servicer this process serves, and the names it serves them under.
 
         Each controller and everything it depends on is built here, from the
-        configuration. Adding a domain is a dependency and one more line; adding
-        a game is a product dependency and one entry each in the rules registry
+        configuration. Every controller that writes publishes through the one
+        publisher. Adding a domain is a dependency and one more line; adding a
+        game is a product dependency and one entry each in the rules registry
         and the seating registry.
 
         A product's rules are held in-process: the session controller calls
@@ -117,10 +128,18 @@ class ServiceHost:
         chess_rules = ChessRules()
         rules = RulesRegistry({GameType.GAME_TYPE_CHESS: chess_rules})
         seating = SeatingRegistry({GameType.GAME_TYPE_CHESS: ChessSeating()})
-        table_controller = TableController(repository=table_repository)
-        session_controller = SessionController(repository=session_repository, rules=rules)
+        table_controller = TableController(
+            repository=table_repository, queue_publisher=queue_publisher
+        )
+        session_controller = SessionController(
+            repository=session_repository, rules=rules, queue_publisher=queue_publisher
+        )
         seat_controller = SeatController(
-            tables=table_controller, seating=seating, sessions=session_controller, rules=rules
+            tables=table_controller,
+            seating=seating,
+            sessions=session_controller,
+            rules=rules,
+            queue_publisher=queue_publisher,
         )
         return (
             LobbyServicers.add_table_service(server, table_controller),

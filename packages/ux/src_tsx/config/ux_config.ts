@@ -16,11 +16,25 @@ export type GatewaySettings = {
 };
 
 /**
+ * Where the socket server answers, and how a dropped socket is reopened.
+ *
+ * `baseUrl` is prefixed to the path a subscription names. A socket that
+ * closes without being asked to is reopened after `reconnectDelayMs`, then
+ * after twice that on each failure, up to `maxReconnectDelayMs`.
+ */
+export type SocketSettings = {
+  readonly baseUrl: string;
+  readonly reconnectDelayMs: number;
+  readonly maxReconnectDelayMs: number;
+};
+
+/**
  * How current the screens are kept.
  *
  * `staleTimeMs` is how long an answer is reused without asking again, which is
- * what stops a remount from being a request. The intervals are polling, and
- * none of them runs while the tab is hidden.
+ * what stops a remount from being a request. The intervals are polling, which
+ * runs only while the socket that would announce a change is not open, and
+ * never while the tab is hidden.
  */
 export type FreshnessSettings = {
   readonly staleTimeMs: number;
@@ -38,6 +52,7 @@ export type ChessSettings = {
 
 export type UxConfig = {
   readonly gateway: GatewaySettings;
+  readonly socket: SocketSettings;
   readonly theme: ThemeName;
   readonly freshness: FreshnessSettings;
   readonly chess: ChessSettings;
@@ -88,6 +103,7 @@ export function parseUxConfig(document: unknown): UxConfig {
   const root = document as Record<string, unknown>;
 
   const gateway = readObject(root, "gateway");
+  const socket = readObject(root, "socket");
   const freshness = readObject(root, "freshness");
   const chess = readObject(root, "chess");
   const themeName = readNonEmptyString(root, "theme");
@@ -103,6 +119,11 @@ export function parseUxConfig(document: unknown): UxConfig {
     gateway: {
       baseUrl: readNonEmptyString(gateway, "baseUrl"),
       requestTimeoutMs: readPositiveInteger(gateway, "requestTimeoutMs"),
+    },
+    socket: {
+      baseUrl: readNonEmptyString(socket, "baseUrl"),
+      reconnectDelayMs: readPositiveInteger(socket, "reconnectDelayMs"),
+      maxReconnectDelayMs: readPositiveInteger(socket, "maxReconnectDelayMs"),
     },
     theme: themeName,
     freshness: {

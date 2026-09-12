@@ -5,18 +5,6 @@ from typing import ClassVar as _ClassVar, Mapping as _Mapping, Optional as _Opti
 
 DESCRIPTOR: _descriptor.FileDescriptor
 
-class UpsertTableRequest(_message.Message):
-    __slots__ = ("table",)
-    TABLE_FIELD_NUMBER: _ClassVar[int]
-    table: _table_pb2.Table
-    def __init__(self, table: _Optional[_Union[_table_pb2.Table, _Mapping]] = ...) -> None: ...
-
-class UpsertTableResponse(_message.Message):
-    __slots__ = ("table",)
-    TABLE_FIELD_NUMBER: _ClassVar[int]
-    table: _table_pb2.Table
-    def __init__(self, table: _Optional[_Union[_table_pb2.Table, _Mapping]] = ...) -> None: ...
-
 class ReadTableRequest(_message.Message):
     __slots__ = ("table_id",)
     TABLE_ID_FIELD_NUMBER: _ClassVar[int]

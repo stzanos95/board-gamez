@@ -10,6 +10,7 @@ mashumaro reads these annotations at runtime to build the parser, so
 
 from dataclasses import dataclass
 
+from core.queue.config import QueueConfig
 from game.repository.config import SessionRepositoryConfig
 from lobby.repository.config import TableRepositoryConfig
 from mashumaro.mixins.yaml import DataClassYAMLMixin
@@ -73,11 +74,13 @@ class ServiceHostConfig(DataClassYAMLMixin):
     """
     Everything the server needs to start.
 
-    One section per domain served. Adding a domain adds a field here and a line
-    where the servicers are registered.
+    One section per domain served, and the queue every domain publishes to.
+    Adding a domain adds a field here and a line where the servicers are
+    registered.
     """
 
     application: ApplicationConfig
     server: ServerConfig
     lobby: LobbyConfig
     game: GameConfig
+    queue: QueueConfig

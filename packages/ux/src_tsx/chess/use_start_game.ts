@@ -5,6 +5,7 @@ import { useCallback } from "react";
 import { usePlayer } from "../identity/player_context";
 import { tableQueryKeys } from "../lobby/table_queries";
 import { useChessGateway } from "../runtime/app_services";
+import { invalidateAfterWrite } from "../transport/query_invalidation";
 import { chessQueryKeys } from "./chess_queries";
 
 const REFUSED_MESSAGE =
@@ -39,7 +40,7 @@ export function useStartGame(): StartGameAction {
         return;
       }
       queryClient.setQueryData(chessQueryKeys.session(session.id), session);
-      void queryClient.invalidateQueries({ queryKey: tableQueryKeys.detail(session.id) });
+      invalidateAfterWrite(queryClient, tableQueryKeys.detail(session.id));
     },
     [queryClient],
   );

@@ -16,8 +16,6 @@ from idl_fastapi.idl.lobby.dto import (
     ListTableResponse,
     ReadTableRequest,
     ReadTableResponse,
-    UpsertTableRequest,
-    UpsertTableResponse,
 )
 from idl_fastapi.services.table_service import BaseTableService
 
@@ -32,12 +30,6 @@ class HttpTableService(BaseTableService):
 
     def __init__(self, client: GrpcTableClient) -> None:
         self._client = client
-
-    async def upsert_table(self, request: UpsertTableRequest) -> UpsertTableResponse:
-        response = await self._client.upsert_table(
-            TableAdapters.upsert_request_model_to_message(request)
-        )
-        return TableAdapters.upsert_response_message_to_model(response)
 
     async def read_table(self, request: ReadTableRequest) -> ReadTableResponse:
         response = await self._client.read_table(

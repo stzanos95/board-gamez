@@ -6,7 +6,10 @@ command already applied, whether the caller read the current state, and what an
 outcome is called. What the action means inside the game is the game's rules'.
 """
 
+from core.queue.base_queue_publisher import BaseQueuePublisher
+from core.queue.message_utils import QueueMessageUtils
 from google.protobuf import any_pb2
+from google.protobuf.message import Message
 from idl.game.model.action_pb2 import Action
 from idl.game.model.command_result_pb2 import CommandOutcome, CommandResult
 from idl.game.model.game_type_pb2 import GameType
@@ -14,7 +17,9 @@ from idl.game.model.participant_pb2 import Participant
 from idl.game.model.session_pb2 import Session, SessionView
 from idl.game.model.withdrawal_result_pb2 import WithdrawalOutcome, WithdrawalResult
 
+from game.adapters.event_adapters import EventAdapters
 from game.adapters.session_adapters import SessionAdapters
+from game.controller.channel_names import GameChannelNames
 from game.controller.rules_registry import RulesRegistry
 from game.repository.base_session_repository import BaseSessionRepository
 
@@ -33,12 +38,21 @@ class SessionController:
     transport carries an argument in, and unpacking it belongs to whatever
     received it, so nothing from `idl.game.dto` reaches this far.
 
+    Every write that is stored is published as one event on the game's
+    channel, after the write and never for a refused one.
+
     Built once at the entry point and passed to whatever serves it.
     """
 
-    def __init__(self, repository: BaseSessionRepository, rules: RulesRegistry) -> None:
+    def __init__(
+        self,
+        repository: BaseSessionRepository,
+        rules: RulesRegistry,
+        queue_publisher: BaseQueuePublisher,
+    ) -> None:
         self._repository = repository
         self._rules = rules
+        self._queue_publisher = queue_publisher
 
     async def create_session(
         self,
@@ -79,6 +93,7 @@ class SessionController:
             # Theirs is the game at this table.
             return await self.read_session(table_id, player_id)
         session = SessionAdapters.session_obj_to_session(stored)
+        await self._publish(session, EventAdapters.session_to_session_started(session))
         return await self._get_session_view(session, player_id)
 
     async def read_session(self, session_id: str, player_id: str) -> SessionView | None:
@@ -158,10 +173,13 @@ class SessionController:
                 outcome=CommandOutcome.COMMAND_OUTCOME_VERSION_MOVED,
                 session=await self.read_session(session_id, player_id),
             )
+        applied = SessionAdapters.session_obj_to_session(stored)
+        await self._publish(
+            applied,
+            EventAdapters.session_to_command_applied(applied, participant, command_id, action),
+        )
         return await self._get_command_result(
-            CommandOutcome.COMMAND_OUTCOME_APPLIED,
-            SessionAdapters.session_obj_to_session(stored),
-            player_id,
+            CommandOutcome.COMMAND_OUTCOME_APPLIED, applied, player_id
         )
 
     async def withdraw_player(self, session_id: str, player_id: str) -> WithdrawalResult:
@@ -220,10 +238,18 @@ class SessionController:
                 outcome=WithdrawalOutcome.WITHDRAWAL_OUTCOME_VERSION_MOVED,
                 session=await self.read_session(session_id, player_id),
             )
+        left = SessionAdapters.session_obj_to_session(stored)
+        await self._publish(left, EventAdapters.session_to_participant_withdrawn(left, participant))
         return await self._get_withdrawal_result(
-            WithdrawalOutcome.WITHDRAWAL_OUTCOME_WITHDRAWN,
-            SessionAdapters.session_obj_to_session(stored),
-            player_id,
+            WithdrawalOutcome.WITHDRAWAL_OUTCOME_WITHDRAWN, left, player_id
+        )
+
+    async def _publish(self, session: Session, event: Message) -> None:
+        """
+        Send this event on the game's channel.
+        """
+        await self._queue_publisher.publish(
+            GameChannelNames.get_session_channel(session.id), QueueMessageUtils.pack(event)
         )
 
     async def _get_withdrawal_result(

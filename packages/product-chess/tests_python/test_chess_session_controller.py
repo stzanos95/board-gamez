@@ -7,6 +7,7 @@ from idl.chess.model.session_pb2 import ChessSession
 from idl.chess.model.table_pb2 import ChessSeatChoice
 from idl.game.model.command_result_pb2 import CommandOutcome
 from idl.game.model.game_type_pb2 import GameType
+from idl.lobby.model.event_pb2 import PlayerLeft, SeatTaken, SeatVacated
 from idl.lobby.model.seat_pb2 import Seat, SeatStatus
 from idl.lobby.model.seat_result_pb2 import SeatOutcome
 from idl.lobby.model.table_pb2 import Table, TableStatus
@@ -19,6 +20,7 @@ from product_chess.controller.chess_rules import ChessRules
 from product_chess.controller.chess_seating import ChessSeating
 from product_chess.controller.chess_session_controller import ChessSessionController
 from tests_python.chess_actions import move, resignation
+from tests_python.in_memory_queue_publisher import InMemoryQueuePublisher
 from tests_python.in_memory_repositories import InMemorySessionRepository, InMemoryTableRepository
 
 TABLE_ID = "t-1"
@@ -34,6 +36,17 @@ UNSTORED_VERSION = 0
 FIRST_STORED_VERSION = 1
 SECOND_STORED_VERSION = 2
 CHESS_SEAT_COUNT = 2
+NO_SEAT = 0
+TABLE_CHANNEL = "table:t-1"
+SESSION_CHANNEL = "session:t-1"
+EMPTY_TABLE_CHANNEL = "table:t-2"
+LOBBY_CHANNEL = "lobby"
+SEAT_TAKEN_TYPE = "idl.lobby.model.SeatTaken"
+SEAT_VACATED_TYPE = "idl.lobby.model.SeatVacated"
+PARTICIPANT_WITHDRAWN_TYPE = "idl.game.model.ParticipantWithdrawn"
+TABLE_CREATED_TYPE = "idl.lobby.model.TableCreated"
+PLAYER_JOINED_TYPE = "idl.lobby.model.PlayerJoined"
+PLAYER_LEFT_TYPE = "idl.lobby.model.PlayerLeft"
 COMMAND_ID = "c-1"
 OTHER_COMMAND_ID = "c-2"
 
@@ -63,14 +76,22 @@ class ChessSessionControllerTest(unittest.IsolatedAsyncioTestCase):
     """
 
     async def asyncSetUp(self) -> None:
-        self.tables = TableController(repository=InMemoryTableRepository())
+        self.queue_publisher = InMemoryQueuePublisher()
+        self.tables = TableController(
+            repository=InMemoryTableRepository(), queue_publisher=self.queue_publisher
+        )
         rules = RulesRegistry({GameType.GAME_TYPE_CHESS: ChessRules()})
-        self.sessions = SessionController(repository=InMemorySessionRepository(), rules=rules)
+        self.sessions = SessionController(
+            repository=InMemorySessionRepository(),
+            rules=rules,
+            queue_publisher=self.queue_publisher,
+        )
         self.seats = SeatController(
             tables=self.tables,
             seating=SeatingRegistry({GameType.GAME_TYPE_CHESS: ChessSeating()}),
             sessions=self.sessions,
             rules=rules,
+            queue_publisher=self.queue_publisher,
         )
         self.controller = ChessSessionController(
             tables=self.tables, seats=self.seats, sessions=self.sessions
@@ -412,3 +433,66 @@ class ChessSessionControllerTest(unittest.IsolatedAsyncioTestCase):
         result = await self.seats.join_table(EMPTY_TABLE_ID, ONLOOKER)
         self.assertEqual(result.outcome, SeatOutcome.SEAT_OUTCOME_NOT_ACCEPTING_PLAYERS)
         self.assertNotIn(ONLOOKER, result.table.player_ids)
+
+    # --- publishing ----------------------------------------------------------
+
+    async def test_taking_a_seat_is_published_on_the_table_and_the_lobby(self) -> None:
+        result = await self.controller.take_seat(
+            EMPTY_TABLE_ID,
+            ONLOOKER,
+            ChessSeatChoice(number=SECOND_SEAT, color=piece_pb2.COLOR_BLACK),
+            FIRST_STORED_VERSION,
+        )
+        self.assertEqual(self.queue_publisher.get_types_on(EMPTY_TABLE_CHANNEL), [SEAT_TAKEN_TYPE])
+        self.assertEqual(self.queue_publisher.get_types_on(LOBBY_CHANNEL), [SEAT_TAKEN_TYPE])
+        taken = SeatTaken()
+        self.assertTrue(self.queue_publisher.published[0].envelope.payload.Unpack(taken))
+        self.assertEqual(taken.table_id, EMPTY_TABLE_ID)
+        self.assertEqual(taken.player_id, ONLOOKER)
+        self.assertEqual(taken.seat_number, SECOND_SEAT)
+        self.assertEqual(taken.version, result.table.version)
+        self.assertTrue(taken.HasField("role"))
+
+    async def test_standing_up_mid_game_publishes_the_withdrawal_before_the_seat(self) -> None:
+        await self.start()
+        self.queue_publisher.published.clear()
+
+        await self.seats.vacate_seat(TABLE_ID, BLACK_PLAYER)
+
+        self.assertEqual(
+            [published.channel for published in self.queue_publisher.published],
+            [SESSION_CHANNEL, TABLE_CHANNEL, LOBBY_CHANNEL],
+        )
+        self.assertEqual(
+            self.queue_publisher.get_types_on(SESSION_CHANNEL), [PARTICIPANT_WITHDRAWN_TYPE]
+        )
+        self.assertEqual(self.queue_publisher.get_types_on(TABLE_CHANNEL), [SEAT_VACATED_TYPE])
+        vacated = SeatVacated()
+        self.assertTrue(self.queue_publisher.published[-1].envelope.payload.Unpack(vacated))
+        self.assertEqual(vacated.seat_number, SECOND_SEAT)
+
+    async def test_opening_joining_and_leaving_are_published(self) -> None:
+        opened = await self.seats.create_table(GameType.GAME_TYPE_CHESS, CHESS_SEAT_COUNT, ONLOOKER)
+        await self.seats.join_table(opened.table.id, WHITE_PLAYER)
+        await self.seats.leave_table(opened.table.id, WHITE_PLAYER)
+
+        self.assertEqual(
+            self.queue_publisher.get_types_on(LOBBY_CHANNEL),
+            [TABLE_CREATED_TYPE, PLAYER_JOINED_TYPE, PLAYER_LEFT_TYPE],
+        )
+        left = PlayerLeft()
+        self.assertTrue(self.queue_publisher.published[-1].envelope.payload.Unpack(left))
+        self.assertEqual(left.seat_number, NO_SEAT)
+
+    async def test_a_refused_seat_change_publishes_nothing(self) -> None:
+        await self.controller.take_seat(
+            EMPTY_TABLE_ID,
+            ONLOOKER,
+            ChessSeatChoice(number=SECOND_SEAT, color=piece_pb2.COLOR_WHITE),
+            FIRST_STORED_VERSION,
+        )
+        await self.seats.join_table(EMPTY_TABLE_ID, WHITE_PLAYER)
+        await self.seats.vacate_seat(TABLE_ID, ONLOOKER)
+        await self.seats.create_table(GameType.GAME_TYPE_CHESS, CHESS_SEAT_COUNT + 1, ONLOOKER)
+
+        self.assertEqual(self.queue_publisher.published, [])

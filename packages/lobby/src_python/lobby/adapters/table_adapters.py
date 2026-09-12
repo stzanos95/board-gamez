@@ -29,8 +29,6 @@ from idl_fastapi.idl.lobby.dto import (
     ListTableResponse,
     ReadTableRequest,
     ReadTableResponse,
-    UpsertTableRequest,
-    UpsertTableResponse,
 )
 
 
@@ -40,10 +38,6 @@ class TableAdapters:
     """
 
     # --- a request, to the arguments an operation takes ----------------------
-
-    @staticmethod
-    def upsert_request_to_table(request: table_pb2.UpsertTableRequest) -> Table:
-        return request.table
 
     @staticmethod
     def read_request_to_table_id(request: table_pb2.ReadTableRequest) -> str:
@@ -58,13 +52,6 @@ class TableAdapters:
         return request.expected_version
 
     # --- what an operation answers, to a response ----------------------------
-
-    @staticmethod
-    def table_to_upsert_response(table: Table | None) -> table_pb2.UpsertTableResponse:
-        """
-        An unset table is how the schema says the write was refused.
-        """
-        return table_pb2.UpsertTableResponse(table=table)
 
     @staticmethod
     def table_to_read_response(table: Table | None) -> table_pb2.ReadTableResponse:
@@ -84,16 +71,6 @@ class TableAdapters:
         return table_pb2.ListTableResponse(collection=collection)
 
     # --- a pydantic model, to the message of the same contract ---------------
-
-    @staticmethod
-    def upsert_request_model_to_message(model: UpsertTableRequest) -> table_pb2.UpsertTableRequest:
-        return ProtobufMessageUtils.message_from_pydantic_model(model, table_pb2.UpsertTableRequest)
-
-    @staticmethod
-    def upsert_response_message_to_model(
-        message: table_pb2.UpsertTableResponse,
-    ) -> UpsertTableResponse:
-        return ProtobufMessageUtils.message_to_pydantic_model(message, UpsertTableResponse)
 
     @staticmethod
     def read_request_model_to_message(model: ReadTableRequest) -> table_pb2.ReadTableRequest:

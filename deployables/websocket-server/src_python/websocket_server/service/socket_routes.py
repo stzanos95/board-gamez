@@ -1,8 +1,8 @@
 """
 The routes a browser opens a socket on, and what each does with it.
 
-A route knows the channel it watches and nothing about what travels on it.
-The controller knows the channels and nothing about the paths.
+A route knows the channels it watches and nothing about what travels on
+them. The controller knows the channels and nothing about the paths.
 """
 
 from websocket_server.adapters.route_adapters import RouteAdapters
@@ -26,6 +26,7 @@ MISSING_TABLE_ID = "the path names no table"
 # RFC 6455 close code for a connection the server will not carry.
 POLICY_VIOLATION = 1008
 NOT_OPENED_FOR_A_CHANNEL = "the socket was opened for no channel"
+LOBBY_CHANNELS = (LOBBY_CHANNEL,)
 # The server sends pings itself, so a browser that never writes stays open.
 SEND_PINGS_AUTOMATICALLY = True
 
@@ -67,23 +68,23 @@ class SocketRoutes:
     def _upgrade_lobby(
         self, response: SocketifyResponse, request: SocketifyRequest, socket_context: object
     ) -> None:
-        SocketRoutes._upgrade_to_channel(response, request, socket_context, LOBBY_CHANNEL)
+        SocketRoutes._upgrade_to_channels(response, request, socket_context, LOBBY_CHANNELS)
 
     def _upgrade_table(
         self, response: SocketifyResponse, request: SocketifyRequest, socket_context: object
     ) -> None:
-        channel = RouteAdapters.table_request_to_channel(request)
-        if channel is None:
+        channels = RouteAdapters.table_request_to_channels(request)
+        if channels is None:
             response.write_status(HTTP_BAD_REQUEST).end(MISSING_TABLE_ID)
             return
-        SocketRoutes._upgrade_to_channel(response, request, socket_context, channel)
+        SocketRoutes._upgrade_to_channels(response, request, socket_context, channels)
 
     @staticmethod
-    def _upgrade_to_channel(
+    def _upgrade_to_channels(
         response: SocketifyResponse,
         request: SocketifyRequest,
         socket_context: object,
-        channel: str,
+        channels: tuple[str, ...],
     ) -> None:
         headers = RouteAdapters.request_to_upgrade_headers(request)
         response.upgrade(
@@ -91,7 +92,7 @@ class SocketRoutes:
             headers.protocol,
             headers.extensions,
             socket_context,
-            SocketConnection(channel=channel),
+            SocketConnection(channels=channels),
         )
 
     async def _open(self, websocket: SocketifyWebSocket) -> None:
@@ -101,10 +102,12 @@ class SocketRoutes:
             return
         client = SocketifyClient(websocket)
         connection.client = client
-        await self._controller.attach(connection.channel, client)
+        for channel in connection.channels:
+            await self._controller.attach(channel, client)
 
     async def _close(self, websocket: SocketifyWebSocket, code: int, message: bytes | None) -> None:
         connection = RouteAdapters.websocket_to_connection(websocket)
         if connection is None or connection.client is None:
             return
-        await self._controller.detach(connection.channel, connection.client)
+        for channel in connection.channels:
+            await self._controller.detach(channel, connection.client)

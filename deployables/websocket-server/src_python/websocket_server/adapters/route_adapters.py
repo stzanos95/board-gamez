@@ -24,14 +24,14 @@ class RouteAdapters:
     """
 
     @staticmethod
-    def table_request_to_channel(request: SocketifyRequest) -> str | None:
+    def table_request_to_channels(request: SocketifyRequest) -> tuple[str, ...] | None:
         """
-        The channel of the table the path names, or None when it names none.
+        The channels of the table the path names, or None when it names none.
         """
         table_id = request.get_parameter(TABLE_ID_PARAMETER)
         if not table_id:
             return None
-        return ChannelNames.get_table_channel(table_id)
+        return ChannelNames.get_table_channels(table_id)
 
     @staticmethod
     def request_to_upgrade_headers(request: SocketifyRequest) -> UpgradeHeaders:

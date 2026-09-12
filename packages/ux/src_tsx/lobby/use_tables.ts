@@ -3,6 +3,8 @@ import { useCallback, useMemo } from "react";
 
 import { usePlayer } from "../identity/player_context";
 import { useFreshness, useTableGateway } from "../runtime/app_services";
+import { LOBBY_TARGET } from "../transport/socket_client";
+import { useSocketStatus } from "../transport/use_socket_status";
 import { tableQueryKeys } from "./table_queries";
 import { toTableSummaryView, type TableSummaryView } from "./table_views";
 
@@ -22,20 +24,22 @@ export type TablesView = {
 /**
  * Every table in the lobby, in the shape the list draws.
  *
- * Polled while the tab is in front. A hidden tab issues nothing.
+ * Changes arrive over the lobby's socket. Polled only while that socket is
+ * not open, and only while the tab is in front. A hidden tab issues nothing.
  */
 export function useTables(): TablesView {
   const gateway = useTableGateway();
   const freshness = useFreshness();
   const { player } = usePlayer();
   const queryClient = useQueryClient();
+  const isLive = useSocketStatus(LOBBY_TARGET);
 
   const fetchTables = useCallback(() => gateway.list(), [gateway]);
 
   const query = useQuery({
     queryKey: tableQueryKeys.list(),
     queryFn: fetchTables,
-    refetchInterval: freshness.lobbyIntervalMs,
+    refetchInterval: isLive ? false : freshness.lobbyIntervalMs,
   });
 
   const tables = query.data;

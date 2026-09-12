@@ -1,11 +1,12 @@
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
-import { useCallback, useEffect, type ReactElement } from "react";
+import { useCallback, useEffect, useMemo, type ReactElement } from "react";
 
 import { useDeleteTable } from "../../lobby/use_delete_table";
 import { useLeaveTable, useStandUp } from "../../lobby/use_table_actions";
 import { useTable } from "../../lobby/use_table";
+import { useTableChanges, type TableChangeHandlers } from "../../lobby/use_table_changes";
 import { LoadingPanel, PanelMessage } from "../common/PanelMessage";
 import { TableStatusChip } from "../common/TableStatusChip";
 import { GameScreen } from "./GameScreen";
@@ -22,13 +23,18 @@ export type TableScreenProps = {
  * Reached by joining, and left by leaving. Standing up happens here without
  * leaving; sitting down happens on the game's own screen, where the game says
  * what each seat is. A player who is not at this table is sent back to the
- * list, so this screen only ever shows a table its viewer is at.
+ * list, so this screen only ever shows a table its viewer is at, and so is a
+ * viewer whose table is closed under them.
+ *
+ * The table's socket is opened here, once, for every query on the screen.
  *
  * The game's own screen sits above the seats, and is what the table becomes
  * once it is full.
  */
 export function TableScreen(props: TableScreenProps): ReactElement {
   const { tableId, onLeft } = props;
+  const changeHandlers = useMemo<TableChangeHandlers>(() => ({ onClosed: onLeft }), [onLeft]);
+  useTableChanges(tableId, changeHandlers);
   const { summary, seats, isLoading, isMissing, error } = useTable(tableId);
   const { run: standUp, isPending: isStandingUp, problem: standProblem } = useStandUp();
   const { run: leaveTable, isPending: isLeaving, problem: leaveProblem } = useLeaveTable();

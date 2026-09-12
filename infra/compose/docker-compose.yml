@@ -28,10 +28,12 @@ services:
     # without the other leaves nothing listening here.
     ports:
       - "8081:8081"
-    # Calls to the gateway are forwarded by nginx, so the browser makes no
-    # cross-origin request and the gateway needs no origin allowed.
+    # Calls to the gateway and sockets to the socket server are forwarded by
+    # nginx, so the browser makes no cross-origin request and neither upstream
+    # needs an origin allowed. nginx resolves both names when it starts.
     depends_on:
       - fastapi-gateway
+      - websocket-server
     command: ["serve"]
 
   grpc-server:

@@ -14,19 +14,25 @@ game's.
 
 import uuid
 
+from core.queue.base_queue_publisher import BaseQueuePublisher
+from core.queue.message_utils import QueueMessageUtils
 from game.controller.rules_registry import RulesRegistry
 from game.controller.session_controller import SessionController
+from google.protobuf.message import Message
 from idl.game.model.game_type_pb2 import GameType
 from idl.game.model.withdrawal_result_pb2 import WithdrawalOutcome
 from idl.lobby.model.seat_pb2 import SeatChoice, SeatChoiceCollection, SeatStatus
 from idl.lobby.model.seat_result_pb2 import SeatOutcome, SeatResult
 from idl.lobby.model.table_pb2 import Table, TableStatus
 
+from lobby.adapters.event_adapters import EventAdapters
 from lobby.adapters.seat_adapters import SeatAdapters
+from lobby.controller.channel_names import LOBBY_CHANNEL, LobbyChannelNames
 from lobby.controller.seating_registry import SeatingRegistry
 from lobby.controller.table_controller import TableController
 
 NO_CHOICES: tuple[SeatChoice, ...] = ()
+NO_SEAT_NUMBER = 0
 # The statuses under which a table takes players.
 ACCEPTING_STATUSES = (TableStatus.TABLE_STATUS_WAITING, TableStatus.TABLE_STATUS_IN_PROGRESS)
 
@@ -38,6 +44,11 @@ class SeatController:
     Takes and answers with the domain's own types. Nothing from `idl.lobby.dto`
     reaches this far.
 
+    Every write that is stored is published as one event, on the table's
+    channel and on the lobby's, after the write and never for a refused one.
+    A withdrawal from the game is published by the session controller before
+    the seat event follows it.
+
     Built once at the entry point and passed to whatever serves it.
     """
 
@@ -47,11 +58,13 @@ class SeatController:
         seating: SeatingRegistry,
         sessions: SessionController,
         rules: RulesRegistry,
+        queue_publisher: BaseQueuePublisher,
     ) -> None:
         self._tables = tables
         self._seating = seating
         self._sessions = sessions
         self._rules = rules
+        self._queue_publisher = queue_publisher
 
     async def create_table(
         self, game_type: GameType, seat_count: int, player_id: str
@@ -73,6 +86,7 @@ class SeatController:
         )
         if stored is None:
             return SeatResult(outcome=SeatOutcome.SEAT_OUTCOME_VERSION_MOVED)
+        await self._publish(stored, EventAdapters.table_to_table_created(stored, player_id))
         return SeatResult(outcome=SeatOutcome.SEAT_OUTCOME_CREATED, table=stored)
 
     async def join_table(self, table_id: str, player_id: str) -> SeatResult:
@@ -94,6 +108,7 @@ class SeatController:
         )
         if stored is None:
             return SeatResult(outcome=SeatOutcome.SEAT_OUTCOME_VERSION_MOVED, table=table)
+        await self._publish(stored, EventAdapters.table_to_player_joined(stored, player_id))
         return SeatResult(outcome=SeatOutcome.SEAT_OUTCOME_JOINED, table=stored)
 
     async def list_seat_choices(self, table_id: str, player_id: str) -> SeatChoiceCollection:
@@ -134,6 +149,7 @@ class SeatController:
         if stored is None:
             # Another writer moved the table between the read and the write.
             return SeatResult(outcome=SeatOutcome.SEAT_OUTCOME_VERSION_MOVED, table=table)
+        await self._publish(stored, EventAdapters.table_to_seat_taken(stored, player_id, choice))
         return SeatResult(outcome=SeatOutcome.SEAT_OUTCOME_TAKEN, table=stored)
 
     async def vacate_seat(self, table_id: str, player_id: str) -> SeatResult:
@@ -151,11 +167,15 @@ class SeatController:
             return SeatResult(outcome=SeatOutcome.SEAT_OUTCOME_NOT_SEATED, table=table)
         if not await self._is_withdrawn(table_id, player_id):
             return SeatResult(outcome=SeatOutcome.SEAT_OUTCOME_VERSION_MOVED, table=table)
+        seat_number = SeatController._get_seat_number(table, player_id)
         stored = await self._tables.upsert_table(
             SeatAdapters.table_to_table_with_seat_vacated(table, player_id)
         )
         if stored is None:
             return SeatResult(outcome=SeatOutcome.SEAT_OUTCOME_VERSION_MOVED, table=table)
+        await self._publish(
+            stored, EventAdapters.table_to_seat_vacated(stored, player_id, seat_number)
+        )
         return SeatResult(outcome=SeatOutcome.SEAT_OUTCOME_VACATED, table=stored)
 
     async def leave_table(self, table_id: str, player_id: str) -> SeatResult:
@@ -175,12 +195,24 @@ class SeatController:
             table_id, player_id
         ):
             return SeatResult(outcome=SeatOutcome.SEAT_OUTCOME_VERSION_MOVED, table=table)
+        seat_number = SeatController._get_seat_number(table, player_id)
         stored = await self._tables.upsert_table(
             SeatAdapters.table_to_table_with_player_left(table, player_id)
         )
         if stored is None:
             return SeatResult(outcome=SeatOutcome.SEAT_OUTCOME_VERSION_MOVED, table=table)
+        await self._publish(
+            stored, EventAdapters.table_to_player_left(stored, player_id, seat_number)
+        )
         return SeatResult(outcome=SeatOutcome.SEAT_OUTCOME_LEFT, table=stored)
+
+    async def _publish(self, table: Table, event: Message) -> None:
+        """
+        Send this event on the table's channel and on the lobby's.
+        """
+        envelope = QueueMessageUtils.pack(event)
+        await self._queue_publisher.publish(LobbyChannelNames.get_table_channel(table.id), envelope)
+        await self._queue_publisher.publish(LOBBY_CHANNEL, envelope)
 
     async def _is_withdrawn(self, table_id: str, player_id: str) -> bool:
         """
@@ -201,6 +233,16 @@ class SeatController:
         if SeatController._is_seated(table, player_id):
             return NO_CHOICES
         return await self._seating.get_seating(table.game_type).list_seat_choices(table, player_id)
+
+    @staticmethod
+    def _get_seat_number(table: Table, player_id: str) -> int:
+        """
+        The seat this player holds, or 0 when they hold none.
+        """
+        for seat in table.seats:
+            if seat.status == SeatStatus.SEAT_STATUS_OCCUPIED and seat.player_id == player_id:
+                return seat.number
+        return NO_SEAT_NUMBER
 
     @staticmethod
     def _is_seated(table: Table, player_id: str) -> bool:

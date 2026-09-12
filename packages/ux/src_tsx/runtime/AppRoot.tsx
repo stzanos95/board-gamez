@@ -10,6 +10,7 @@ import { TableGateway } from "../lobby/table_gateway";
 import { AppThemeProvider } from "../theme/AppThemeProvider";
 import { GatewayClient } from "../transport/gateway_client";
 import { buildQueryClient } from "../transport/query_client";
+import { SocketClient } from "../transport/socket_client";
 import { AppServicesProvider, type AppServices } from "./app_services";
 import { buildPackedTypeRegistry } from "./packed_types";
 
@@ -20,8 +21,8 @@ export type AppRootProps = {
 /**
  * Everything the application needs, built once from the configuration.
  *
- * This is the only place a client, a cache, a theme or a board skin is
- * constructed. Nothing below it reads a setting.
+ * This is the only place a client, a socket, a cache, a theme or a board skin
+ * is constructed. Nothing below it reads a setting.
  */
 export function AppRoot(props: AppRootProps): ReactElement {
   const { config } = props;
@@ -31,9 +32,10 @@ export function AppRoot(props: AppRootProps): ReactElement {
     return {
       tableGateway: new TableGateway(client),
       chessGateway: new ChessGateway(client),
+      socketClient: new SocketClient(config.socket),
       freshness: config.freshness,
     };
-  }, [config.gateway, config.freshness]);
+  }, [config.gateway, config.socket, config.freshness]);
 
   const queryClient = useMemo(() => buildQueryClient(config.freshness), [config.freshness]);
 

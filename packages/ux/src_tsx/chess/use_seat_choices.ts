@@ -1,9 +1,11 @@
 import type { ChessSeatChoice } from "@board-gamez/idl/chess/model/table_pb";
 import { useQuery } from "@tanstack/react-query";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 
 import { usePlayer } from "../identity/player_context";
 import { useChessGateway, useFreshness } from "../runtime/app_services";
+import { tableTarget } from "../transport/socket_client";
+import { useSocketStatus } from "../transport/use_socket_status";
 import { chessQueryKeys } from "./chess_queries";
 
 const NO_CHOICES: readonly ChessSeatChoice[] = [];
@@ -17,13 +19,16 @@ export type SeatChoicesView = {
  * The seats this viewer may take at a table, as the game offers them.
  *
  * Empty while the answer is loading, and empty once the viewer is seated or
- * the table is full. Polled on the table interval, because another player
- * sitting down takes a choice away.
+ * the table is full. Changes arrive over the table's socket. Polled only
+ * while that socket is not open, on the table interval, because another
+ * player sitting down takes a choice away.
  */
 export function useSeatChoices(tableId: string): SeatChoicesView {
   const gateway = useChessGateway();
   const freshness = useFreshness();
   const { player } = usePlayer();
+  const target = useMemo(() => tableTarget(tableId), [tableId]);
+  const isLive = useSocketStatus(target);
 
   const fetchChoices = useCallback(
     () => gateway.listSeatChoices(tableId, player.id),
@@ -33,7 +38,7 @@ export function useSeatChoices(tableId: string): SeatChoicesView {
   const query = useQuery<readonly ChessSeatChoice[]>({
     queryKey: chessQueryKeys.seatChoices(tableId, player.id),
     queryFn: fetchChoices,
-    refetchInterval: freshness.tableIntervalMs,
+    refetchInterval: isLive ? false : freshness.tableIntervalMs,
     enabled: tableId.length > 0,
   });
 

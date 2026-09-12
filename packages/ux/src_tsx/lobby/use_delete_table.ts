@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 
 import { useTableGateway } from "../runtime/app_services";
+import { invalidateAfterWrite } from "../transport/query_invalidation";
 import type { TableGateway } from "./table_gateway";
 import { tableQueryKeys } from "./table_queries";
 
@@ -35,7 +36,7 @@ export function useDeleteTable(): DeleteTableAction {
         return;
       }
       queryClient.removeQueries({ queryKey: tableQueryKeys.detail(tableId) });
-      void queryClient.invalidateQueries({ queryKey: tableQueryKeys.list() });
+      invalidateAfterWrite(queryClient, tableQueryKeys.list());
     },
     [queryClient],
   );

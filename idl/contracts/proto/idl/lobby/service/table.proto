@@ -1,4 +1,4 @@
-// Reading and writing tables.
+// Reading and retiring tables.
 
 syntax = "proto3";
 
@@ -9,19 +9,12 @@ import "idl/lobby/dto/table.proto";
 
 option go_package = "boardgamez/contracts/gen/go/idl/lobby/service;lobbyservice";
 
-// Storage for tables.
+// Tables as stored, read and retired.
 //
-// Four methods and no domain verbs. Joining a seat and leaving one are decided
-// above this layer and arrive here as a write of the whole table, guarded by the
-// version it was read at.
+// No method here writes a table. Every write is a SeatService verb, which the
+// lobby decides and records as an event; a table read here is the result of
+// those.
 service TableService {
-  rpc UpsertTable(idl.lobby.dto.UpsertTableRequest) returns (idl.lobby.dto.UpsertTableResponse) {
-    option (google.api.http) = {
-      post: "/internal/platform/lobby/upsert/table"
-      body: "*"
-    };
-  }
-
   rpc ReadTable(idl.lobby.dto.ReadTableRequest) returns (idl.lobby.dto.ReadTableResponse) {
     option (google.api.http) = {
       post: "/internal/platform/lobby/read/table"

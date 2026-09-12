@@ -35,19 +35,15 @@ backend. **Say so, and ask before filling it here.** If it is filled here as a
 stopgap, it goes in exactly one file, named for what it decides, so that moving
 it later is one file and one call site.
 
-Today there is one such stopgap: `packages/ux/src_tsx/lobby/table_intents.ts`.
-`TableService` is a store with four methods and no domain verbs, so opening a
-table and joining one are a read, a change, and a write guarded by the version
-that was read. That file is the only place in the frontend that produces a new
-`Table`.
-
-Taking a seat, giving one up and leaving are not stopgaps. What a seat is — a
-side, a token — is the game's to say, so a seat is taken on the game's own
-screen through the game's own service: `ListSeatChoice` answers what the viewer
-may take, and `TakeSeat` sends one of those choices back unchanged. Giving a
-seat up has a consequence in the game being played — a resignation, a removal —
-so it goes through the lobby's `SeatService` (`VacateSeat`, `LeaveTable`), and
-the hook that calls it re-reads the game's views as well as the table.
+There is none today. The browser never writes a `Table`: opening one and
+joining one are the lobby's `CreateTable` and `JoinTable`, and `TableService`
+is only read through. What a seat is — a side, a token — is the game's to
+say, so a seat is taken on the game's own screen through the game's own
+service: `ListSeatChoice` answers what the viewer may take, and `TakeSeat`
+sends one of those choices back unchanged. Giving a seat up has a consequence
+in the game being played — a resignation, a removal — so it goes through the
+lobby's `SeatService` (`VacateSeat`, `LeaveTable`), and the hook that calls it
+re-reads the game's views as well as the table.
 
 ## Where things live
 
@@ -188,12 +184,37 @@ Stop and ask before writing any of these in a browser:
 - Any derivation a second client would have to copy to agree.
 - Anything read on a timer that a socket could push instead.
 
-Real-time game state is already decided: it arrives over the WebSocket server,
-not by polling. `idl/core/dto/websocket.proto` is the envelope it travels in.
-Lobby operations go over the gateway. Until the socket exists, a game session
-is polled on `freshness.gameIntervalMs`, and only while someone else can change
-it: `refetchInterval` is a function of the data that answers `false` during the
-viewer's own turn and once the game has a result.
+A change to a table or a game is announced over the socket server, and the
+browser reads the changed thing through the gateway; nothing is pushed but an
+id and a version. `idl/core/dto/websocket.proto` is the envelope it travels
+in. Lobby operations go over the gateway.
+
+### The socket
+
+`transport/socket_client.ts` is the only module that knows a socket URL
+exists. A screen subscribes to a target — one table, or the lobby — through
+one hook that owns the subscription for that screen (`use_table_changes.ts`,
+`use_lobby_changes.ts`), and that hook is called once per screen: one socket
+per table, however many queries draw from it.
+
+- **A change is never written into the cache.** A frame carries an id and a
+  version and nothing else. The hook compares the version with the cached
+  one and, when the cache is older, invalidates the queries that draw from
+  it. Never `setQueryData` from a frame.
+- **A change the cache is already at is skipped.** The viewer's own write
+  adopted the answer before the frame arrived; re-reading it would be a
+  request for a value in hand.
+- **A hidden tab is marked, not refetched.** `invalidateOnChange` uses
+  `refetchType: "none"` while the document is hidden, and the query reads when
+  the tab comes back into view.
+- **A reconnect re-reads everything the screen watches.** Frames announced
+  while the socket was down were not delivered.
+- **Polling is the fallback, not the mechanism.** Every `refetchInterval` is
+  `isLive ? false : interval`, where `isLive` is `useSocketStatus(target)`.
+  The socket server going away turns polling back on; it coming back turns it
+  off. A game session, when it does poll, polls only while someone else can
+  change it: the function answers `false` during the viewer's own turn and
+  once the game has a result.
 
 ## Configuration is a file
 

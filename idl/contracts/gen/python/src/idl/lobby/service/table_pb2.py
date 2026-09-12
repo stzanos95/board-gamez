@@ -26,7 +26,7 @@ from google.api import annotations_pb2 as google_dot_api_dot_annotations__pb2
 from idl.lobby.dto import table_pb2 as idl_dot_lobby_dot_dto_dot_table__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1didl/lobby/service/table.proto\x12\x11idl.lobby.service\x1a\x1cgoogle/api/annotations.proto\x1a\x19idl/lobby/dto/table.proto2\xa0\x04\n\x0cTableService\x12\x86\x01\n\x0bUpsertTable\x12!.idl.lobby.dto.UpsertTableRequest\x1a\".idl.lobby.dto.UpsertTableResponse\"0\x82\xd3\xe4\x93\x02*\"%/internal/platform/lobby/upsert/table:\x01*\x12~\n\tReadTable\x12\x1f.idl.lobby.dto.ReadTableRequest\x1a .idl.lobby.dto.ReadTableResponse\".\x82\xd3\xe4\x93\x02(\"#/internal/platform/lobby/read/table:\x01*\x12\x86\x01\n\x0b\x44\x65leteTable\x12!.idl.lobby.dto.DeleteTableRequest\x1a\".idl.lobby.dto.DeleteTableResponse\"0\x82\xd3\xe4\x93\x02*\"%/internal/platform/lobby/delete/table:\x01*\x12~\n\tListTable\x12\x1f.idl.lobby.dto.ListTableRequest\x1a .idl.lobby.dto.ListTableResponse\".\x82\xd3\xe4\x93\x02(\"#/internal/platform/lobby/list/table:\x01*B<Z:boardgamez/contracts/gen/go/idl/lobby/service;lobbyserviceb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1didl/lobby/service/table.proto\x12\x11idl.lobby.service\x1a\x1cgoogle/api/annotations.proto\x1a\x19idl/lobby/dto/table.proto2\x97\x03\n\x0cTableService\x12~\n\tReadTable\x12\x1f.idl.lobby.dto.ReadTableRequest\x1a .idl.lobby.dto.ReadTableResponse\".\x82\xd3\xe4\x93\x02(\"#/internal/platform/lobby/read/table:\x01*\x12\x86\x01\n\x0b\x44\x65leteTable\x12!.idl.lobby.dto.DeleteTableRequest\x1a\".idl.lobby.dto.DeleteTableResponse\"0\x82\xd3\xe4\x93\x02*\"%/internal/platform/lobby/delete/table:\x01*\x12~\n\tListTable\x12\x1f.idl.lobby.dto.ListTableRequest\x1a .idl.lobby.dto.ListTableResponse\".\x82\xd3\xe4\x93\x02(\"#/internal/platform/lobby/list/table:\x01*B<Z:boardgamez/contracts/gen/go/idl/lobby/service;lobbyserviceb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -34,8 +34,6 @@ _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'idl.lobby.service.table_pb2
 if not _descriptor._USE_C_DESCRIPTORS:
   _globals['DESCRIPTOR']._loaded_options = None
   _globals['DESCRIPTOR']._serialized_options = b'Z:boardgamez/contracts/gen/go/idl/lobby/service;lobbyservice'
-  _globals['_TABLESERVICE'].methods_by_name['UpsertTable']._loaded_options = None
-  _globals['_TABLESERVICE'].methods_by_name['UpsertTable']._serialized_options = b'\202\323\344\223\002*\"%/internal/platform/lobby/upsert/table:\001*'
   _globals['_TABLESERVICE'].methods_by_name['ReadTable']._loaded_options = None
   _globals['_TABLESERVICE'].methods_by_name['ReadTable']._serialized_options = b'\202\323\344\223\002(\"#/internal/platform/lobby/read/table:\001*'
   _globals['_TABLESERVICE'].methods_by_name['DeleteTable']._loaded_options = None
@@ -43,5 +41,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_TABLESERVICE'].methods_by_name['ListTable']._loaded_options = None
   _globals['_TABLESERVICE'].methods_by_name['ListTable']._serialized_options = b'\202\323\344\223\002(\"#/internal/platform/lobby/list/table:\001*'
   _globals['_TABLESERVICE']._serialized_start=110
-  _globals['_TABLESERVICE']._serialized_end=654
+  _globals['_TABLESERVICE']._serialized_end=517
 # @@protoc_insertion_point(module_scope)

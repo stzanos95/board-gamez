@@ -1,6 +1,7 @@
 import unittest
 
 from idl.game.model.command_result_pb2 import CommandOutcome, CommandResult
+from idl.game.model.event_pb2 import CommandApplied, ParticipantWithdrawn
 from idl.game.model.game_result_pb2 import ParticipantOutcome
 from idl.game.model.game_type_pb2 import GameType
 from idl.game.model.participant_pb2 import Participant
@@ -9,6 +10,7 @@ from idl.game.model.withdrawal_result_pb2 import WithdrawalOutcome
 
 from game.controller.rules_registry import RulesRegistry
 from game.controller.session_controller import SessionController
+from tests_python.in_memory_queue_publisher import InMemoryQueuePublisher
 from tests_python.in_memory_session_repository import RefusingOnceSessionRepository
 from tests_python.scripted_rules import MOVE, WIN, ScriptedRules
 
@@ -23,6 +25,7 @@ NOBODY = 0
 FIRST_STORED_VERSION = 1
 SECOND_STORED_VERSION = 2
 STALE_VERSION = 9
+SESSION_CHANNEL = "session:t-1"
 COMMAND_ID = "c-1"
 OTHER_COMMAND_ID = "c-2"
 NO_COMMAND_ID = ""
@@ -42,9 +45,11 @@ class SessionControllerTest(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
         self.repository = RefusingOnceSessionRepository()
         self.rules = ScriptedRules(minimum=2, maximum=2)
+        self.queue_publisher = InMemoryQueuePublisher()
         self.controller = SessionController(
             repository=self.repository,
             rules=RulesRegistry({GameType.GAME_TYPE_CHESS: self.rules}),
+            queue_publisher=self.queue_publisher,
         )
         self.commands_sent = 0
 
@@ -336,3 +341,40 @@ class SessionControllerTest(unittest.IsolatedAsyncioTestCase):
 
         self.assertIs(result.outcome, WithdrawalOutcome.WITHDRAWAL_OUTCOME_WITHDRAWN)
         self.assertEqual(result.session.version, SECOND_STORED_VERSION)
+
+    # --- publishing ----------------------------------------------------------
+
+    async def test_every_stored_write_is_published_on_the_game_channel(self) -> None:
+        started = await self.start()
+        first = await self.applied(FIRST_PLAYER, MOVE, started.version)
+        await self.controller.withdraw_player(TABLE_ID, SECOND_PLAYER)
+
+        self.assertEqual(
+            self.queue_publisher.get_types_on(SESSION_CHANNEL),
+            [
+                "idl.game.model.SessionStarted",
+                "idl.game.model.CommandApplied",
+                "idl.game.model.ParticipantWithdrawn",
+            ],
+        )
+        applied = CommandApplied()
+        self.assertTrue(self.queue_publisher.published[1].envelope.payload.Unpack(applied))
+        self.assertEqual(applied.session_id, TABLE_ID)
+        self.assertEqual(applied.participant, FIRST_PARTICIPANT)
+        self.assertEqual(applied.version, first.version)
+        self.assertFalse(applied.is_over)
+        self.assertEqual(ScriptedRules.view_text(applied.action), MOVE)
+        withdrawn = ParticipantWithdrawn()
+        self.assertTrue(self.queue_publisher.published[2].envelope.payload.Unpack(withdrawn))
+        self.assertTrue(withdrawn.is_over)
+        self.assertEqual(withdrawn.version, first.version + 1)
+
+    async def test_a_refused_write_publishes_nothing(self) -> None:
+        await self.start()
+        self.queue_publisher.published.clear()
+        self.repository.refuse_next_write = True
+        await self.apply(FIRST_PLAYER, MOVE, FIRST_STORED_VERSION)
+        await self.apply(SECOND_PLAYER, MOVE, FIRST_STORED_VERSION)
+        await self.apply(FIRST_PLAYER, MOVE, STALE_VERSION)
+
+        self.assertEqual(self.queue_publisher.published, [])

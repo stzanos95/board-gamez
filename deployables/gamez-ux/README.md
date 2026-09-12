@@ -39,14 +39,25 @@ Brought up from `config/gamez_ux.json`, fetched before anything renders.
 ```json
 {
   "gateway": { "baseUrl": "/api", "requestTimeoutMs": 8000 },
+  "socket": { "baseUrl": "/ws", "reconnectDelayMs": 1000, "maxReconnectDelayMs": 30000 },
   "theme": "midnight",
-  "freshness": { "staleTimeMs": 2000, "lobbyIntervalMs": 10000, "tableIntervalMs": 3000 }
+  "freshness": {
+    "staleTimeMs": 2000,
+    "lobbyIntervalMs": 10000,
+    "tableIntervalMs": 3000,
+    "gameIntervalMs": 2000
+  },
+  "chess": { "defaultSkin": "classic" }
 }
 ```
 
 - `theme` names a theme in `packages/ux/src_tsx/theme/theme_registry.ts`.
   `midnight` and `daylight` ship. Changing this line changes the whole interface.
-- The two intervals are polling, and neither runs while the tab is hidden.
+- `socket` is where changes are announced from. A socket that drops is
+  reopened after `reconnectDelayMs`, doubling on each failure up to
+  `maxReconnectDelayMs`.
+- The intervals are polling, which runs only while the socket that would
+  announce a change is not open, and never while the tab is hidden.
 - A field that is missing, of the wrong type, or naming a theme that does not
   exist stops bringup with a message. Nothing falls back to a default.
 
@@ -54,12 +65,13 @@ The document is served beside the bundle, so a container runs against another
 gateway by mounting a different file over
 `/usr/share/nginx/html/gamez_ux.json` — no rebuild.
 
-## Calls to the gateway
+## Calls to the gateway, and the socket
 
 The browser calls `/api/…` on its own origin, and that prefix is forwarded to the
-gateway: by the dev server here, and by nginx in the container. The application
-therefore makes no cross-origin request, and the gateway needs no origin
-allowed.
+gateway; it opens sockets under `/ws/…`, forwarded to the socket server. Both
+are forwarded by the dev server here and by nginx in the container. The
+application therefore makes no cross-origin request, and neither upstream
+needs an origin allowed.
 
 The path after the prefix is the path the `.proto` declares. Nothing writes it
 down.

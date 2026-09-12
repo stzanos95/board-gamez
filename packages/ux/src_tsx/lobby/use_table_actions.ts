@@ -3,14 +3,12 @@ import type { Table } from "@board-gamez/idl/lobby/model/table_pb";
 import { useMutation, useQueryClient, type QueryClient } from "@tanstack/react-query";
 import { useCallback, useMemo } from "react";
 
-import { chessQueryKeys } from "../chess/chess_queries";
 import { usePlayer } from "../identity/player_context";
 import { useTableGateway } from "../runtime/app_services";
+import { CHANGE_KEYS_BY_GAME_TYPE } from "../runtime/game_change_keys_registry";
+import { invalidateAfterWrite } from "../transport/query_invalidation";
 import { SEAT_OUTCOME_PROBLEMS } from "./seat_labels";
-import { tableWriteProblem } from "./table_write_problem";
-import { writeTableChange, type TableWrite } from "./table_writer";
 import { tableQueryKeys } from "./table_queries";
-import { withPlayerJoined } from "./table_intents";
 
 const GONE_MESSAGE = "That table is no longer there.";
 
@@ -37,21 +35,20 @@ export function useJoinTable(): TableAction<string> {
   const { player } = usePlayer();
 
   const joinTable = useCallback(
-    (tableId: string) =>
-      writeTableChange(gateway, tableId, (table: Table) => withPlayerJoined(table, player.id)),
+    (tableId: string) => gateway.joinTable(tableId, player.id),
     [gateway, player.id],
   );
 
   const mutation = useMutation({
     mutationFn: joinTable,
-    onSuccess: (write: TableWrite) => adoptTableWrite(queryClient, write),
+    onSuccess: (result: SeatResult | null) => adoptSeatResult(queryClient, result, player.id),
   });
 
-  return useTableAction({
+  return useSeatAction({
     run: mutation.mutate,
     isPending: mutation.isPending,
     input: mutation.variables,
-    write: mutation.data,
+    result: mutation.data,
     error: mutation.error,
     dismissProblem: mutation.reset,
   });
@@ -76,8 +73,7 @@ export function useStandUp(): TableAction<string> {
 
   const mutation = useMutation({
     mutationFn: standUp,
-    onSuccess: (result: SeatResult | null, tableId: string) =>
-      adoptSeatResult(queryClient, result, tableId),
+    onSuccess: (result: SeatResult | null) => adoptSeatResult(queryClient, result, player.id),
   });
 
   return useSeatAction({
@@ -106,8 +102,7 @@ export function useLeaveTable(): TableAction<string> {
 
   const mutation = useMutation({
     mutationFn: leaveTable,
-    onSuccess: (result: SeatResult | null, tableId: string) =>
-      adoptSeatResult(queryClient, result, tableId),
+    onSuccess: (result: SeatResult | null) => adoptSeatResult(queryClient, result, player.id),
   });
 
   return useSeatAction({
@@ -121,50 +116,39 @@ export function useLeaveTable(): TableAction<string> {
 }
 
 /**
- * Put the table the store answered with straight into the cache.
+ * Put the table a seat change answered with straight into the cache, and
+ * re-read what the change may have moved: the lobby's list, and everything
+ * the game at that table keeps, which a withdrawal changes.
  *
- * The write already carries the stored table, so re-reading it would be a round
- * trip for a value in hand. Both the table and its row in the list are corrected
- * from it: which screen a player belongs on is read off that list, and a stale
- * row would send them back to the table they just left. The refetch that follows
+ * The answer already carries the stored table, so re-reading it would be a
+ * round trip for a value in hand. Both the table and its row in the list are
+ * corrected from it: which screen a player belongs on is read off that list,
+ * and a stale row would send them to the wrong one. The refetch that follows
  * is for everyone else's changes.
  */
-function adoptTableWrite(queryClient: QueryClient, write: TableWrite): void {
-  if (write.kind !== "written") {
+function adoptSeatResult(
+  queryClient: QueryClient,
+  result: SeatResult | null,
+  playerId: string,
+): void {
+  if (result?.table === undefined) {
+    invalidateAfterWrite(queryClient, tableQueryKeys.list());
     return;
   }
-  const stored = write.table;
+  const stored = result.table;
   queryClient.setQueryData(tableQueryKeys.detail(stored.id), stored);
   queryClient.setQueryData(
     tableQueryKeys.list(),
     (cached: readonly Table[] | undefined) =>
       cached?.map((table: Table) => (table.id === stored.id ? stored : table)),
   );
-  void queryClient.invalidateQueries({ queryKey: tableQueryKeys.list() });
-}
-
-/**
- * Put the table a seat change answered with straight into the cache, and
- * re-read what the change may have moved: the lobby's list, and every view
- * of the game at that table, which a withdrawal changes.
- */
-function adoptSeatResult(
-  queryClient: QueryClient,
-  result: SeatResult | null,
-  tableId: string,
-): void {
-  if (result?.table !== undefined) {
-    const stored = result.table;
-    queryClient.setQueryData(tableQueryKeys.detail(stored.id), stored);
-    queryClient.setQueryData(
-      tableQueryKeys.list(),
-      (cached: readonly Table[] | undefined) =>
-        cached?.map((table: Table) => (table.id === stored.id ? stored : table)),
-    );
+  invalidateAfterWrite(queryClient, tableQueryKeys.list());
+  const game = CHANGE_KEYS_BY_GAME_TYPE[stored.gameType];
+  game.tableKeys(stored.id, playerId).forEach((queryKey) => invalidateAfterWrite(queryClient, queryKey));
+  const sessionKey = game.sessionKey(stored.id);
+  if (sessionKey !== null) {
+    invalidateAfterWrite(queryClient, sessionKey);
   }
-  void queryClient.invalidateQueries({ queryKey: tableQueryKeys.list() });
-  void queryClient.invalidateQueries({ queryKey: chessQueryKeys.table(tableId) });
-  void queryClient.invalidateQueries({ queryKey: chessQueryKeys.session(tableId) });
 }
 
 /**
@@ -191,37 +175,6 @@ function useSeatAction<Input>(mutation: SeatMutation<Input>): TableAction<Input>
     }
     return result === null ? GONE_MESSAGE : SEAT_OUTCOME_PROBLEMS[result.outcome];
   }, [error, result]);
-
-  return {
-    run,
-    isPending,
-    pendingInput: isPending && input !== undefined ? input : null,
-    problem,
-    dismissProblem,
-  };
-}
-
-/**
- * The parts of a mutation a table action is built from.
- */
-type TableMutation<Input> = {
-  readonly run: (input: Input) => void;
-  readonly isPending: boolean;
-  readonly input: Input | undefined;
-  readonly write: TableWrite | undefined;
-  readonly error: Error | null;
-  readonly dismissProblem: () => void;
-};
-
-function useTableAction<Input>(mutation: TableMutation<Input>): TableAction<Input> {
-  const { run, isPending, input, write, error, dismissProblem } = mutation;
-
-  const problem = useMemo(() => {
-    if (error !== null) {
-      return error.message;
-    }
-    return write === undefined ? null : tableWriteProblem(write);
-  }, [error, write]);
 
   return {
     run,

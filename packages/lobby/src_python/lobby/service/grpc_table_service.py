@@ -18,8 +18,6 @@ from idl.lobby.dto.table_pb2 import (
     ListTableResponse,
     ReadTableRequest,
     ReadTableResponse,
-    UpsertTableRequest,
-    UpsertTableResponse,
 )
 from idl.lobby.service.table_pb2_grpc import TableServiceServicer
 
@@ -34,14 +32,6 @@ class GrpcTableService(TableServiceServicer):
 
     def __init__(self, controller: TableController) -> None:
         self._controller = controller
-
-    async def UpsertTable(
-        self,
-        request: UpsertTableRequest,
-        context: grpc.aio.ServicerContext[UpsertTableRequest, UpsertTableResponse],
-    ) -> UpsertTableResponse:
-        table = await self._controller.upsert_table(TableAdapters.upsert_request_to_table(request))
-        return TableAdapters.table_to_upsert_response(table)
 
     async def ReadTable(
         self,

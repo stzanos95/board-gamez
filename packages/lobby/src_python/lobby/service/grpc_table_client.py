@@ -20,8 +20,6 @@ from idl.lobby.dto.table_pb2 import (
     ListTableResponse,
     ReadTableRequest,
     ReadTableResponse,
-    UpsertTableRequest,
-    UpsertTableResponse,
 )
 from idl.lobby.service.table_pb2_grpc import TableServiceAsyncStub, TableServiceStub
 
@@ -57,9 +55,6 @@ class GrpcTableClient:
             await self._channel.close()
             self._channel = None
             self._stub = None
-
-    async def upsert_table(self, request: UpsertTableRequest) -> UpsertTableResponse:
-        return await self._connected_stub().UpsertTable(request)
 
     async def read_table(self, request: ReadTableRequest) -> ReadTableResponse:
         return await self._connected_stub().ReadTable(request)

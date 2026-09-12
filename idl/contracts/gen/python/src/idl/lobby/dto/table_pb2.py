@@ -25,7 +25,7 @@ _sym_db = _symbol_database.Default()
 from idl.lobby.model import table_pb2 as idl_dot_lobby_dot_model_dot_table__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x19idl/lobby/dto/table.proto\x12\ridl.lobby.dto\x1a\x1bidl/lobby/model/table.proto\";\n\x12UpsertTableRequest\x12%\n\x05table\x18\x01 \x01(\x0b\x32\x16.idl.lobby.model.Table\"<\n\x13UpsertTableResponse\x12%\n\x05table\x18\x01 \x01(\x0b\x32\x16.idl.lobby.model.Table\"$\n\x10ReadTableRequest\x12\x10\n\x08table_id\x18\x01 \x01(\t\":\n\x11ReadTableResponse\x12%\n\x05table\x18\x01 \x01(\x0b\x32\x16.idl.lobby.model.Table\"@\n\x12\x44\x65leteTableRequest\x12\x10\n\x08table_id\x18\x01 \x01(\t\x12\x18\n\x10\x65xpected_version\x18\x02 \x01(\x04\"\'\n\x13\x44\x65leteTableResponse\x12\x10\n\x08table_id\x18\x01 \x01(\t\"\x12\n\x10ListTableRequest\"I\n\x11ListTableResponse\x12\x34\n\ncollection\x18\x01 \x01(\x0b\x32 .idl.lobby.model.TableCollectionB4Z2boardgamez/contracts/gen/go/idl/lobby/dto;lobbydtob\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x19idl/lobby/dto/table.proto\x12\ridl.lobby.dto\x1a\x1bidl/lobby/model/table.proto\"$\n\x10ReadTableRequest\x12\x10\n\x08table_id\x18\x01 \x01(\t\":\n\x11ReadTableResponse\x12%\n\x05table\x18\x01 \x01(\x0b\x32\x16.idl.lobby.model.Table\"@\n\x12\x44\x65leteTableRequest\x12\x10\n\x08table_id\x18\x01 \x01(\t\x12\x18\n\x10\x65xpected_version\x18\x02 \x01(\x04\"\'\n\x13\x44\x65leteTableResponse\x12\x10\n\x08table_id\x18\x01 \x01(\t\"\x12\n\x10ListTableRequest\"I\n\x11ListTableResponse\x12\x34\n\ncollection\x18\x01 \x01(\x0b\x32 .idl.lobby.model.TableCollectionB4Z2boardgamez/contracts/gen/go/idl/lobby/dto;lobbydtob\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -33,20 +33,16 @@ _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'idl.lobby.dto.table_pb2', _
 if not _descriptor._USE_C_DESCRIPTORS:
   _globals['DESCRIPTOR']._loaded_options = None
   _globals['DESCRIPTOR']._serialized_options = b'Z2boardgamez/contracts/gen/go/idl/lobby/dto;lobbydto'
-  _globals['_UPSERTTABLEREQUEST']._serialized_start=73
-  _globals['_UPSERTTABLEREQUEST']._serialized_end=132
-  _globals['_UPSERTTABLERESPONSE']._serialized_start=134
-  _globals['_UPSERTTABLERESPONSE']._serialized_end=194
-  _globals['_READTABLEREQUEST']._serialized_start=196
-  _globals['_READTABLEREQUEST']._serialized_end=232
-  _globals['_READTABLERESPONSE']._serialized_start=234
-  _globals['_READTABLERESPONSE']._serialized_end=292
-  _globals['_DELETETABLEREQUEST']._serialized_start=294
-  _globals['_DELETETABLEREQUEST']._serialized_end=358
-  _globals['_DELETETABLERESPONSE']._serialized_start=360
-  _globals['_DELETETABLERESPONSE']._serialized_end=399
-  _globals['_LISTTABLEREQUEST']._serialized_start=401
-  _globals['_LISTTABLEREQUEST']._serialized_end=419
-  _globals['_LISTTABLERESPONSE']._serialized_start=421
-  _globals['_LISTTABLERESPONSE']._serialized_end=494
+  _globals['_READTABLEREQUEST']._serialized_start=73
+  _globals['_READTABLEREQUEST']._serialized_end=109
+  _globals['_READTABLERESPONSE']._serialized_start=111
+  _globals['_READTABLERESPONSE']._serialized_end=169
+  _globals['_DELETETABLEREQUEST']._serialized_start=171
+  _globals['_DELETETABLEREQUEST']._serialized_end=235
+  _globals['_DELETETABLERESPONSE']._serialized_start=237
+  _globals['_DELETETABLERESPONSE']._serialized_end=276
+  _globals['_LISTTABLEREQUEST']._serialized_start=278
+  _globals['_LISTTABLEREQUEST']._serialized_end=296
+  _globals['_LISTTABLERESPONSE']._serialized_start=298
+  _globals['_LISTTABLERESPONSE']._serialized_end=371
 # @@protoc_insertion_point(module_scope)

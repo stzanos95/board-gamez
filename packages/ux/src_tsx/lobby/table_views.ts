@@ -1,10 +1,9 @@
 import type { GameType } from "@board-gamez/idl/game/model/game_type_pb";
 import { SeatStatus, type Seat } from "@board-gamez/idl/lobby/model/seat_pb";
-import type { Table, TableStatus } from "@board-gamez/idl/lobby/model/table_pb";
+import { TableStatus, type Table } from "@board-gamez/idl/lobby/model/table_pb";
 
 import { shortIdentifier } from "../format/short_identifier";
 import { GAME_TYPE_LABELS } from "./table_labels";
-import { isAcceptingPlayers, isAtTable, seatOf } from "./table_intents";
 
 /**
  * Tables and seats, in the shape a component draws them.
@@ -21,6 +20,18 @@ import { isAcceptingPlayers, isAtTable, seatOf } from "./table_intents";
 
 const YOU = "You";
 const TABLE_NAME_PREFIX = "Table";
+
+/**
+ * Whether a join is offered for a table in each status. The lobby decides
+ * whether a join is accepted; this only says whether to show the way in.
+ */
+const IS_JOIN_OFFERED_BY_STATUS: Record<TableStatus, boolean> = {
+  [TableStatus.UNSPECIFIED]: false,
+  [TableStatus.WAITING]: true,
+  [TableStatus.IN_PROGRESS]: true,
+  [TableStatus.FINISHED]: false,
+  [TableStatus.ABANDONED]: false,
+};
 
 export type SeatView = {
   readonly number: number;
@@ -59,8 +70,8 @@ export function toSeatViews(
 export function toTableSummaryView(table: Table, viewerId: string): TableSummaryView {
   const seatCount = table.seats.length;
   const occupiedCount = table.seats.filter(isOccupied).length;
-  const atTable = isAtTable(table, viewerId);
-  const isSeated = seatOf(table, viewerId) !== null;
+  const atTable = table.playerIds.includes(viewerId);
+  const isSeated = table.seats.some((seat: Seat) => seat.playerId === viewerId);
   const isFull = occupiedCount >= seatCount;
 
   return {
@@ -78,7 +89,7 @@ export function toTableSummaryView(table: Table, viewerId: string): TableSummary
     isAtTable: atTable,
     isSeated,
     isFull,
-    canJoin: isAcceptingPlayers(table) && !atTable,
+    canJoin: IS_JOIN_OFFERED_BY_STATUS[table.status] && !atTable,
   };
 }
 

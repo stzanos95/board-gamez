@@ -63,11 +63,12 @@ class RedisTableRepository(BaseTableRepository):
         )
         return None if data is None else RedisTableRow.decode_table(data)
 
-    async def delete(self, table_id: str, expected_version: int) -> None:
-        await self._delete_table(
+    async def delete(self, table_id: str, expected_version: int) -> bool:
+        removed = await self._delete_table(
             keys=[RedisTableRow.table_key(self._key_prefix, table_id)],
             args=[str(expected_version)],
         )
+        return bool(removed == SCRIPT_APPLIED)
 
     async def list_all(self) -> tuple[TableObj, ...]:
         tables = []

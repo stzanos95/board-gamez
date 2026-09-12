@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState, type ReactElement } from "react";
 
 import type { NewTableInput } from "../../lobby/use_create_table";
 import { useCreateTable } from "../../lobby/use_create_table";
+import { useLobbyChanges } from "../../lobby/use_lobby_changes";
 import { useJoinTable } from "../../lobby/use_table_actions";
 import { useTables } from "../../lobby/use_tables";
 import { LoadingPanel, PanelMessage } from "../common/PanelMessage";
@@ -24,6 +25,7 @@ export type LobbyScreenProps = {
  */
 export function LobbyScreen(props: LobbyScreenProps): ReactElement {
   const { onEnterTable } = props;
+  useLobbyChanges();
   const { summaries, joinedTableId, isLoading, isRefreshing, error, refresh } = useTables();
   const { run: createTable, isPending: isCreating, problem: createProblem } = useCreateTable();
   const { run: joinTable, pendingInput: joiningTableId, problem: joinProblem } = useJoinTable();

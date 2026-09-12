@@ -4,6 +4,8 @@ import { useCallback, useMemo } from "react";
 
 import { usePlayer } from "../identity/player_context";
 import { useFreshness, useTableGateway } from "../runtime/app_services";
+import { tableTarget } from "../transport/socket_client";
+import { useSocketStatus } from "../transport/use_socket_status";
 import { tableQueryKeys } from "./table_queries";
 import { toSeatViews, toTableSummaryView, type SeatView, type TableSummaryView } from "./table_views";
 
@@ -16,20 +18,25 @@ export type TableView = {
 };
 
 /**
- * One table and its seats, polled more often than the lobby list because it is
- * the screen a player waits on.
+ * One table and its seats.
+ *
+ * Changes arrive over the table's socket. Polled only while that socket is
+ * not open, more often than the lobby list because this is the screen a
+ * player waits on.
  */
 export function useTable(tableId: string): TableView {
   const gateway = useTableGateway();
   const freshness = useFreshness();
   const { player } = usePlayer();
+  const target = useMemo(() => tableTarget(tableId), [tableId]);
+  const isLive = useSocketStatus(target);
 
   const fetchTable = useCallback(() => gateway.read(tableId), [gateway, tableId]);
 
   const query = useQuery<Table | null>({
     queryKey: tableQueryKeys.detail(tableId),
     queryFn: fetchTable,
-    refetchInterval: freshness.tableIntervalMs,
+    refetchInterval: isLive ? false : freshness.tableIntervalMs,
     enabled: tableId.length > 0,
   });
 

@@ -3,6 +3,7 @@ import { createContext, useContext, type ReactElement, type ReactNode } from "re
 import type { ChessGateway } from "../chess/chess_gateway";
 import type { FreshnessSettings } from "../config/ux_config";
 import type { TableGateway } from "../lobby/table_gateway";
+import type { SocketClient } from "../transport/socket_client";
 
 /**
  * The collaborators every screen reaches for, built once at bringup.
@@ -13,6 +14,7 @@ import type { TableGateway } from "../lobby/table_gateway";
 export type AppServices = {
   readonly tableGateway: TableGateway;
   readonly chessGateway: ChessGateway;
+  readonly socketClient: SocketClient;
   readonly freshness: FreshnessSettings;
 };
 
@@ -42,6 +44,10 @@ export function useTableGateway(): TableGateway {
 
 export function useChessGateway(): ChessGateway {
   return useAppServices().chessGateway;
+}
+
+export function useSocketClient(): SocketClient {
+  return useAppServices().socketClient;
 }
 
 export function useFreshness(): FreshnessSettings {

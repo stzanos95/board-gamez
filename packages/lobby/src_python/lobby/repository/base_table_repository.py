@@ -36,9 +36,10 @@ class BaseTableRepository(ABC):
         """
 
     @abstractmethod
-    async def delete(self, table_id: str, expected_version: int) -> None:
+    async def delete(self, table_id: str, expected_version: int) -> bool:
         """
-        Remove the table stored under this id at this version.
+        Remove the table stored under this id at this version, and answer
+        whether one was removed.
 
         Nothing is removed when nothing is stored under the id, or when the
         stored version is a different one.

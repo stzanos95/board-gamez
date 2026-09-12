@@ -18,8 +18,6 @@ from idl_fastapi.idl.lobby.dto import (
     ListTableResponse,
     ReadTableRequest,
     ReadTableResponse,
-    UpsertTableRequest,
-    UpsertTableResponse,
 )
 
 
@@ -56,15 +54,6 @@ class BaseTableService(ABC):
     ) -> ReadTableResponse:
         """
         POST /internal/platform/lobby/read/table
-        """
-
-    @abstractmethod
-    async def upsert_table(
-        self,
-        request: UpsertTableRequest,
-    ) -> UpsertTableResponse:
-        """
-        POST /internal/platform/lobby/upsert/table
         """
 
 
@@ -119,20 +108,6 @@ class TableServiceRouter:
             request: ReadTableRequest,
         ) -> ReadTableResponse:
             return await service.read_table(
-                request=request,
-            )
-
-        @router.post(
-            "/internal/platform/lobby/upsert/table",
-            operation_id="TableService_UpsertTable",
-            response_model=UpsertTableResponse,
-            response_model_exclude_none=True,
-            responses={"default": {"model": Status}},
-        )
-        async def upsert_table(
-            request: UpsertTableRequest,
-        ) -> UpsertTableResponse:
-            return await service.upsert_table(
                 request=request,
             )
 

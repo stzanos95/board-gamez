@@ -5,6 +5,8 @@ import { useCallback, useMemo } from "react";
 
 import { usePlayer } from "../identity/player_context";
 import { useChessGateway, useFreshness } from "../runtime/app_services";
+import { tableTarget } from "../transport/socket_client";
+import { useSocketStatus } from "../transport/use_socket_status";
 import { chessQueryKeys } from "./chess_queries";
 import { toChessGameView, type ChessGameView } from "./chess_views";
 
@@ -38,14 +40,17 @@ function isAwaitingOthers(session: ChessSession | null | undefined): boolean {
 /**
  * The chess game at a table, as this viewer may see it.
  *
- * A null game is a table where no game has started. The query polls on the
- * game interval while someone else can change the answer and stops while
- * the tab is hidden.
+ * A null game is a table where no game has started. Changes arrive over the
+ * table's socket. Polled only while that socket is not open, on the game
+ * interval, while someone else can change the answer, and never while the
+ * tab is hidden.
  */
 export function useChessSession(tableId: string): ChessSessionView {
   const gateway = useChessGateway();
   const freshness = useFreshness();
   const { player } = usePlayer();
+  const target = useMemo(() => tableTarget(tableId), [tableId]);
+  const isLive = useSocketStatus(target);
 
   const fetchSession = useCallback(
     () => gateway.read(tableId, player.id),
@@ -54,8 +59,8 @@ export function useChessSession(tableId: string): ChessSessionView {
 
   const pollWhileAwaitingOthers = useCallback(
     (query: SessionQuery) =>
-      isAwaitingOthers(query.state.data) ? freshness.gameIntervalMs : false,
-    [freshness.gameIntervalMs],
+      !isLive && isAwaitingOthers(query.state.data) ? freshness.gameIntervalMs : false,
+    [isLive, freshness.gameIntervalMs],
   );
 
   const query = useQuery<ChessSession | null>({

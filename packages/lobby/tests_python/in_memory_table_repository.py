@@ -34,9 +34,11 @@ class InMemoryTableRepository(BaseTableRepository):
     async def read(self, table_id: str) -> TableObj | None:
         return self._tables.get(table_id)
 
-    async def delete(self, table_id: str, expected_version: int) -> None:
-        if expected_version == self._version_of(table_id):
-            self._tables.pop(table_id, None)
+    async def delete(self, table_id: str, expected_version: int) -> bool:
+        if table_id not in self._tables or expected_version != self._version_of(table_id):
+            return False
+        del self._tables[table_id]
+        return True
 
     async def list_all(self) -> tuple[TableObj, ...]:
         return tuple(self._tables.values())

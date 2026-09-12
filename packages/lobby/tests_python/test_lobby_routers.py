@@ -6,7 +6,6 @@ from lobby.service.grpc_table_client import GrpcTableClient
 from lobby.service.lobby_routers import LobbyRouters
 
 TABLE_SERVICE_PATHS = {
-    "/internal/platform/lobby/upsert/table",
     "/internal/platform/lobby/read/table",
     "/internal/platform/lobby/delete/table",
     "/internal/platform/lobby/list/table",

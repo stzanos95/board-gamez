@@ -1,6 +1,8 @@
 import unittest
 
 import grpc
+from core.queue.config import QueueConfig, QueueType, RedisQueueConfig
+from core.queue.provider import QueueProvider
 from game.repository.config import (
     RedisSessionRepositoryConfig,
     SessionRepositoryConfig,
@@ -70,12 +72,22 @@ def game_config() -> GameConfig:
     )
 
 
+def queue_config() -> QueueConfig:
+    return QueueConfig(
+        queue=QueueType.REDIS,
+        redis_config=RedisQueueConfig(
+            host="127.0.0.1", port=REDIS_PORT, database=REDIS_DATABASE, channel_prefix="gamez-test"
+        ),
+    )
+
+
 def config_for() -> ServiceHostConfig:
     return ServiceHostConfig(
         application=ApplicationConfig(name="test server", version="9.9.9"),
         server=server_config(),
         lobby=lobby_config(),
         game=game_config(),
+        queue=queue_config(),
     )
 
 
@@ -98,7 +110,9 @@ class RegistrationTest(unittest.IsolatedAsyncioTestCase):
 
     async def test_every_service_is_registered_under_its_full_name(self) -> None:
         server = grpc.aio.server()
-        names = ServiceHost._register_services(server, lobby_config(), game_config())
+        names = ServiceHost._register_services(
+            server, lobby_config(), game_config(), QueueProvider.get_publisher(queue_config())
+        )
         self.assertEqual(
             names,
             (

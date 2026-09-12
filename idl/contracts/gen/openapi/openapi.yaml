@@ -270,30 +270,6 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/google.rpc.Status'
-    /internal/platform/lobby/upsert/table:
-        post:
-            tags:
-                - TableService
-            operationId: TableService_UpsertTable
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/idl.lobby.dto.UpsertTableRequest'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/idl.lobby.dto.UpsertTableResponse'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/google.rpc.Status'
     /internal/platform/lobby/vacate/seat:
         post:
             tags:
@@ -1510,21 +1486,6 @@ components:
             properties:
                 table:
                     $ref: '#/components/schemas/idl.lobby.model.Table'
-        idl.lobby.dto.UpsertTableRequest:
-            type: object
-            properties:
-                table:
-                    $ref: '#/components/schemas/idl.lobby.model.Table'
-            description: |-
-                Write a table, creating it if it is not there.
-
-                 The table carries the version it was read at. A write built on an earlier
-                 version is refused, and version 0 means the caller believes it is creating.
-        idl.lobby.dto.UpsertTableResponse:
-            type: object
-            properties:
-                table:
-                    $ref: '#/components/schemas/idl.lobby.model.Table'
         idl.lobby.dto.VacateSeatRequest:
             type: object
             properties:
@@ -1685,8 +1646,8 @@ tags:
          caller can set one.
     - name: TableService
       description: |-
-        Storage for tables.
+        Tables as stored, read and retired.
 
-         Four methods and no domain verbs. Joining a seat and leaving one are decided
-         above this layer and arrive here as a write of the whole table, guarded by the
-         version it was read at.
+         No method here writes a table. Every write is a SeatService verb, which the
+         lobby decides and records as an event; a table read here is the result of
+         those.

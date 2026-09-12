@@ -3,14 +3,18 @@ import { fileURLToPath, URL } from "node:url";
 import { defineConfig } from "vite";
 
 /**
- * Where the gateway answers while developing on this machine.
+ * Where the gateway and the socket server answer while developing on this
+ * machine.
  *
- * The browser calls a path under GATEWAY_PREFIX, and the dev server forwards
- * it. In a container nginx does the same thing, so the application never sees
- * a cross-origin request and never needs one allowed.
+ * The browser calls a path under GATEWAY_PREFIX or opens a socket under
+ * SOCKET_PREFIX, and the dev server forwards it. In a container nginx does
+ * the same thing, so the application never sees a cross-origin request and
+ * never needs one allowed.
  */
 const LOCAL_GATEWAY_ORIGIN = "http://127.0.0.1:8080";
 const GATEWAY_PREFIX = "/api";
+const LOCAL_SOCKET_ORIGIN = "ws://127.0.0.1:8082";
+const SOCKET_PREFIX = "/ws";
 const DEV_SERVER_PORT = 5173;
 
 function repositoryPath(relative: string): string {
@@ -42,6 +46,10 @@ export default defineConfig({
         target: LOCAL_GATEWAY_ORIGIN,
         changeOrigin: true,
         rewrite: (path: string) => path.replace(GATEWAY_PREFIX, ""),
+      },
+      [SOCKET_PREFIX]: {
+        target: LOCAL_SOCKET_ORIGIN,
+        ws: true,
       },
     },
   },

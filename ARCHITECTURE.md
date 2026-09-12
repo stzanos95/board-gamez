@@ -54,23 +54,24 @@ gamez-ux                                Presentation: a browser
  └─ TableGateway → GatewayClient        Presentation: outbound transport
     ─────────── network ───────────
     nginx, forwarding /api              Presentation: hosting
- └─ POST /internal/platform/lobby/upsert/table
+ └─ POST /internal/platform/lobby/join/table
     fastapi-gateway                     Application: HTTP transport
-     └─ LobbyRouters → HttpTableService  Application: binding
-        └─ TableAdapters                 adapter: pydantic to protobuf
-           └─ GrpcTableClient            Application: outbound transport
+     └─ LobbyRouters → HttpSeatService  Application: binding
+        └─ SeatAdapters                 adapter: pydantic to protobuf
+           └─ GrpcSeatClient            Application: outbound transport
               ─────────── network ───────────
               grpc-server                Application: gRPC transport
-               └─ LobbyServicers → GrpcTableService   Application: binding
-                  └─ TableAdapters       adapter: dto to model
-                     └─ TableController  Business: the decision
-                        └─ TableRepository   Persistence
-                           └─ Redis      Database
+               └─ LobbyServicers → GrpcSeatService   Application: binding
+                  └─ SeatAdapters       adapter: dto to model
+                     └─ SeatController  Business: the decision
+                        └─ TableController → TableRepository   Persistence
+                        │                     └─ Redis      Database
+                        └─ BaseQueuePublisher   the event, after the write
 ```
 
 Each step downwards removes knowledge. The gateway handles HTTP and has no
-concept of a table. The servicer handles gRPC and has no concept of what an
-upsert means. The controller defines what an upsert means and has no concept of
+concept of a table. The servicer handles gRPC and has no concept of what
+joining means. The controller defines what joining means and has no concept of
 where a table is stored.
 
 ## Decisions
@@ -104,7 +105,7 @@ business layer, and a second transport can call the same controller.
 ### Two transports, one controller
 
 `TableService` is served over gRPC by `GrpcTableService` and called over HTTP by
-`HttpTableService`. Both expose the same four operations. A queue consumer would
+`HttpTableService`. Both expose the same three operations. A queue consumer would
 be a third and would require no change below the Application layer.
 
 ### The browser renders, and does not decide
@@ -113,14 +114,9 @@ The presentation layer draws what it is given and sends what a person asked
 for. A rule it evaluated would be a second copy of that rule, on a machine this
 project does not control, that drifts from the first.
 
-`TableService` is a store with four methods and no domain verb, and nothing
-between it and a browser decides yet, so opening a table and joining one are
-currently a read, a change and a version-guarded write made in
-`packages/ux/src_tsx/lobby/table_intents.ts`. That is business logic above the
-Application layer. It is in one file so that `CreateTable` and `JoinTable`
-operations on the lobby replace it with calls.
-
-Taking a seat, giving one up and leaving are not made there. A seat is taken
+Nothing over the wire writes a table. `TableService` reads and retires;
+opening a table and joining one are `SeatService.CreateTable` and `JoinTable`,
+decided by the lobby's `SeatController` and recorded as events. A seat is taken
 through the game's own service as one of the `SeatChoice`s the game offered;
 a seat is given up through the lobby's `SeatService`, which withdraws the
 player from the game being played before it opens the seat. What a withdrawal
@@ -184,6 +180,10 @@ action only its sender may see. A browser is never sent one. It is sent
 `TableChanged` or `SessionChanged` — an id and a version — and reads the view
 it renders through the typed service it already uses, which projects it for
 that viewer. Projection therefore happens in one place, on the read path.
+
+A channel is a string, and each domain names its own: the lobby publishes on
+`table:<id>` and `lobby`, the platform on `session:<id>`. `core.queue` carries
+the name and never reads it.
 
 `deployables/websocket-server` is the process between the two. It holds a
 `BaseQueueConsumer` per configured source and the open sockets by the channel

@@ -30,7 +30,7 @@ websocket_server/
 │   └── route_adapters.py       a request or a socket, to what a route needs
 └── service/
     ├── socket_routes.py        /ws/lobby and /ws/tables/:table_id
-    ├── channel_names.py        the channel each route watches
+    ├── channel_names.py        the channels each route watches
     ├── websocket_behavior.py   the mapping socketify takes for a route
     ├── socket_connection.py    what a socket carries from upgrade to close
     ├── socketify_client.py     a client over a socketify socket
@@ -45,10 +45,12 @@ over them, declares the two routes, and serves.
 ## What travels
 
 Every write that succeeds is published as an event in a
-`idl.core.dto.QueueMessageEnvelope`, on the channel of the table it concerns
-(`table:<table_id>`) and, for the events the lobby list needs, on `lobby` as
-well. This server subscribes a channel on every source while at least one
-socket watches it, and unsubscribes it when the last one leaves.
+`idl.core.dto.QueueMessageEnvelope`. The lobby publishes a table's events on
+`table:<table_id>` and, for the events its listing needs, on `lobby` as well;
+the platform publishes a game's events on `session:<session_id>`. A game is
+played at the table whose id it carries, so a socket on a table watches both
+of that id's channels. This server subscribes a channel on every source while
+at least one socket watches it, and unsubscribes it when the last one leaves.
 
 A browser is never sent an event. Each event is opened only to read an id and a
 version, and becomes one frame, a `idl.core.dto.WebsocketMessageEnvelope`

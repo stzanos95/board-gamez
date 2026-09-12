@@ -3,6 +3,11 @@
     "baseUrl": "/api",
     "requestTimeoutMs": 8000
   },
+  "socket": {
+    "baseUrl": "/ws",
+    "reconnectDelayMs": 1000,
+    "maxReconnectDelayMs": 30000
+  },
   "theme": "midnight",
   "freshness": {
     "staleTimeMs": 2000,

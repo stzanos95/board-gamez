@@ -162,8 +162,8 @@ Every path is built the same way:
 ```
 /<internal or external>/<platform or product>/<domain>/<method>/<entity>
 
-/internal/platform/lobby/upsert/table
-/internal/platform/lobby/list/table
+/internal/platform/lobby/read/table
+/internal/platform/lobby/join/table
 ```
 
 - **internal or external** — who may call it. `internal` is reached from inside
@@ -191,8 +191,16 @@ should have been its own row all along.
 
 **The entity stays singular in the method name too.** `ListTable`, never
 `ListTables` — the method names what it acts on, and the plural belongs to what
-comes back. So the four are `UpsertTable`, `ReadTable`, `DeleteTable`,
+comes back. So the storage methods are `ReadTable`, `DeleteTable` and
 `ListTable`, and their messages follow.
+
+**A write never crosses a boundary as a storage method.** Every write that
+succeeds is an event, and an event is published by the controller that decided
+the write. An `UpsertTable` over the wire is a write nothing decided and
+nothing announced, so a store service exposes reads and retirements, and every
+write arrives as a domain verb (`CreateTable`, `JoinTable`, `TakeSeat`) on a
+service above it. The controller keeps `upsert` as the operation those verbs
+end in.
 
 **A listing returns a collection model, never a repeated field.**
 

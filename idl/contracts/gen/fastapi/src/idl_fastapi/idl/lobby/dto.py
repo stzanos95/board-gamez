@@ -110,27 +110,6 @@ class ReadTableResponse(BaseModel):
     table: model.Table | None = None
 
 
-class UpsertTableRequest(BaseModel):
-    """
-    Write a table, creating it if it is not there.
-
-     The table carries the version it was read at. A write built on an earlier
-     version is refused, and version 0 means the caller believes it is creating.
-    """
-
-    model_config = ConfigDict(
-        populate_by_name=True,
-    )
-    table: model.Table | None = None
-
-
-class UpsertTableResponse(BaseModel):
-    model_config = ConfigDict(
-        populate_by_name=True,
-    )
-    table: model.Table | None = None
-
-
 class CreateTableResponse(BaseModel):
     model_config = ConfigDict(
         populate_by_name=True,

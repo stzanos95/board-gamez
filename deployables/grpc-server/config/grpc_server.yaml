@@ -49,3 +49,14 @@ game:
       port: 6379
       database: 0
       key_prefix: "board-gamez"
+
+# Where every write that succeeds is published as an event. `queue` selects, and
+# the section it names must be present.
+queue:
+  queue: redis
+  redis_config:
+    host: "127.0.0.1"
+    port: 6379
+    database: 0
+    # Begins every channel published on. Set together with the subscribers'.
+    channel_prefix: "gamez"

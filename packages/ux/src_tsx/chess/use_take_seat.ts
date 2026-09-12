@@ -6,6 +6,7 @@ import { usePlayer } from "../identity/player_context";
 import { SEAT_OUTCOME_PROBLEMS } from "../lobby/seat_labels";
 import { tableQueryKeys } from "../lobby/table_queries";
 import { useChessGateway } from "../runtime/app_services";
+import { invalidateAfterWrite } from "../transport/query_invalidation";
 import { chessQueryKeys } from "./chess_queries";
 
 const GONE_MESSAGE = "That table is no longer there.";
@@ -51,11 +52,9 @@ export function useTakeSeat(): TakeSeatAction {
       if (result?.table !== undefined) {
         queryClient.setQueryData(chessQueryKeys.table(input.tableId), result.table);
       }
-      void queryClient.invalidateQueries({ queryKey: tableQueryKeys.detail(input.tableId) });
-      void queryClient.invalidateQueries({ queryKey: tableQueryKeys.list() });
-      void queryClient.invalidateQueries({
-        queryKey: chessQueryKeys.seatChoices(input.tableId, player.id),
-      });
+      invalidateAfterWrite(queryClient, tableQueryKeys.detail(input.tableId));
+      invalidateAfterWrite(queryClient, tableQueryKeys.list());
+      invalidateAfterWrite(queryClient, chessQueryKeys.seatChoices(input.tableId, player.id));
     },
     [queryClient, player.id],
   );
