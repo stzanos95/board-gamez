@@ -3,6 +3,7 @@ import unittest
 from chess.board.starting_position import StartingPosition
 from chess.engine.chess_engine import ChessEngine
 from chess.notation.coordinate_notation import CoordinateNotation
+from idl.chess.model.piece_pb2 import COLOR_BLACK
 
 from chess_cli.config_error import ConfigError
 from chess_cli.display.config import DisplayConfig, DisplayType
@@ -140,7 +141,7 @@ class StatusTest(unittest.TestCase):
         self.assertEqual(ASCII_DISPLAY.render_status(engine, NAMES), "Checkmate. Alan wins. 0-1")
 
     def test_resignation_is_described_as_such(self) -> None:
-        engine = play_all(new_game(), ("e2e4",)).resign()
+        engine = play_all(new_game(), ("e2e4",)).resign(COLOR_BLACK)
         self.assertEqual(ASCII_DISPLAY.render_status(engine, NAMES), "Alan resigns. Ada wins. 1-0")
 
     def test_a_draw_names_the_rule_that_ended_it(self) -> None:

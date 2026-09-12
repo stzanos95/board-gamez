@@ -2,7 +2,7 @@ import unittest
 
 from game.controller.rules_registry import RulesRegistry
 from game.controller.session_controller import SessionController
-from idl.chess.model import piece_pb2
+from idl.chess.model import game_pb2, piece_pb2
 from idl.chess.model.session_pb2 import ChessSession
 from idl.chess.model.table_pb2 import ChessSeatChoice
 from idl.game.model.command_result_pb2 import CommandOutcome
@@ -70,6 +70,7 @@ class ChessSessionControllerTest(unittest.IsolatedAsyncioTestCase):
         self.seats = SeatController(
             tables=self.tables,
             seating=SeatingRegistry({GameType.GAME_TYPE_CHESS: ChessSeating()}),
+            sessions=self.sessions,
         )
         self.controller = ChessSessionController(
             tables=self.tables, seats=self.seats, sessions=self.sessions
@@ -274,3 +275,70 @@ class ChessSessionControllerTest(unittest.IsolatedAsyncioTestCase):
             [seat.color for seat in table.seats], [piece_pb2.COLOR_WHITE, piece_pb2.COLOR_BLACK]
         )
         self.assertIsNone(await self.controller.read_table(OTHER_GAME_TABLE_ID))
+
+    # --- standing up ---------------------------------------------------------
+
+    async def test_standing_up_mid_game_resigns_and_the_other_side_wins(self) -> None:
+        started = await self.start()
+        self.assertFalse(started.game.HasField("result"))
+
+        result = await self.seats.vacate_seat(TABLE_ID, BLACK_PLAYER)
+
+        self.assertEqual(result.outcome, SeatOutcome.SEAT_OUTCOME_VACATED)
+        self.assertEqual(result.table.seats[SECOND_SEAT - 1].status, SeatStatus.SEAT_STATUS_OPEN)
+        self.assertIn(BLACK_PLAYER, result.table.player_ids)
+        after = await self.controller.read_game(TABLE_ID, WHITE_PLAYER)
+        assert after is not None
+        self.assertEqual(after.game.resigning_color, piece_pb2.COLOR_BLACK)
+        self.assertEqual(after.game.result.outcome, game_pb2.GAME_OUTCOME_WHITE_WINS)
+        self.assertEqual(after.version, started.version + 1)
+
+    async def test_standing_up_out_of_turn_still_resigns(self) -> None:
+        started = await self.start()
+        self.assertEqual(started.game.state.side_to_move, piece_pb2.COLOR_WHITE)
+
+        result = await self.seats.vacate_seat(TABLE_ID, BLACK_PLAYER)
+
+        self.assertEqual(result.outcome, SeatOutcome.SEAT_OUTCOME_VACATED)
+        after = await self.controller.read_game(TABLE_ID, WHITE_PLAYER)
+        assert after is not None
+        self.assertEqual(after.game.resigning_color, piece_pb2.COLOR_BLACK)
+
+    async def test_leaving_the_table_mid_game_resigns_and_removes_the_player(self) -> None:
+        await self.start()
+
+        result = await self.seats.leave_table(TABLE_ID, WHITE_PLAYER)
+
+        self.assertEqual(result.outcome, SeatOutcome.SEAT_OUTCOME_LEFT)
+        self.assertNotIn(WHITE_PLAYER, result.table.player_ids)
+        after = await self.controller.read_game(TABLE_ID, BLACK_PLAYER)
+        assert after is not None
+        self.assertEqual(after.game.result.outcome, game_pb2.GAME_OUTCOME_BLACK_WINS)
+
+    async def test_standing_up_before_a_game_only_opens_the_seat(self) -> None:
+        result = await self.seats.vacate_seat(EMPTY_TABLE_ID, WHITE_PLAYER)
+
+        self.assertEqual(result.outcome, SeatOutcome.SEAT_OUTCOME_VACATED)
+        self.assertIsNone(await self.controller.read_game(EMPTY_TABLE_ID, WHITE_PLAYER))
+
+    async def test_standing_up_after_the_game_is_over_leaves_the_result(self) -> None:
+        session = await self.start()
+        resigned = await self.controller.play_action(
+            TABLE_ID, WHITE_PLAYER, COMMAND_ID, resignation(), session.version
+        )
+
+        result = await self.seats.vacate_seat(TABLE_ID, BLACK_PLAYER)
+
+        self.assertEqual(result.outcome, SeatOutcome.SEAT_OUTCOME_VACATED)
+        after = await self.controller.read_game(TABLE_ID, WHITE_PLAYER)
+        assert after is not None
+        self.assertEqual(after.version, resigned.session.version)
+        self.assertEqual(after.game.resigning_color, piece_pb2.COLOR_WHITE)
+
+    async def test_someone_without_a_seat_cannot_stand_up(self) -> None:
+        result = await self.seats.vacate_seat(TABLE_ID, ONLOOKER)
+        self.assertEqual(result.outcome, SeatOutcome.SEAT_OUTCOME_NOT_SEATED)
+
+    async def test_someone_not_at_the_table_cannot_leave_it(self) -> None:
+        result = await self.seats.leave_table(TABLE_ID, ONLOOKER)
+        self.assertEqual(result.outcome, SeatOutcome.SEAT_OUTCOME_NOT_AT_TABLE)

@@ -112,7 +112,7 @@ class TerminationTest(unittest.TestCase):
             engine.play(engine.turns[0].move)
 
     def test_resigning_hands_the_game_to_the_opponent(self) -> None:
-        engine = play_all(new_game(), ("e2e4",)).resign()
+        engine = play_all(new_game(), ("e2e4",)).resign(COLOR_BLACK)
         self.assertTrue(engine.is_over)
         self.assertEqual(engine.resigning_color, COLOR_BLACK)
         result = require(engine.result)
@@ -124,7 +124,7 @@ class TerminationTest(unittest.TestCase):
     def test_a_finished_game_cannot_be_resigned_again(self) -> None:
         engine = play_all(new_game(), SCHOLARS_MATE)
         with self.assertRaises(IllegalMoveError):
-            engine.resign()
+            engine.resign(COLOR_WHITE)
 
     def test_shuffling_knights_back_and_forth_draws(self) -> None:
         engine = play_all(new_game(), KNIGHT_SHUFFLE)

@@ -1,0 +1,33 @@
+// Giving up a seat, and leaving a table.
+
+syntax = "proto3";
+
+package idl.lobby.dto;
+
+import "idl/lobby/model/seat_result.proto";
+
+option go_package = "boardgamez/contracts/gen/go/idl/lobby/dto;lobbydto";
+
+// Give up the seat and stay at the table.
+//
+// A player in a game being played is withdrawn from it first; what that does
+// to the game is the game's own. No version is carried: giving up a seat is not
+// built against a table the player has seen.
+message VacateSeatRequest {
+  string table_id = 1;
+  string player_id = 2;
+}
+
+message VacateSeatResponse {
+  idl.lobby.model.SeatResult result = 1;
+}
+
+// Leave the table, giving up a seat on the way out.
+message LeaveTableRequest {
+  string table_id = 1;
+  string player_id = 2;
+}
+
+message LeaveTableResponse {
+  idl.lobby.model.SeatResult result = 1;
+}

@@ -1,4 +1,4 @@
-// Starting and reading a game.
+// Starting a game, reading it, and withdrawing from it.
 
 syntax = "proto3";
 
@@ -7,6 +7,7 @@ package idl.game.dto;
 import "idl/game/model/game_type.proto";
 import "idl/game/model/participant.proto";
 import "idl/game/model/session.proto";
+import "idl/game/model/withdrawal_result.proto";
 
 option go_package = "boardgamez/contracts/gen/go/idl/game/dto;gamedto";
 
@@ -35,4 +36,18 @@ message ReadSessionRequest {
 
 message ReadSessionResponse {
   idl.game.model.SessionView session = 1;  // Unset when no game is stored under that id.
+}
+
+// Take a player out of the game at a table.
+//
+// Sent when the player leaves the table, whoever's turn it is. A game with a
+// result is left as it is. `version` is not carried: nothing is built against
+// the game here, and the withdrawal is written against the game as it stands.
+message WithdrawPlayerRequest {
+  string session_id = 1;
+  string player_id = 2;
+}
+
+message WithdrawPlayerResponse {
+  idl.game.model.WithdrawalResult result = 1;
 }

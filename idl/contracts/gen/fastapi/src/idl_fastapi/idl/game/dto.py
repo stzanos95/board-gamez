@@ -50,6 +50,22 @@ class ReadSessionRequest(BaseModel):
     player_id: str | None = Field(default=None, alias='playerId')
 
 
+class WithdrawPlayerRequest(BaseModel):
+    """
+    Take a player out of the game at a table.
+
+     Sent when the player leaves the table, whoever's turn it is. A game with a
+     result is left as it is. `version` is not carried: nothing is built against
+     the game here, and the withdrawal is written against the game as it stands.
+    """
+
+    model_config = ConfigDict(
+        populate_by_name=True,
+    )
+    session_id: str | None = Field(default=None, alias='sessionId')
+    player_id: str | None = Field(default=None, alias='playerId')
+
+
 class CreateSessionRequest(BaseModel):
     """
     Start a game at a table.
@@ -91,6 +107,13 @@ class ReadSessionResponse(BaseModel):
         populate_by_name=True,
     )
     session: model.SessionView | None = None
+
+
+class WithdrawPlayerResponse(BaseModel):
+    model_config = ConfigDict(
+        populate_by_name=True,
+    )
+    result: model.WithdrawalResult | None = None
 
 
 class ApplyCommandResponse(BaseModel):

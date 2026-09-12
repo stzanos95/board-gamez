@@ -118,10 +118,13 @@ class ServiceHost:
         rules = RulesRegistry({GameType.GAME_TYPE_CHESS: chess_rules})
         seating = SeatingRegistry({GameType.GAME_TYPE_CHESS: ChessSeating()})
         table_controller = TableController(repository=table_repository)
-        seat_controller = SeatController(tables=table_controller, seating=seating)
         session_controller = SessionController(repository=session_repository, rules=rules)
+        seat_controller = SeatController(
+            tables=table_controller, seating=seating, sessions=session_controller
+        )
         return (
             LobbyServicers.add_table_service(server, table_controller),
+            LobbyServicers.add_seat_service(server, seat_controller),
             GameServicers.add_session_service(server, session_controller),
             GameServicers.add_game_spec_service(server, GameSpecController(rules=rules)),
             ProductChessServicers.add_rules_service(server, chess_rules),

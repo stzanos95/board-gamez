@@ -135,13 +135,14 @@ class ChessEngine:
             resigning_color=None,
         )
 
-    def resign(self) -> "ChessEngine":
+    def resign(self, color: Color) -> "ChessEngine":
         """
-        The game as it stands after the player to move gives up.
+        The game as it stands after this side gives up, whether or not it is
+        their move.
         """
         if self.is_over:
             raise IllegalMoveError(f"the game is already over ({GameStatus.Name(self.status)})")
-        return replace(self, resigning_color=self.state.side_to_move)
+        return replace(self, resigning_color=color)
 
     @property
     def result(self) -> GameResult | None:

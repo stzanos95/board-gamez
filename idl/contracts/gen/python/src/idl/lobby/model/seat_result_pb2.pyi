@@ -13,11 +13,19 @@ class SeatOutcome(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     SEAT_OUTCOME_TABLE_NOT_FOUND: _ClassVar[SeatOutcome]
     SEAT_OUTCOME_NOT_OFFERED: _ClassVar[SeatOutcome]
     SEAT_OUTCOME_VERSION_MOVED: _ClassVar[SeatOutcome]
+    SEAT_OUTCOME_VACATED: _ClassVar[SeatOutcome]
+    SEAT_OUTCOME_LEFT: _ClassVar[SeatOutcome]
+    SEAT_OUTCOME_NOT_SEATED: _ClassVar[SeatOutcome]
+    SEAT_OUTCOME_NOT_AT_TABLE: _ClassVar[SeatOutcome]
 SEAT_OUTCOME_UNSPECIFIED: SeatOutcome
 SEAT_OUTCOME_TAKEN: SeatOutcome
 SEAT_OUTCOME_TABLE_NOT_FOUND: SeatOutcome
 SEAT_OUTCOME_NOT_OFFERED: SeatOutcome
 SEAT_OUTCOME_VERSION_MOVED: SeatOutcome
+SEAT_OUTCOME_VACATED: SeatOutcome
+SEAT_OUTCOME_LEFT: SeatOutcome
+SEAT_OUTCOME_NOT_SEATED: SeatOutcome
+SEAT_OUTCOME_NOT_AT_TABLE: SeatOutcome
 
 class SeatResult(_message.Message):
     __slots__ = ("outcome", "table")

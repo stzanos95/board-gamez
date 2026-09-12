@@ -25,9 +25,10 @@ _sym_db = _symbol_database.Default()
 from idl.game.model import game_type_pb2 as idl_dot_game_dot_model_dot_game__type__pb2
 from idl.game.model import participant_pb2 as idl_dot_game_dot_model_dot_participant__pb2
 from idl.game.model import session_pb2 as idl_dot_game_dot_model_dot_session__pb2
+from idl.game.model import withdrawal_result_pb2 as idl_dot_game_dot_model_dot_withdrawal__result__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1aidl/game/dto/session.proto\x12\x0cidl.game.dto\x1a\x1eidl/game/model/game_type.proto\x1a idl/game/model/participant.proto\x1a\x1cidl/game/model/session.proto\"\x9b\x01\n\x14\x43reateSessionRequest\x12\x10\n\x08table_id\x18\x01 \x01(\t\x12\x11\n\tplayer_id\x18\x02 \x01(\t\x12+\n\tgame_type\x18\x03 \x01(\x0e\x32\x18.idl.game.model.GameType\x12\x31\n\x0cparticipants\x18\x04 \x03(\x0b\x32\x1b.idl.game.model.Participant\"E\n\x15\x43reateSessionResponse\x12,\n\x07session\x18\x01 \x01(\x0b\x32\x1b.idl.game.model.SessionView\";\n\x12ReadSessionRequest\x12\x12\n\nsession_id\x18\x01 \x01(\t\x12\x11\n\tplayer_id\x18\x02 \x01(\t\"C\n\x13ReadSessionResponse\x12,\n\x07session\x18\x01 \x01(\x0b\x32\x1b.idl.game.model.SessionViewB2Z0boardgamez/contracts/gen/go/idl/game/dto;gamedtob\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1aidl/game/dto/session.proto\x12\x0cidl.game.dto\x1a\x1eidl/game/model/game_type.proto\x1a idl/game/model/participant.proto\x1a\x1cidl/game/model/session.proto\x1a&idl/game/model/withdrawal_result.proto\"\x9b\x01\n\x14\x43reateSessionRequest\x12\x10\n\x08table_id\x18\x01 \x01(\t\x12\x11\n\tplayer_id\x18\x02 \x01(\t\x12+\n\tgame_type\x18\x03 \x01(\x0e\x32\x18.idl.game.model.GameType\x12\x31\n\x0cparticipants\x18\x04 \x03(\x0b\x32\x1b.idl.game.model.Participant\"E\n\x15\x43reateSessionResponse\x12,\n\x07session\x18\x01 \x01(\x0b\x32\x1b.idl.game.model.SessionView\";\n\x12ReadSessionRequest\x12\x12\n\nsession_id\x18\x01 \x01(\t\x12\x11\n\tplayer_id\x18\x02 \x01(\t\"C\n\x13ReadSessionResponse\x12,\n\x07session\x18\x01 \x01(\x0b\x32\x1b.idl.game.model.SessionView\">\n\x15WithdrawPlayerRequest\x12\x12\n\nsession_id\x18\x01 \x01(\t\x12\x11\n\tplayer_id\x18\x02 \x01(\t\"J\n\x16WithdrawPlayerResponse\x12\x30\n\x06result\x18\x01 \x01(\x0b\x32 .idl.game.model.WithdrawalResultB2Z0boardgamez/contracts/gen/go/idl/game/dto;gamedtob\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -35,12 +36,16 @@ _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'idl.game.dto.session_pb2', 
 if not _descriptor._USE_C_DESCRIPTORS:
   _globals['DESCRIPTOR']._loaded_options = None
   _globals['DESCRIPTOR']._serialized_options = b'Z0boardgamez/contracts/gen/go/idl/game/dto;gamedto'
-  _globals['_CREATESESSIONREQUEST']._serialized_start=141
-  _globals['_CREATESESSIONREQUEST']._serialized_end=296
-  _globals['_CREATESESSIONRESPONSE']._serialized_start=298
-  _globals['_CREATESESSIONRESPONSE']._serialized_end=367
-  _globals['_READSESSIONREQUEST']._serialized_start=369
-  _globals['_READSESSIONREQUEST']._serialized_end=428
-  _globals['_READSESSIONRESPONSE']._serialized_start=430
-  _globals['_READSESSIONRESPONSE']._serialized_end=497
+  _globals['_CREATESESSIONREQUEST']._serialized_start=181
+  _globals['_CREATESESSIONREQUEST']._serialized_end=336
+  _globals['_CREATESESSIONRESPONSE']._serialized_start=338
+  _globals['_CREATESESSIONRESPONSE']._serialized_end=407
+  _globals['_READSESSIONREQUEST']._serialized_start=409
+  _globals['_READSESSIONREQUEST']._serialized_end=468
+  _globals['_READSESSIONRESPONSE']._serialized_start=470
+  _globals['_READSESSIONRESPONSE']._serialized_end=537
+  _globals['_WITHDRAWPLAYERREQUEST']._serialized_start=539
+  _globals['_WITHDRAWPLAYERREQUEST']._serialized_end=601
+  _globals['_WITHDRAWPLAYERRESPONSE']._serialized_start=603
+  _globals['_WITHDRAWPLAYERRESPONSE']._serialized_end=677
 # @@protoc_insertion_point(module_scope)

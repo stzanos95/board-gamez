@@ -57,6 +57,11 @@ class RulesServiceStub(object):
                 request_serializer=idl_dot_game_dot_dto_dot_rules__pb2.ReadViewRequest.SerializeToString,
                 response_deserializer=idl_dot_game_dot_dto_dot_rules__pb2.ReadViewResponse.FromString,
                 _registered_method=True)
+        self.WithdrawParticipant = channel.unary_unary(
+                '/idl.game.service.RulesService/WithdrawParticipant',
+                request_serializer=idl_dot_game_dot_dto_dot_rules__pb2.WithdrawParticipantRequest.SerializeToString,
+                response_deserializer=idl_dot_game_dot_dto_dot_rules__pb2.WithdrawParticipantResponse.FromString,
+                _registered_method=True)
         self.ReadBounds = channel.unary_unary(
                 '/idl.game.service.RulesService/ReadBounds',
                 request_serializer=idl_dot_game_dot_dto_dot_rules__pb2.ReadBoundsRequest.SerializeToString,
@@ -93,6 +98,12 @@ class RulesServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def WithdrawParticipant(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
     def ReadBounds(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -116,6 +127,11 @@ def add_RulesServiceServicer_to_server(servicer, server):
                     servicer.ReadView,
                     request_deserializer=idl_dot_game_dot_dto_dot_rules__pb2.ReadViewRequest.FromString,
                     response_serializer=idl_dot_game_dot_dto_dot_rules__pb2.ReadViewResponse.SerializeToString,
+            ),
+            'WithdrawParticipant': grpc.unary_unary_rpc_method_handler(
+                    servicer.WithdrawParticipant,
+                    request_deserializer=idl_dot_game_dot_dto_dot_rules__pb2.WithdrawParticipantRequest.FromString,
+                    response_serializer=idl_dot_game_dot_dto_dot_rules__pb2.WithdrawParticipantResponse.SerializeToString,
             ),
             'ReadBounds': grpc.unary_unary_rpc_method_handler(
                     servicer.ReadBounds,
@@ -212,6 +228,33 @@ class RulesService(object):
             '/idl.game.service.RulesService/ReadView',
             idl_dot_game_dot_dto_dot_rules__pb2.ReadViewRequest.SerializeToString,
             idl_dot_game_dot_dto_dot_rules__pb2.ReadViewResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def WithdrawParticipant(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/idl.game.service.RulesService/WithdrawParticipant',
+            idl_dot_game_dot_dto_dot_rules__pb2.WithdrawParticipantRequest.SerializeToString,
+            idl_dot_game_dot_dto_dot_rules__pb2.WithdrawParticipantResponse.FromString,
             options,
             channel_credentials,
             insecure,

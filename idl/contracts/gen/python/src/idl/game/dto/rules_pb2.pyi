@@ -52,6 +52,20 @@ class ReadViewResponse(_message.Message):
     view: _any_pb2.Any
     def __init__(self, view: _Optional[_Union[_any_pb2.Any, _Mapping]] = ...) -> None: ...
 
+class WithdrawParticipantRequest(_message.Message):
+    __slots__ = ("state", "participant")
+    STATE_FIELD_NUMBER: _ClassVar[int]
+    PARTICIPANT_FIELD_NUMBER: _ClassVar[int]
+    state: _game_state_pb2.GameState
+    participant: int
+    def __init__(self, state: _Optional[_Union[_game_state_pb2.GameState, _Mapping]] = ..., participant: _Optional[int] = ...) -> None: ...
+
+class WithdrawParticipantResponse(_message.Message):
+    __slots__ = ("state",)
+    STATE_FIELD_NUMBER: _ClassVar[int]
+    state: _game_state_pb2.GameState
+    def __init__(self, state: _Optional[_Union[_game_state_pb2.GameState, _Mapping]] = ...) -> None: ...
+
 class ReadBoundsRequest(_message.Message):
     __slots__ = ()
     def __init__(self) -> None: ...

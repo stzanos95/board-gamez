@@ -25,7 +25,7 @@ _sym_db = _symbol_database.Default()
 from idl.game.dto import rules_pb2 as idl_dot_game_dot_dto_dot_rules__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1cidl/game/service/rules.proto\x12\x10idl.game.service\x1a\x18idl/game/dto/rules.proto2\xcf\x02\n\x0cRulesService\x12O\n\nCreateGame\x12\x1f.idl.game.dto.CreateGameRequest\x1a .idl.game.dto.CreateGameResponse\x12R\n\x0b\x41pplyAction\x12 .idl.game.dto.ApplyActionRequest\x1a!.idl.game.dto.ApplyActionResponse\x12I\n\x08ReadView\x12\x1d.idl.game.dto.ReadViewRequest\x1a\x1e.idl.game.dto.ReadViewResponse\x12O\n\nReadBounds\x12\x1f.idl.game.dto.ReadBoundsRequest\x1a .idl.game.dto.ReadBoundsResponseB:Z8boardgamez/contracts/gen/go/idl/game/service;gameserviceb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1cidl/game/service/rules.proto\x12\x10idl.game.service\x1a\x18idl/game/dto/rules.proto2\xbb\x03\n\x0cRulesService\x12O\n\nCreateGame\x12\x1f.idl.game.dto.CreateGameRequest\x1a .idl.game.dto.CreateGameResponse\x12R\n\x0b\x41pplyAction\x12 .idl.game.dto.ApplyActionRequest\x1a!.idl.game.dto.ApplyActionResponse\x12I\n\x08ReadView\x12\x1d.idl.game.dto.ReadViewRequest\x1a\x1e.idl.game.dto.ReadViewResponse\x12j\n\x13WithdrawParticipant\x12(.idl.game.dto.WithdrawParticipantRequest\x1a).idl.game.dto.WithdrawParticipantResponse\x12O\n\nReadBounds\x12\x1f.idl.game.dto.ReadBoundsRequest\x1a .idl.game.dto.ReadBoundsResponseB:Z8boardgamez/contracts/gen/go/idl/game/service;gameserviceb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -34,5 +34,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['DESCRIPTOR']._loaded_options = None
   _globals['DESCRIPTOR']._serialized_options = b'Z8boardgamez/contracts/gen/go/idl/game/service;gameservice'
   _globals['_RULESSERVICE']._serialized_start=77
-  _globals['_RULESSERVICE']._serialized_end=412
+  _globals['_RULESSERVICE']._serialized_end=520
 # @@protoc_insertion_point(module_scope)

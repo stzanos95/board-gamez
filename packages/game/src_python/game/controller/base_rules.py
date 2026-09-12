@@ -43,6 +43,14 @@ class BaseRules(ABC):
         """
 
     @abstractmethod
+    async def withdraw_participant(self, state: GameState, participant: int) -> GameState | None:
+        """
+        The state after this participant leaves the game, or None when the
+        participant is not in it. Asked in or out of turn, and never once the
+        game has a result.
+        """
+
+    @abstractmethod
     async def read_bounds(self) -> ParticipantBounds:
         """
         How many participants the game takes.

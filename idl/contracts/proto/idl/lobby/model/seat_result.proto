@@ -1,4 +1,4 @@
-// How taking a seat ended.
+// How a change to a player's place at a table ended.
 
 syntax = "proto3";
 
@@ -8,24 +8,29 @@ import "idl/lobby/model/table.proto";
 
 option go_package = "boardgamez/contracts/gen/go/idl/lobby/model;lobbymodel";
 
-// Every way taking a seat ends.
+// Every way taking a seat, giving one up, or leaving the table ends.
 //
-// VERSION_MOVED means the caller read an earlier table, and the choice is worth
-// picking again from the table answered with it. NOT_OFFERED means the choice is
-// not one the game offers this player at this table now: the seat is taken, the
-// player is already seated, or the table is not waiting for players.
+// TAKEN, VACATED and LEFT are the three changes made. VERSION_MOVED means the
+// table changed while the change was being written, and the table answered
+// with it is the one to act on next. NOT_OFFERED means the choice is not one
+// the game offers this player at this table now: the seat is taken, the player
+// is already seated, or the table is not waiting for players.
 enum SeatOutcome {
   SEAT_OUTCOME_UNSPECIFIED = 0;
   SEAT_OUTCOME_TAKEN = 1;
   SEAT_OUTCOME_TABLE_NOT_FOUND = 2;
   SEAT_OUTCOME_NOT_OFFERED = 3;
   SEAT_OUTCOME_VERSION_MOVED = 4;
+  SEAT_OUTCOME_VACATED = 5;
+  SEAT_OUTCOME_LEFT = 6;
+  SEAT_OUTCOME_NOT_SEATED = 7;
+  SEAT_OUTCOME_NOT_AT_TABLE = 8;
 }
 
-// What happened to a seat being taken, and the table as it now stands.
+// What happened to a player's place at a table, and the table as it now stands.
 //
 // The table is carried whatever the outcome, and is unset only when no table has
-// the id the choice named.
+// the id the change named.
 message SeatResult {
   SeatOutcome outcome = 1;
   Table table = 2;

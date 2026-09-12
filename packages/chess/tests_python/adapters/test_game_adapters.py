@@ -50,7 +50,8 @@ class RecordTest(unittest.TestCase):
         self.assertEqual(game.result.outcome, game_pb2.GAME_OUTCOME_WHITE_WINS)
 
     def test_a_resigned_game_names_the_colour_that_gave_up(self) -> None:
-        game = GameAdapters.engine_to_chess_game(play_all(new_game(), ("e2e4",)).resign())
+        resigned = play_all(new_game(), ("e2e4",)).resign(piece_pb2.COLOR_BLACK)
+        game = GameAdapters.engine_to_chess_game(resigned)
         self.assertEqual(game.resigning_color, piece_pb2.COLOR_BLACK)
         self.assertEqual(game.result.resigning_player.participant, BLACK_PARTICIPANT)
 
@@ -85,7 +86,7 @@ class RoundTripTest(unittest.TestCase):
         self.assertEqual(require(rebuilt.result).outcome, game_pb2.GAME_OUTCOME_WHITE_WINS)
 
     def test_a_resignation_survives_a_round_trip(self) -> None:
-        rebuilt = round_trip(play_all(new_game(), ("e2e4",)).resign())
+        rebuilt = round_trip(play_all(new_game(), ("e2e4",)).resign(piece_pb2.COLOR_BLACK))
         self.assertEqual(rebuilt.resigning_color, piece_pb2.COLOR_BLACK)
         self.assertTrue(rebuilt.is_over)
 

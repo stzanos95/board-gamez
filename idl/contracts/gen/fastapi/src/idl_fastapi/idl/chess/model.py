@@ -251,7 +251,7 @@ class ChessSeatResult(BaseModel):
     model_config = ConfigDict(
         populate_by_name=True,
     )
-    outcome: Literal['SEAT_OUTCOME_UNSPECIFIED', 'SEAT_OUTCOME_TAKEN', 'SEAT_OUTCOME_TABLE_NOT_FOUND', 'SEAT_OUTCOME_NOT_OFFERED', 'SEAT_OUTCOME_VERSION_MOVED'] | None = (
+    outcome: Literal['SEAT_OUTCOME_UNSPECIFIED', 'SEAT_OUTCOME_TAKEN', 'SEAT_OUTCOME_TABLE_NOT_FOUND', 'SEAT_OUTCOME_NOT_OFFERED', 'SEAT_OUTCOME_VERSION_MOVED', 'SEAT_OUTCOME_VACATED', 'SEAT_OUTCOME_LEFT', 'SEAT_OUTCOME_NOT_SEATED', 'SEAT_OUTCOME_NOT_AT_TABLE'] | None = (
         None
     )
     table: ChessTable | None = None

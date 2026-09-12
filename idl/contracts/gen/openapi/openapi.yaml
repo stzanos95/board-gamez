@@ -102,6 +102,30 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/google.rpc.Status'
+    /internal/platform/game/withdraw/player:
+        post:
+            tags:
+                - SessionService
+            operationId: SessionService_WithdrawPlayer
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/idl.game.dto.WithdrawPlayerRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/idl.game.dto.WithdrawPlayerResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/google.rpc.Status'
     /internal/platform/lobby/delete/table:
         post:
             tags:
@@ -120,6 +144,30 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/idl.lobby.dto.DeleteTableResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/google.rpc.Status'
+    /internal/platform/lobby/leave/table:
+        post:
+            tags:
+                - SeatService
+            operationId: SeatService_LeaveTable
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/idl.lobby.dto.LeaveTableRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/idl.lobby.dto.LeaveTableResponse'
                 default:
                     description: Default error response
                     content:
@@ -192,6 +240,30 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/idl.lobby.dto.UpsertTableResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/google.rpc.Status'
+    /internal/platform/lobby/vacate/seat:
+        post:
+            tags:
+                - SeatService
+            operationId: SeatService_VacateSeat
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/idl.lobby.dto.VacateSeatRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/idl.lobby.dto.VacateSeatResponse'
                 default:
                     description: Default error response
                     content:
@@ -676,6 +748,10 @@ components:
                         - SEAT_OUTCOME_TABLE_NOT_FOUND
                         - SEAT_OUTCOME_NOT_OFFERED
                         - SEAT_OUTCOME_VERSION_MOVED
+                        - SEAT_OUTCOME_VACATED
+                        - SEAT_OUTCOME_LEFT
+                        - SEAT_OUTCOME_NOT_SEATED
+                        - SEAT_OUTCOME_NOT_AT_TABLE
                     type: string
                     format: enum
                 table:
@@ -1102,6 +1178,24 @@ components:
             properties:
                 session:
                     $ref: '#/components/schemas/idl.game.model.SessionView'
+        idl.game.dto.WithdrawPlayerRequest:
+            type: object
+            properties:
+                sessionId:
+                    type: string
+                playerId:
+                    type: string
+            description: |-
+                Take a player out of the game at a table.
+
+                 Sent when the player leaves the table, whoever's turn it is. A game with a
+                 result is left as it is. `version` is not carried: nothing is built against
+                 the game here, and the withdrawal is written against the game as it stands.
+        idl.game.dto.WithdrawPlayerResponse:
+            type: object
+            properties:
+                result:
+                    $ref: '#/components/schemas/idl.game.model.WithdrawalResult'
         idl.game.model.CommandResult:
             type: object
             properties:
@@ -1260,6 +1354,28 @@ components:
 
                  A view arrives both as an answer and unasked, so two of them can cross. A
                  client renders one only when its version is above the version it is showing.
+        idl.game.model.WithdrawalResult:
+            type: object
+            properties:
+                outcome:
+                    enum:
+                        - WITHDRAWAL_OUTCOME_UNSPECIFIED
+                        - WITHDRAWAL_OUTCOME_WITHDRAWN
+                        - WITHDRAWAL_OUTCOME_SESSION_NOT_FOUND
+                        - WITHDRAWAL_OUTCOME_NOT_A_PARTICIPANT
+                        - WITHDRAWAL_OUTCOME_NOT_IN_GAME
+                        - WITHDRAWAL_OUTCOME_GAME_OVER
+                        - WITHDRAWAL_OUTCOME_VERSION_MOVED
+                    type: string
+                    format: enum
+                session:
+                    $ref: '#/components/schemas/idl.game.model.SessionView'
+            description: |-
+                What happened to a withdrawal, and the game as the withdrawing player may
+                 now see it.
+
+                 The session is carried whatever the outcome, and is unset only when no game
+                 is stored under the id the withdrawal named.
         idl.lobby.dto.DeleteTableRequest:
             type: object
             properties:
@@ -1272,6 +1388,19 @@ components:
             properties:
                 tableId:
                     type: string
+        idl.lobby.dto.LeaveTableRequest:
+            type: object
+            properties:
+                tableId:
+                    type: string
+                playerId:
+                    type: string
+            description: Leave the table, giving up a seat on the way out.
+        idl.lobby.dto.LeaveTableResponse:
+            type: object
+            properties:
+                result:
+                    $ref: '#/components/schemas/idl.lobby.model.SeatResult'
         idl.lobby.dto.ListTableRequest:
             type: object
             properties: {}
@@ -1305,6 +1434,24 @@ components:
             properties:
                 table:
                     $ref: '#/components/schemas/idl.lobby.model.Table'
+        idl.lobby.dto.VacateSeatRequest:
+            type: object
+            properties:
+                tableId:
+                    type: string
+                playerId:
+                    type: string
+            description: |-
+                Give up the seat and stay at the table.
+
+                 A player in a game being played is withdrawn from it first; what that does
+                 to the game is the game's own. No version is carried: giving up a seat is not
+                 built against a table the player has seen.
+        idl.lobby.dto.VacateSeatResponse:
+            type: object
+            properties:
+                result:
+                    $ref: '#/components/schemas/idl.lobby.model.SeatResult'
         idl.lobby.model.Seat:
             type: object
             properties:
@@ -1339,6 +1486,29 @@ components:
 
                  A seat holds a player id and no more. A name to draw is read from identity
                  when it is needed, so a renamed player is never stale here.
+        idl.lobby.model.SeatResult:
+            type: object
+            properties:
+                outcome:
+                    enum:
+                        - SEAT_OUTCOME_UNSPECIFIED
+                        - SEAT_OUTCOME_TAKEN
+                        - SEAT_OUTCOME_TABLE_NOT_FOUND
+                        - SEAT_OUTCOME_NOT_OFFERED
+                        - SEAT_OUTCOME_VERSION_MOVED
+                        - SEAT_OUTCOME_VACATED
+                        - SEAT_OUTCOME_LEFT
+                        - SEAT_OUTCOME_NOT_SEATED
+                        - SEAT_OUTCOME_NOT_AT_TABLE
+                    type: string
+                    format: enum
+                table:
+                    $ref: '#/components/schemas/idl.lobby.model.Table'
+            description: |-
+                What happened to a player's place at a table, and the table as it now stands.
+
+                 The table is carried whatever the outcome, and is unset only when no table has
+                 the id the change named.
         idl.lobby.model.Table:
             type: object
             properties:
@@ -1402,12 +1572,19 @@ tags:
          game changes by playing an action and in no other way.
     - name: GameSpecService
       description: The catalogue of games, assembled from what each game answers about itself.
+    - name: SeatService
+      description: |-
+        A player's place at a table, and the two ways to give it up.
+
+         Both withdraw the player from a game being played at the table before the
+         table is written, so a game is never left waiting on a player who has gone.
     - name: SessionService
       description: |-
-        A game being played, and the one way to change one.
+        A game being played, and the two ways to change one.
 
-         A game changes by applying a command and in no other way. There is no write of
-         a state, so no caller can set one.
+         A game changes by a participant applying a command, or by a player being
+         withdrawn from it, and in no other way. There is no write of a state, so no
+         caller can set one.
     - name: TableService
       description: |-
         Storage for tables.

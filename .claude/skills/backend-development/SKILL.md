@@ -123,11 +123,19 @@ deployable  →  package  →  contracts
 One direction, with no exceptions.
 
 - A package never imports a deployable.
-- A domain package never imports another domain package. Domains reference each
-  other by identifier, and a name is joined when a view is assembled.
 - `packages/core` is imported by anything and imports no domain.
+- `packages/game` is the platform: a game being played, whatever game it is.
+  Every domain package may import it and hold its controllers as
+  collaborators. It imports `core` and nothing else under `packages/`.
+- Every other domain package (`lobby`, `identity`, ...) imports `core` and
+  `game`, and never a peer. Two peers reference each other by identifier, and
+  a name is joined when a view is assembled.
 - A generic layer never imports a specific one. The session layer carries a
   game's state as `google.protobuf.Any` and never unpacks it.
+
+```
+deployable  →  product  →  { lobby, identity, ... }  →  game  →  core
+```
 
 ### A game is two packages, and the line between them is the platform contract
 
@@ -158,6 +166,12 @@ What goes where, by the question it answers:
   does a `GameResult` read for participant 2, how is a `GameState` payload
   unpacked" — `packages/product-<game>`. Anything that names a participant, a
   session, a `GameState` or an `Action` is the product's, never the rules'.
+- "What a participant leaving the game does to it" —
+  `packages/product-<game>`, as `BaseRules.withdraw_participant`. Asked by
+  the session controller in or out of turn and never once there is a result;
+  it answers the state the game became. The lobby's `SeatController` calls the
+  session controller's `withdraw_player` before it opens a seat, so a game is
+  never left waiting on a player who has gone.
 - "Which seats a player may take, and what each one is in this game" —
   `packages/product-<game>`, as a `BaseSeating` implementation. It answers a
   list of `SeatChoice`s, each a seat number and a role packed as `Any`, and

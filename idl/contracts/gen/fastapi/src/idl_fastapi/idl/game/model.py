@@ -148,6 +148,24 @@ class SessionView(BaseModel):
     version: str | None = None
 
 
+class WithdrawalResult(BaseModel):
+    """
+    What happened to a withdrawal, and the game as the withdrawing player may
+     now see it.
+
+     The session is carried whatever the outcome, and is unset only when no game
+     is stored under the id the withdrawal named.
+    """
+
+    model_config = ConfigDict(
+        populate_by_name=True,
+    )
+    outcome: Literal['WITHDRAWAL_OUTCOME_UNSPECIFIED', 'WITHDRAWAL_OUTCOME_WITHDRAWN', 'WITHDRAWAL_OUTCOME_SESSION_NOT_FOUND', 'WITHDRAWAL_OUTCOME_NOT_A_PARTICIPANT', 'WITHDRAWAL_OUTCOME_NOT_IN_GAME', 'WITHDRAWAL_OUTCOME_GAME_OVER', 'WITHDRAWAL_OUTCOME_VERSION_MOVED'] | None = (
+        None
+    )
+    session: SessionView | None = None
+
+
 class CommandResult(BaseModel):
     """
     What happened to a command, and the game as its sender may now see it.

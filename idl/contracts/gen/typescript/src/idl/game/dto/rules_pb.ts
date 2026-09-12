@@ -22,7 +22,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file idl/game/dto/rules.proto.
  */
 export const file_idl_game_dto_rules: GenFile = /*@__PURE__*/
-  fileDesc("ChhpZGwvZ2FtZS9kdG8vcnVsZXMucHJvdG8SDGlkbC5nYW1lLmR0byJqChFDcmVhdGVHYW1lUmVxdWVzdBIZChFwYXJ0aWNpcGFudF9jb3VudBgBIAEoDRI6ChFwYXJ0aWNpcGFudF9yb2xlcxgCIAMoCzIfLmlkbC5nYW1lLm1vZGVsLlBhcnRpY2lwYW50Um9sZSI+ChJDcmVhdGVHYW1lUmVzcG9uc2USKAoFc3RhdGUYASABKAsyGS5pZGwuZ2FtZS5tb2RlbC5HYW1lU3RhdGUiZgoSQXBwbHlBY3Rpb25SZXF1ZXN0EigKBXN0YXRlGAEgASgLMhkuaWRsLmdhbWUubW9kZWwuR2FtZVN0YXRlEiYKBmFjdGlvbhgCIAEoCzIWLmlkbC5nYW1lLm1vZGVsLkFjdGlvbiI/ChNBcHBseUFjdGlvblJlc3BvbnNlEigKBXN0YXRlGAEgASgLMhkuaWRsLmdhbWUubW9kZWwuR2FtZVN0YXRlIlAKD1JlYWRWaWV3UmVxdWVzdBIoCgVzdGF0ZRgBIAEoCzIZLmlkbC5nYW1lLm1vZGVsLkdhbWVTdGF0ZRITCgtwYXJ0aWNpcGFudBgCIAEoDSI2ChBSZWFkVmlld1Jlc3BvbnNlEiIKBHZpZXcYASABKAsyFC5nb29nbGUucHJvdG9idWYuQW55IhMKEVJlYWRCb3VuZHNSZXF1ZXN0IkcKElJlYWRCb3VuZHNSZXNwb25zZRIxCgZib3VuZHMYASABKAsyIS5pZGwuZ2FtZS5tb2RlbC5QYXJ0aWNpcGFudEJvdW5kc0IyWjBib2FyZGdhbWV6L2NvbnRyYWN0cy9nZW4vZ28vaWRsL2dhbWUvZHRvO2dhbWVkdG9iBnByb3RvMw", [file_google_protobuf_any, file_idl_game_model_action, file_idl_game_model_game_spec, file_idl_game_model_game_state, file_idl_game_model_participant]);
+  fileDesc("ChhpZGwvZ2FtZS9kdG8vcnVsZXMucHJvdG8SDGlkbC5nYW1lLmR0byJqChFDcmVhdGVHYW1lUmVxdWVzdBIZChFwYXJ0aWNpcGFudF9jb3VudBgBIAEoDRI6ChFwYXJ0aWNpcGFudF9yb2xlcxgCIAMoCzIfLmlkbC5nYW1lLm1vZGVsLlBhcnRpY2lwYW50Um9sZSI+ChJDcmVhdGVHYW1lUmVzcG9uc2USKAoFc3RhdGUYASABKAsyGS5pZGwuZ2FtZS5tb2RlbC5HYW1lU3RhdGUiZgoSQXBwbHlBY3Rpb25SZXF1ZXN0EigKBXN0YXRlGAEgASgLMhkuaWRsLmdhbWUubW9kZWwuR2FtZVN0YXRlEiYKBmFjdGlvbhgCIAEoCzIWLmlkbC5nYW1lLm1vZGVsLkFjdGlvbiI/ChNBcHBseUFjdGlvblJlc3BvbnNlEigKBXN0YXRlGAEgASgLMhkuaWRsLmdhbWUubW9kZWwuR2FtZVN0YXRlIlAKD1JlYWRWaWV3UmVxdWVzdBIoCgVzdGF0ZRgBIAEoCzIZLmlkbC5nYW1lLm1vZGVsLkdhbWVTdGF0ZRITCgtwYXJ0aWNpcGFudBgCIAEoDSI2ChBSZWFkVmlld1Jlc3BvbnNlEiIKBHZpZXcYASABKAsyFC5nb29nbGUucHJvdG9idWYuQW55IlsKGldpdGhkcmF3UGFydGljaXBhbnRSZXF1ZXN0EigKBXN0YXRlGAEgASgLMhkuaWRsLmdhbWUubW9kZWwuR2FtZVN0YXRlEhMKC3BhcnRpY2lwYW50GAIgASgNIkcKG1dpdGhkcmF3UGFydGljaXBhbnRSZXNwb25zZRIoCgVzdGF0ZRgBIAEoCzIZLmlkbC5nYW1lLm1vZGVsLkdhbWVTdGF0ZSITChFSZWFkQm91bmRzUmVxdWVzdCJHChJSZWFkQm91bmRzUmVzcG9uc2USMQoGYm91bmRzGAEgASgLMiEuaWRsLmdhbWUubW9kZWwuUGFydGljaXBhbnRCb3VuZHNCMlowYm9hcmRnYW1lei9jb250cmFjdHMvZ2VuL2dvL2lkbC9nYW1lL2R0bztnYW1lZHRvYgZwcm90bzM", [file_google_protobuf_any, file_idl_game_model_action, file_idl_game_model_game_spec, file_idl_game_model_game_state, file_idl_game_model_participant]);
 
 /**
  * Begin a game for these participants.
@@ -163,6 +163,54 @@ export const ReadViewResponseSchema: GenMessage<ReadViewResponse> = /*@__PURE__*
   messageDesc(file_idl_game_dto_rules, 5);
 
 /**
+ * Take one participant out of a game being played.
+ *
+ * Asked when a participant leaves the table, in or out of turn, and only while
+ * the game has no result. What leaving means is the game's own: a resignation,
+ * a removal, holdings returned to the pile. The state answered carries whatever
+ * that is, and a result once the game cannot go on.
+ *
+ * @generated from message idl.game.dto.WithdrawParticipantRequest
+ */
+export type WithdrawParticipantRequest = Message<"idl.game.dto.WithdrawParticipantRequest"> & {
+  /**
+   * @generated from field: idl.game.model.GameState state = 1;
+   */
+  state?: GameState;
+
+  /**
+   * @generated from field: uint32 participant = 2;
+   */
+  participant: number;
+};
+
+/**
+ * Describes the message idl.game.dto.WithdrawParticipantRequest.
+ * Use `create(WithdrawParticipantRequestSchema)` to create a new message.
+ */
+export const WithdrawParticipantRequestSchema: GenMessage<WithdrawParticipantRequest> = /*@__PURE__*/
+  messageDesc(file_idl_game_dto_rules, 6);
+
+/**
+ * @generated from message idl.game.dto.WithdrawParticipantResponse
+ */
+export type WithdrawParticipantResponse = Message<"idl.game.dto.WithdrawParticipantResponse"> & {
+  /**
+   * Unset when the participant is not in the game.
+   *
+   * @generated from field: idl.game.model.GameState state = 1;
+   */
+  state?: GameState;
+};
+
+/**
+ * Describes the message idl.game.dto.WithdrawParticipantResponse.
+ * Use `create(WithdrawParticipantResponseSchema)` to create a new message.
+ */
+export const WithdrawParticipantResponseSchema: GenMessage<WithdrawParticipantResponse> = /*@__PURE__*/
+  messageDesc(file_idl_game_dto_rules, 7);
+
+/**
  * @generated from message idl.game.dto.ReadBoundsRequest
  */
 export type ReadBoundsRequest = Message<"idl.game.dto.ReadBoundsRequest"> & {
@@ -173,7 +221,7 @@ export type ReadBoundsRequest = Message<"idl.game.dto.ReadBoundsRequest"> & {
  * Use `create(ReadBoundsRequestSchema)` to create a new message.
  */
 export const ReadBoundsRequestSchema: GenMessage<ReadBoundsRequest> = /*@__PURE__*/
-  messageDesc(file_idl_game_dto_rules, 6);
+  messageDesc(file_idl_game_dto_rules, 8);
 
 /**
  * @generated from message idl.game.dto.ReadBoundsResponse
@@ -190,5 +238,5 @@ export type ReadBoundsResponse = Message<"idl.game.dto.ReadBoundsResponse"> & {
  * Use `create(ReadBoundsResponseSchema)` to create a new message.
  */
 export const ReadBoundsResponseSchema: GenMessage<ReadBoundsResponse> = /*@__PURE__*/
-  messageDesc(file_idl_game_dto_rules, 7);
+  messageDesc(file_idl_game_dto_rules, 9);
 

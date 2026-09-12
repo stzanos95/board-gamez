@@ -33,7 +33,7 @@ convert values so that neither adjacent layer needs to know the other's types.
 | `packages/<domain>/…/controller/` | Business | Yes. This is the only layer that decides |
 | `packages/<domain>/…/repository/` | Persistence | Only about storage, never about meaning |
 | `packages/core/` | Shared utilities | No domain-specific code |
-| `packages/game/` | Application, Business, Persistence | A game being played, whatever game it is. Never imports a product |
+| `packages/game/` | Application, Business, Persistence | A game being played, whatever game it is. Imported by every domain package; imports none of them, and never a product |
 | `packages/chess/` | Business (one game's rules) | Chess rules only. Every chess type is `idl.chess.model`'s; the package adds behaviour. Knows nothing about tables or participants |
 | `packages/product-chess/` | Application and Business (one product) | Chess as the platform hosts it. The only package importing both `game` and `chess` |
 | `idl/contracts/proto/…/model/` | Business vocabulary | Definitions of what a thing is |
@@ -114,15 +114,18 @@ for. A rule it evaluated would be a second copy of that rule, on a machine this
 project does not control, that drifts from the first.
 
 `TableService` is a store with four methods and no domain verb, and nothing
-between it and a browser decides yet, so joining a table, standing up and
-leaving are currently a read, a change and a version-guarded write made in
+between it and a browser decides yet, so opening a table and joining one are
+currently a read, a change and a version-guarded write made in
 `packages/ux/src_tsx/lobby/table_intents.ts`. That is business logic above the
-Application layer. It is in one file so that `JoinTable`, `StandUp` and
-`LeaveTable` operations on the lobby replace it with calls.
+Application layer. It is in one file so that `CreateTable` and `JoinTable`
+operations on the lobby replace it with calls.
 
-Taking a seat is not made there. A seat is taken through the game's own service
-as one of the `SeatChoice`s the game offered, and the lobby's `SeatController`
-checks the choice and writes the table.
+Taking a seat, giving one up and leaving are not made there. A seat is taken
+through the game's own service as one of the `SeatChoice`s the game offered;
+a seat is given up through the lobby's `SeatService`, which withdraws the
+player from the game being played before it opens the seat. What a withdrawal
+does to the game is answered by the game's rules through
+`RulesService.WithdrawParticipant`: in chess the leaver resigns.
 
 ### The platform does not interpret games
 
@@ -150,6 +153,11 @@ and hands them to the session controller; there is no product process.
 `lobby` stores a `player_id`, not a `Player`. A stored copy of another domain's
 model becomes stale when that domain changes it, and it places one domain's shape
 inside another's storage. Display names are joined when a view is assembled.
+
+`game` is the exception in one direction: it is the platform every domain is
+built on, so any domain package may import it and call its controllers. A
+table hosts a game, and the lobby withdraws a player from that game when they
+give up their seat. `game` imports no domain package in return.
 
 ### Configuration is a file, and construction happens once
 

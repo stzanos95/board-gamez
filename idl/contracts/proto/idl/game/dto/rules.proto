@@ -49,6 +49,21 @@ message ReadViewResponse {
   google.protobuf.Any view = 1;  // The game's own view type.
 }
 
+// Take one participant out of a game being played.
+//
+// Asked when a participant leaves the table, in or out of turn, and only while
+// the game has no result. What leaving means is the game's own: a resignation,
+// a removal, holdings returned to the pile. The state answered carries whatever
+// that is, and a result once the game cannot go on.
+message WithdrawParticipantRequest {
+  idl.game.model.GameState state = 1;
+  uint32 participant = 2;
+}
+
+message WithdrawParticipantResponse {
+  idl.game.model.GameState state = 1;  // Unset when the participant is not in the game.
+}
+
 message ReadBoundsRequest {}
 
 message ReadBoundsResponse {

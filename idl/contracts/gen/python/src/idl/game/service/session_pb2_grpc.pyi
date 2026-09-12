@@ -19,10 +19,11 @@ class _ServicerContext(grpc.ServicerContext, grpc.aio.ServicerContext):  # type:
     ...
 
 class SessionServiceStub:
-    """A game being played, and the one way to change one.
+    """A game being played, and the two ways to change one.
 
-    A game changes by applying a command and in no other way. There is no write of
-    a state, so no caller can set one.
+    A game changes by a participant applying a command, or by a player being
+    withdrawn from it, and in no other way. There is no write of a state, so no
+    caller can set one.
     """
 
     def __init__(self, channel: typing.Union[grpc.Channel, grpc.aio.Channel]) -> None: ...
@@ -41,11 +42,17 @@ class SessionServiceStub:
         idl.game.dto.command_pb2.ApplyCommandResponse,
     ]
 
-class SessionServiceAsyncStub:
-    """A game being played, and the one way to change one.
+    WithdrawPlayer: grpc.UnaryUnaryMultiCallable[
+        idl.game.dto.session_pb2.WithdrawPlayerRequest,
+        idl.game.dto.session_pb2.WithdrawPlayerResponse,
+    ]
 
-    A game changes by applying a command and in no other way. There is no write of
-    a state, so no caller can set one.
+class SessionServiceAsyncStub:
+    """A game being played, and the two ways to change one.
+
+    A game changes by a participant applying a command, or by a player being
+    withdrawn from it, and in no other way. There is no write of a state, so no
+    caller can set one.
     """
 
     CreateSession: grpc.aio.UnaryUnaryMultiCallable[
@@ -63,11 +70,17 @@ class SessionServiceAsyncStub:
         idl.game.dto.command_pb2.ApplyCommandResponse,
     ]
 
-class SessionServiceServicer(metaclass=abc.ABCMeta):
-    """A game being played, and the one way to change one.
+    WithdrawPlayer: grpc.aio.UnaryUnaryMultiCallable[
+        idl.game.dto.session_pb2.WithdrawPlayerRequest,
+        idl.game.dto.session_pb2.WithdrawPlayerResponse,
+    ]
 
-    A game changes by applying a command and in no other way. There is no write of
-    a state, so no caller can set one.
+class SessionServiceServicer(metaclass=abc.ABCMeta):
+    """A game being played, and the two ways to change one.
+
+    A game changes by a participant applying a command, or by a player being
+    withdrawn from it, and in no other way. There is no write of a state, so no
+    caller can set one.
     """
 
     @abc.abstractmethod
@@ -90,5 +103,12 @@ class SessionServiceServicer(metaclass=abc.ABCMeta):
         request: idl.game.dto.command_pb2.ApplyCommandRequest,
         context: _ServicerContext,
     ) -> typing.Union[idl.game.dto.command_pb2.ApplyCommandResponse, collections.abc.Awaitable[idl.game.dto.command_pb2.ApplyCommandResponse]]: ...
+
+    @abc.abstractmethod
+    def WithdrawPlayer(
+        self,
+        request: idl.game.dto.session_pb2.WithdrawPlayerRequest,
+        context: _ServicerContext,
+    ) -> typing.Union[idl.game.dto.session_pb2.WithdrawPlayerResponse, collections.abc.Awaitable[idl.game.dto.session_pb2.WithdrawPlayerResponse]]: ...
 
 def add_SessionServiceServicer_to_server(servicer: SessionServiceServicer, server: typing.Union[grpc.Server, grpc.aio.Server]) -> None: ...

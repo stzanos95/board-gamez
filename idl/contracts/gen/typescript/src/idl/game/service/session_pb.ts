@@ -9,20 +9,21 @@ import { fileDesc, serviceDesc } from "@bufbuild/protobuf/codegenv1";
 import { file_google_api_annotations } from "../../../google/api/annotations_pb";
 import type { ApplyCommandRequestSchema, ApplyCommandResponseSchema } from "../dto/command_pb";
 import { file_idl_game_dto_command } from "../dto/command_pb";
-import type { CreateSessionRequestSchema, CreateSessionResponseSchema, ReadSessionRequestSchema, ReadSessionResponseSchema } from "../dto/session_pb";
+import type { CreateSessionRequestSchema, CreateSessionResponseSchema, ReadSessionRequestSchema, ReadSessionResponseSchema, WithdrawPlayerRequestSchema, WithdrawPlayerResponseSchema } from "../dto/session_pb";
 import { file_idl_game_dto_session } from "../dto/session_pb";
 
 /**
  * Describes the file idl/game/service/session.proto.
  */
 export const file_idl_game_service_session: GenFile = /*@__PURE__*/
-  fileDesc("Ch5pZGwvZ2FtZS9zZXJ2aWNlL3Nlc3Npb24ucHJvdG8SEGlkbC5nYW1lLnNlcnZpY2UyrgMKDlNlc3Npb25TZXJ2aWNlEosBCg1DcmVhdGVTZXNzaW9uEiIuaWRsLmdhbWUuZHRvLkNyZWF0ZVNlc3Npb25SZXF1ZXN0GiMuaWRsLmdhbWUuZHRvLkNyZWF0ZVNlc3Npb25SZXNwb25zZSIxgtPkkwIrIiYvaW50ZXJuYWwvcGxhdGZvcm0vZ2FtZS9jcmVhdGUvc2Vzc2lvbjoBKhKDAQoLUmVhZFNlc3Npb24SIC5pZGwuZ2FtZS5kdG8uUmVhZFNlc3Npb25SZXF1ZXN0GiEuaWRsLmdhbWUuZHRvLlJlYWRTZXNzaW9uUmVzcG9uc2UiL4LT5JMCKSIkL2ludGVybmFsL3BsYXRmb3JtL2dhbWUvcmVhZC9zZXNzaW9uOgEqEocBCgxBcHBseUNvbW1hbmQSIS5pZGwuZ2FtZS5kdG8uQXBwbHlDb21tYW5kUmVxdWVzdBoiLmlkbC5nYW1lLmR0by5BcHBseUNvbW1hbmRSZXNwb25zZSIwgtPkkwIqIiUvaW50ZXJuYWwvcGxhdGZvcm0vZ2FtZS9hcHBseS9jb21tYW5kOgEqQjpaOGJvYXJkZ2FtZXovY29udHJhY3RzL2dlbi9nby9pZGwvZ2FtZS9zZXJ2aWNlO2dhbWVzZXJ2aWNlYgZwcm90bzM", [file_google_api_annotations, file_idl_game_dto_command, file_idl_game_dto_session]);
+  fileDesc("Ch5pZGwvZ2FtZS9zZXJ2aWNlL3Nlc3Npb24ucHJvdG8SEGlkbC5nYW1lLnNlcnZpY2UywAQKDlNlc3Npb25TZXJ2aWNlEosBCg1DcmVhdGVTZXNzaW9uEiIuaWRsLmdhbWUuZHRvLkNyZWF0ZVNlc3Npb25SZXF1ZXN0GiMuaWRsLmdhbWUuZHRvLkNyZWF0ZVNlc3Npb25SZXNwb25zZSIxgtPkkwIrIiYvaW50ZXJuYWwvcGxhdGZvcm0vZ2FtZS9jcmVhdGUvc2Vzc2lvbjoBKhKDAQoLUmVhZFNlc3Npb24SIC5pZGwuZ2FtZS5kdG8uUmVhZFNlc3Npb25SZXF1ZXN0GiEuaWRsLmdhbWUuZHRvLlJlYWRTZXNzaW9uUmVzcG9uc2UiL4LT5JMCKSIkL2ludGVybmFsL3BsYXRmb3JtL2dhbWUvcmVhZC9zZXNzaW9uOgEqEocBCgxBcHBseUNvbW1hbmQSIS5pZGwuZ2FtZS5kdG8uQXBwbHlDb21tYW5kUmVxdWVzdBoiLmlkbC5nYW1lLmR0by5BcHBseUNvbW1hbmRSZXNwb25zZSIwgtPkkwIqIiUvaW50ZXJuYWwvcGxhdGZvcm0vZ2FtZS9hcHBseS9jb21tYW5kOgEqEo8BCg5XaXRoZHJhd1BsYXllchIjLmlkbC5nYW1lLmR0by5XaXRoZHJhd1BsYXllclJlcXVlc3QaJC5pZGwuZ2FtZS5kdG8uV2l0aGRyYXdQbGF5ZXJSZXNwb25zZSIygtPkkwIsIicvaW50ZXJuYWwvcGxhdGZvcm0vZ2FtZS93aXRoZHJhdy9wbGF5ZXI6ASpCOlo4Ym9hcmRnYW1lei9jb250cmFjdHMvZ2VuL2dvL2lkbC9nYW1lL3NlcnZpY2U7Z2FtZXNlcnZpY2ViBnByb3RvMw", [file_google_api_annotations, file_idl_game_dto_command, file_idl_game_dto_session]);
 
 /**
- * A game being played, and the one way to change one.
+ * A game being played, and the two ways to change one.
  *
- * A game changes by applying a command and in no other way. There is no write of
- * a state, so no caller can set one.
+ * A game changes by a participant applying a command, or by a player being
+ * withdrawn from it, and in no other way. There is no write of a state, so no
+ * caller can set one.
  *
  * @generated from service idl.game.service.SessionService
  */
@@ -50,6 +51,14 @@ export const SessionService: GenService<{
     methodKind: "unary";
     input: typeof ApplyCommandRequestSchema;
     output: typeof ApplyCommandResponseSchema;
+  },
+  /**
+   * @generated from rpc idl.game.service.SessionService.WithdrawPlayer
+   */
+  withdrawPlayer: {
+    methodKind: "unary";
+    input: typeof WithdrawPlayerRequestSchema;
+    output: typeof WithdrawPlayerResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_idl_game_service_session, 0);

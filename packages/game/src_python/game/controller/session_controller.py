@@ -12,6 +12,7 @@ from idl.game.model.command_result_pb2 import CommandOutcome, CommandResult
 from idl.game.model.game_type_pb2 import GameType
 from idl.game.model.participant_pb2 import Participant
 from idl.game.model.session_pb2 import Session, SessionView
+from idl.game.model.withdrawal_result_pb2 import WithdrawalOutcome, WithdrawalResult
 
 from game.adapters.session_adapters import SessionAdapters
 from game.controller.rules_registry import RulesRegistry
@@ -21,6 +22,7 @@ UNSTORED_VERSION = 0
 NO_COMMAND_ID = ""
 NOT_PLAYING = 0
 FIRST_PARTICIPANT = 1
+WITHDRAWAL_ATTEMPTS = 3
 
 
 class SessionController:
@@ -160,6 +162,75 @@ class SessionController:
             CommandOutcome.COMMAND_OUTCOME_APPLIED,
             SessionAdapters.session_obj_to_session(stored),
             player_id,
+        )
+
+    async def withdraw_player(self, session_id: str, player_id: str) -> WithdrawalResult:
+        """
+        Take a player out of the game, and say how it went.
+
+        Nothing is built against a version here, so a write that loses to a
+        command is read and made again, up to WITHDRAWAL_ATTEMPTS times.
+        """
+        result = await self._withdraw_player_once(session_id, player_id)
+        attempts = 1
+        while (
+            result.outcome == WithdrawalOutcome.WITHDRAWAL_OUTCOME_VERSION_MOVED
+            and attempts < WITHDRAWAL_ATTEMPTS
+        ):
+            result = await self._withdraw_player_once(session_id, player_id)
+            attempts += 1
+        return result
+
+    async def _withdraw_player_once(self, session_id: str, player_id: str) -> WithdrawalResult:
+        """
+        One read, one ask of the rules, one write.
+        """
+        stored = await self._repository.read(session_id)
+        if stored is None:
+            return WithdrawalResult(outcome=WithdrawalOutcome.WITHDRAWAL_OUTCOME_SESSION_NOT_FOUND)
+        session = SessionAdapters.session_obj_to_session(stored)
+        participant = SessionController._get_participant(session, player_id)
+        if participant == NOT_PLAYING:
+            return await self._get_withdrawal_result(
+                WithdrawalOutcome.WITHDRAWAL_OUTCOME_NOT_A_PARTICIPANT, session, player_id
+            )
+        if session.state.HasField("result"):
+            return await self._get_withdrawal_result(
+                WithdrawalOutcome.WITHDRAWAL_OUTCOME_GAME_OVER, session, player_id
+            )
+
+        rules = self._rules.get_rules(session.game_type)
+        next_state = await rules.withdraw_participant(session.state, participant)
+        if next_state is None:
+            return await self._get_withdrawal_result(
+                WithdrawalOutcome.WITHDRAWAL_OUTCOME_NOT_IN_GAME, session, player_id
+            )
+
+        withdrawn = Session(
+            id=session.id,
+            game_type=session.game_type,
+            participants=session.participants,
+            state=next_state,
+            last_command_id=session.last_command_id,
+            version=session.version,
+        )
+        stored = await self._repository.upsert(SessionAdapters.session_to_session_obj(withdrawn))
+        if stored is None:
+            return WithdrawalResult(
+                outcome=WithdrawalOutcome.WITHDRAWAL_OUTCOME_VERSION_MOVED,
+                session=await self.read_session(session_id, player_id),
+            )
+        return await self._get_withdrawal_result(
+            WithdrawalOutcome.WITHDRAWAL_OUTCOME_WITHDRAWN,
+            SessionAdapters.session_obj_to_session(stored),
+            player_id,
+        )
+
+    async def _get_withdrawal_result(
+        self, outcome: WithdrawalOutcome, session: Session, player_id: str
+    ) -> WithdrawalResult:
+        return WithdrawalResult(
+            outcome=outcome, session=await self._get_session_view(session, player_id)
         )
 
     async def _get_command_result(

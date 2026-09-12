@@ -27,10 +27,11 @@ if _version_not_supported:
 
 
 class SessionServiceStub(object):
-    """A game being played, and the one way to change one.
+    """A game being played, and the two ways to change one.
 
-    A game changes by applying a command and in no other way. There is no write of
-    a state, so no caller can set one.
+    A game changes by a participant applying a command, or by a player being
+    withdrawn from it, and in no other way. There is no write of a state, so no
+    caller can set one.
     """
 
     def __init__(self, channel):
@@ -54,13 +55,19 @@ class SessionServiceStub(object):
                 request_serializer=idl_dot_game_dot_dto_dot_command__pb2.ApplyCommandRequest.SerializeToString,
                 response_deserializer=idl_dot_game_dot_dto_dot_command__pb2.ApplyCommandResponse.FromString,
                 _registered_method=True)
+        self.WithdrawPlayer = channel.unary_unary(
+                '/idl.game.service.SessionService/WithdrawPlayer',
+                request_serializer=idl_dot_game_dot_dto_dot_session__pb2.WithdrawPlayerRequest.SerializeToString,
+                response_deserializer=idl_dot_game_dot_dto_dot_session__pb2.WithdrawPlayerResponse.FromString,
+                _registered_method=True)
 
 
 class SessionServiceServicer(object):
-    """A game being played, and the one way to change one.
+    """A game being played, and the two ways to change one.
 
-    A game changes by applying a command and in no other way. There is no write of
-    a state, so no caller can set one.
+    A game changes by a participant applying a command, or by a player being
+    withdrawn from it, and in no other way. There is no write of a state, so no
+    caller can set one.
     """
 
     def CreateSession(self, request, context):
@@ -76,6 +83,12 @@ class SessionServiceServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def ApplyCommand(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def WithdrawPlayer(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -99,6 +112,11 @@ def add_SessionServiceServicer_to_server(servicer, server):
                     request_deserializer=idl_dot_game_dot_dto_dot_command__pb2.ApplyCommandRequest.FromString,
                     response_serializer=idl_dot_game_dot_dto_dot_command__pb2.ApplyCommandResponse.SerializeToString,
             ),
+            'WithdrawPlayer': grpc.unary_unary_rpc_method_handler(
+                    servicer.WithdrawPlayer,
+                    request_deserializer=idl_dot_game_dot_dto_dot_session__pb2.WithdrawPlayerRequest.FromString,
+                    response_serializer=idl_dot_game_dot_dto_dot_session__pb2.WithdrawPlayerResponse.SerializeToString,
+            ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
             'idl.game.service.SessionService', rpc_method_handlers)
@@ -108,10 +126,11 @@ def add_SessionServiceServicer_to_server(servicer, server):
 
  # This class is part of an EXPERIMENTAL API.
 class SessionService(object):
-    """A game being played, and the one way to change one.
+    """A game being played, and the two ways to change one.
 
-    A game changes by applying a command and in no other way. There is no write of
-    a state, so no caller can set one.
+    A game changes by a participant applying a command, or by a player being
+    withdrawn from it, and in no other way. There is no write of a state, so no
+    caller can set one.
     """
 
     @staticmethod
@@ -185,6 +204,33 @@ class SessionService(object):
             '/idl.game.service.SessionService/ApplyCommand',
             idl_dot_game_dot_dto_dot_command__pb2.ApplyCommandRequest.SerializeToString,
             idl_dot_game_dot_dto_dot_command__pb2.ApplyCommandResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def WithdrawPlayer(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/idl.game.service.SessionService/WithdrawPlayer',
+            idl_dot_game_dot_dto_dot_session__pb2.WithdrawPlayerRequest.SerializeToString,
+            idl_dot_game_dot_dto_dot_session__pb2.WithdrawPlayerResponse.FromString,
             options,
             channel_credentials,
             insecure,

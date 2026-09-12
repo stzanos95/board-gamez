@@ -100,7 +100,7 @@ class TerminalGame:
                 self._show(games[-1], names)
                 continue
             if command.command_type is CommandType.RESIGN:
-                games.append(engine.resign())
+                games.append(engine.resign(engine.state.side_to_move))
                 self._show(games[-1], names)
                 continue
 

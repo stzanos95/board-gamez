@@ -52,6 +52,24 @@ class ChessRulesAdapters:
             return None
         return chess_action
 
+    @staticmethod
+    def withdraw_request_to_state(request: rules_pb2.WithdrawParticipantRequest) -> GameState:
+        return request.state
+
+    @staticmethod
+    def withdraw_request_to_participant(request: rules_pb2.WithdrawParticipantRequest) -> int:
+        return request.participant
+
+    @staticmethod
+    def game_state_to_withdraw_response(
+        state: GameState | None,
+    ) -> rules_pb2.WithdrawParticipantResponse:
+        """
+        An unset state is how the schema says the participant is not in the
+        game.
+        """
+        return rules_pb2.WithdrawParticipantResponse(state=state)
+
     # --- the platform's roles, to chess's roster ----------------------------
 
     @staticmethod

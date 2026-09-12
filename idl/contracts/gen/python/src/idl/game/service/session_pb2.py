@@ -27,7 +27,7 @@ from idl.game.dto import command_pb2 as idl_dot_game_dot_dto_dot_command__pb2
 from idl.game.dto import session_pb2 as idl_dot_game_dot_dto_dot_session__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1eidl/game/service/session.proto\x12\x10idl.game.service\x1a\x1cgoogle/api/annotations.proto\x1a\x1aidl/game/dto/command.proto\x1a\x1aidl/game/dto/session.proto2\xae\x03\n\x0eSessionService\x12\x8b\x01\n\rCreateSession\x12\".idl.game.dto.CreateSessionRequest\x1a#.idl.game.dto.CreateSessionResponse\"1\x82\xd3\xe4\x93\x02+\"&/internal/platform/game/create/session:\x01*\x12\x83\x01\n\x0bReadSession\x12 .idl.game.dto.ReadSessionRequest\x1a!.idl.game.dto.ReadSessionResponse\"/\x82\xd3\xe4\x93\x02)\"$/internal/platform/game/read/session:\x01*\x12\x87\x01\n\x0c\x41pplyCommand\x12!.idl.game.dto.ApplyCommandRequest\x1a\".idl.game.dto.ApplyCommandResponse\"0\x82\xd3\xe4\x93\x02*\"%/internal/platform/game/apply/command:\x01*B:Z8boardgamez/contracts/gen/go/idl/game/service;gameserviceb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1eidl/game/service/session.proto\x12\x10idl.game.service\x1a\x1cgoogle/api/annotations.proto\x1a\x1aidl/game/dto/command.proto\x1a\x1aidl/game/dto/session.proto2\xc0\x04\n\x0eSessionService\x12\x8b\x01\n\rCreateSession\x12\".idl.game.dto.CreateSessionRequest\x1a#.idl.game.dto.CreateSessionResponse\"1\x82\xd3\xe4\x93\x02+\"&/internal/platform/game/create/session:\x01*\x12\x83\x01\n\x0bReadSession\x12 .idl.game.dto.ReadSessionRequest\x1a!.idl.game.dto.ReadSessionResponse\"/\x82\xd3\xe4\x93\x02)\"$/internal/platform/game/read/session:\x01*\x12\x87\x01\n\x0c\x41pplyCommand\x12!.idl.game.dto.ApplyCommandRequest\x1a\".idl.game.dto.ApplyCommandResponse\"0\x82\xd3\xe4\x93\x02*\"%/internal/platform/game/apply/command:\x01*\x12\x8f\x01\n\x0eWithdrawPlayer\x12#.idl.game.dto.WithdrawPlayerRequest\x1a$.idl.game.dto.WithdrawPlayerResponse\"2\x82\xd3\xe4\x93\x02,\"\'/internal/platform/game/withdraw/player:\x01*B:Z8boardgamez/contracts/gen/go/idl/game/service;gameserviceb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -41,6 +41,8 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_SESSIONSERVICE'].methods_by_name['ReadSession']._serialized_options = b'\202\323\344\223\002)\"$/internal/platform/game/read/session:\001*'
   _globals['_SESSIONSERVICE'].methods_by_name['ApplyCommand']._loaded_options = None
   _globals['_SESSIONSERVICE'].methods_by_name['ApplyCommand']._serialized_options = b'\202\323\344\223\002*\"%/internal/platform/game/apply/command:\001*'
+  _globals['_SESSIONSERVICE'].methods_by_name['WithdrawPlayer']._loaded_options = None
+  _globals['_SESSIONSERVICE'].methods_by_name['WithdrawPlayer']._serialized_options = b'\202\323\344\223\002,\"\'/internal/platform/game/withdraw/player:\001*'
   _globals['_SESSIONSERVICE']._serialized_start=139
-  _globals['_SESSIONSERVICE']._serialized_end=569
+  _globals['_SESSIONSERVICE']._serialized_end=715
 # @@protoc_insertion_point(module_scope)

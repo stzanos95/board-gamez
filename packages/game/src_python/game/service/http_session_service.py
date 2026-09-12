@@ -16,6 +16,8 @@ from idl_fastapi.idl.game.dto import (
     CreateSessionResponse,
     ReadSessionRequest,
     ReadSessionResponse,
+    WithdrawPlayerRequest,
+    WithdrawPlayerResponse,
 )
 from idl_fastapi.services.session_service import BaseSessionService
 
@@ -48,3 +50,9 @@ class HttpSessionService(BaseSessionService):
             SessionAdapters.apply_request_model_to_message(request)
         )
         return SessionAdapters.apply_response_message_to_model(response)
+
+    async def withdraw_player(self, request: WithdrawPlayerRequest) -> WithdrawPlayerResponse:
+        response = await self._client.withdraw_player(
+            SessionAdapters.withdraw_request_model_to_message(request)
+        )
+        return SessionAdapters.withdraw_response_message_to_model(response)

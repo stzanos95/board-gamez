@@ -1,0 +1,36 @@
+// How a player's withdrawal from a game ended.
+
+syntax = "proto3";
+
+package idl.game.model;
+
+import "idl/game/model/session.proto";
+
+option go_package = "boardgamez/contracts/gen/go/idl/game/model;gamemodel";
+
+// Every way a withdrawal ends.
+//
+// WITHDRAWN means the game no longer counts the player among those playing, and
+// the state answered with it is what the game became. NOT_IN_GAME means the
+// player was a participant and has already been withdrawn. VERSION_MOVED means
+// the game changed while the withdrawal was being written, and asking again is
+// the right thing to do; the rest end the same way when asked again.
+enum WithdrawalOutcome {
+  WITHDRAWAL_OUTCOME_UNSPECIFIED = 0;
+  WITHDRAWAL_OUTCOME_WITHDRAWN = 1;
+  WITHDRAWAL_OUTCOME_SESSION_NOT_FOUND = 2;
+  WITHDRAWAL_OUTCOME_NOT_A_PARTICIPANT = 3;
+  WITHDRAWAL_OUTCOME_NOT_IN_GAME = 4;
+  WITHDRAWAL_OUTCOME_GAME_OVER = 5;
+  WITHDRAWAL_OUTCOME_VERSION_MOVED = 6;
+}
+
+// What happened to a withdrawal, and the game as the withdrawing player may
+// now see it.
+//
+// The session is carried whatever the outcome, and is unset only when no game
+// is stored under the id the withdrawal named.
+message WithdrawalResult {
+  WithdrawalOutcome outcome = 1;
+  SessionView session = 2;
+}

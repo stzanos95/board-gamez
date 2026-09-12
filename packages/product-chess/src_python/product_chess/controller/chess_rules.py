@@ -12,12 +12,14 @@ from chess.rules.move_matcher import MoveMatcher
 from game.controller.base_rules import BaseRules
 from google.protobuf import any_pb2
 from idl.chess.model.action_pb2 import ChessAction
+from idl.chess.model.piece_pb2 import COLOR_UNSPECIFIED
 from idl.game.model.action_pb2 import Action
 from idl.game.model.game_spec_pb2 import ParticipantBounds
 from idl.game.model.game_state_pb2 import GameState
 from idl.game.model.participant_pb2 import ParticipantRole
 
 from product_chess.adapters.chess_rules_adapters import ChessRulesAdapters
+from product_chess.adapters.chess_session_adapters import ChessSessionAdapters
 
 CHESS_PARTICIPANT_COUNT = 2
 
@@ -56,6 +58,19 @@ class ChessRules(BaseRules):
             return None
         return ChessRulesAdapters.engine_to_game_state(advanced)
 
+    async def withdraw_participant(self, state: GameState, participant: int) -> GameState | None:
+        """
+        A participant who leaves resigns, and the other side wins.
+        """
+        game = ChessRulesAdapters.game_state_to_chess_game(state)
+        if game is None:
+            return None
+        color = ChessSessionAdapters.participant_to_color(game.roster, participant)
+        if color == COLOR_UNSPECIFIED:
+            return None
+        engine = GameAdapters.chess_game_to_engine(game)
+        return ChessRulesAdapters.engine_to_game_state(engine.resign(color))
+
     async def read_view(self, state: GameState, participant: int) -> any_pb2.Any:
         view = any_pb2.Any()
         view.CopyFrom(state.payload)
@@ -73,5 +88,5 @@ class ChessRules(BaseRules):
             move = MoveMatcher.get_legal_move(chess_action.move, engine.legal_moves)
             return None if move is None else engine.play(move)
         if chess_action.HasField("resignation"):
-            return engine.resign()
+            return engine.resign(engine.state.side_to_move)
         return None

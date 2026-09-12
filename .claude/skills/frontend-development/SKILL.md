@@ -36,16 +36,18 @@ stopgap, it goes in exactly one file, named for what it decides, so that moving
 it later is one file and one call site.
 
 Today there is one such stopgap: `packages/ux/src_tsx/lobby/table_intents.ts`.
-`TableService` is a store with four methods and no domain verbs, so joining a
-table, standing up and leaving are a read, a change, and a write guarded by the
-version that was read. That file is the only place in the frontend that
-produces a new `Table`.
+`TableService` is a store with four methods and no domain verbs, so opening a
+table and joining one are a read, a change, and a write guarded by the version
+that was read. That file is the only place in the frontend that produces a new
+`Table`.
 
-Taking a seat is not a stopgap. What a seat is — a side, a token — is the game's
-to say, so a seat is taken on the game's own screen through the game's own
-service: `ListSeatChoice` answers what the viewer may take, and `TakeSeat` sends
-one of those choices back unchanged. The lobby's generic seat list shows seats
-and gives them up; it never offers one.
+Taking a seat, giving one up and leaving are not stopgaps. What a seat is — a
+side, a token — is the game's to say, so a seat is taken on the game's own
+screen through the game's own service: `ListSeatChoice` answers what the viewer
+may take, and `TakeSeat` sends one of those choices back unchanged. Giving a
+seat up has a consequence in the game being played — a resignation, a removal —
+so it goes through the lobby's `SeatService` (`VacateSeat`, `LeaveTable`), and
+the hook that calls it re-reads the game's views as well as the table.
 
 ## Where things live
 

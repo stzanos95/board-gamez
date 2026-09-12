@@ -44,6 +44,11 @@ class RulesServiceStub:
         idl.game.dto.rules_pb2.ReadViewResponse,
     ]
 
+    WithdrawParticipant: grpc.UnaryUnaryMultiCallable[
+        idl.game.dto.rules_pb2.WithdrawParticipantRequest,
+        idl.game.dto.rules_pb2.WithdrawParticipantResponse,
+    ]
+
     ReadBounds: grpc.UnaryUnaryMultiCallable[
         idl.game.dto.rules_pb2.ReadBoundsRequest,
         idl.game.dto.rules_pb2.ReadBoundsResponse,
@@ -73,6 +78,11 @@ class RulesServiceAsyncStub:
     ReadView: grpc.aio.UnaryUnaryMultiCallable[
         idl.game.dto.rules_pb2.ReadViewRequest,
         idl.game.dto.rules_pb2.ReadViewResponse,
+    ]
+
+    WithdrawParticipant: grpc.aio.UnaryUnaryMultiCallable[
+        idl.game.dto.rules_pb2.WithdrawParticipantRequest,
+        idl.game.dto.rules_pb2.WithdrawParticipantResponse,
     ]
 
     ReadBounds: grpc.aio.UnaryUnaryMultiCallable[
@@ -111,6 +121,13 @@ class RulesServiceServicer(metaclass=abc.ABCMeta):
         request: idl.game.dto.rules_pb2.ReadViewRequest,
         context: _ServicerContext,
     ) -> typing.Union[idl.game.dto.rules_pb2.ReadViewResponse, collections.abc.Awaitable[idl.game.dto.rules_pb2.ReadViewResponse]]: ...
+
+    @abc.abstractmethod
+    def WithdrawParticipant(
+        self,
+        request: idl.game.dto.rules_pb2.WithdrawParticipantRequest,
+        context: _ServicerContext,
+    ) -> typing.Union[idl.game.dto.rules_pb2.WithdrawParticipantResponse, collections.abc.Awaitable[idl.game.dto.rules_pb2.WithdrawParticipantResponse]]: ...
 
     @abc.abstractmethod
     def ReadBounds(

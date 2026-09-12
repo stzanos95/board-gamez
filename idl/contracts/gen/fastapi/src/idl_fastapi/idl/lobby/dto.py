@@ -23,6 +23,18 @@ class DeleteTableResponse(BaseModel):
     table_id: str | None = Field(default=None, alias='tableId')
 
 
+class LeaveTableRequest(BaseModel):
+    """
+    Leave the table, giving up a seat on the way out.
+    """
+
+    model_config = ConfigDict(
+        populate_by_name=True,
+    )
+    table_id: str | None = Field(default=None, alias='tableId')
+    player_id: str | None = Field(default=None, alias='playerId')
+
+
 class ListTableRequest(BaseModel):
     model_config = ConfigDict(
         populate_by_name=True,
@@ -34,6 +46,22 @@ class ReadTableRequest(BaseModel):
         populate_by_name=True,
     )
     table_id: str | None = Field(default=None, alias='tableId')
+
+
+class VacateSeatRequest(BaseModel):
+    """
+    Give up the seat and stay at the table.
+
+     A player in a game being played is withdrawn from it first; what that does
+     to the game is the game's own. No version is carried: giving up a seat is not
+     built against a table the player has seen.
+    """
+
+    model_config = ConfigDict(
+        populate_by_name=True,
+    )
+    table_id: str | None = Field(default=None, alias='tableId')
+    player_id: str | None = Field(default=None, alias='playerId')
 
 
 class ListTableResponse(BaseModel):
@@ -69,3 +97,17 @@ class UpsertTableResponse(BaseModel):
         populate_by_name=True,
     )
     table: model.Table | None = None
+
+
+class LeaveTableResponse(BaseModel):
+    model_config = ConfigDict(
+        populate_by_name=True,
+    )
+    result: model.SeatResult | None = None
+
+
+class VacateSeatResponse(BaseModel):
+    model_config = ConfigDict(
+        populate_by_name=True,
+    )
+    result: model.SeatResult | None = None

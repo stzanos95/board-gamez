@@ -386,6 +386,7 @@ source = { editable = "../lobby" }
 dependencies = [
     { name = "board-gamez-idl" },
     { name = "core" },
+    { name = "game" },
     { name = "grpcio" },
     { name = "idl-fastapi" },
     { name = "mashumaro", extra = ["yaml"] },
@@ -396,6 +397,7 @@ dependencies = [
 requires-dist = [
     { name = "board-gamez-idl", editable = "../../idl/contracts/gen/python" },
     { name = "core", editable = "../core" },
+    { name = "game", editable = "../game" },
     { name = "grpcio", specifier = ">=1.68.1" },
     { name = "idl-fastapi", editable = "../../idl/contracts/gen/fastapi" },
     { name = "mashumaro", extras = ["yaml"], specifier = ">=3.22" },

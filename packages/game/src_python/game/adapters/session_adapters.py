@@ -25,6 +25,7 @@ from idl.game.model.game_state_pb2 import GameState
 from idl.game.model.game_type_pb2 import GameType
 from idl.game.model.participant_pb2 import Participant, ParticipantRole
 from idl.game.model.session_pb2 import Session, SessionView
+from idl.game.model.withdrawal_result_pb2 import WithdrawalResult
 from idl.game.obj.session_pb2 import SessionObj
 from idl_fastapi.idl.game.dto import (
     ApplyCommandRequest,
@@ -33,6 +34,8 @@ from idl_fastapi.idl.game.dto import (
     CreateSessionResponse,
     ReadSessionRequest,
     ReadSessionResponse,
+    WithdrawPlayerRequest,
+    WithdrawPlayerResponse,
 )
 
 
@@ -108,6 +111,14 @@ class SessionAdapters:
     def apply_request_to_expected_version(request: command_pb2.ApplyCommandRequest) -> int:
         return request.expected_version
 
+    @staticmethod
+    def withdraw_request_to_session_id(request: session_pb2.WithdrawPlayerRequest) -> str:
+        return request.session_id
+
+    @staticmethod
+    def withdraw_request_to_player_id(request: session_pb2.WithdrawPlayerRequest) -> str:
+        return request.player_id
+
     # --- what an operation answers, to a response ----------------------------
 
     @staticmethod
@@ -133,6 +144,12 @@ class SessionAdapters:
         result: CommandResult,
     ) -> command_pb2.ApplyCommandResponse:
         return command_pb2.ApplyCommandResponse(result=result)
+
+    @staticmethod
+    def withdrawal_result_to_withdraw_response(
+        result: WithdrawalResult,
+    ) -> session_pb2.WithdrawPlayerResponse:
+        return session_pb2.WithdrawPlayerResponse(result=result)
 
     # --- a pydantic model, to the message of the same contract ---------------
 
@@ -175,6 +192,20 @@ class SessionAdapters:
         message: command_pb2.ApplyCommandResponse,
     ) -> ApplyCommandResponse:
         return ProtobufMessageUtils.message_to_pydantic_model(message, ApplyCommandResponse)
+
+    @staticmethod
+    def withdraw_request_model_to_message(
+        model: WithdrawPlayerRequest,
+    ) -> session_pb2.WithdrawPlayerRequest:
+        return ProtobufMessageUtils.message_from_pydantic_model(
+            model, session_pb2.WithdrawPlayerRequest
+        )
+
+    @staticmethod
+    def withdraw_response_message_to_model(
+        message: session_pb2.WithdrawPlayerResponse,
+    ) -> WithdrawPlayerResponse:
+        return ProtobufMessageUtils.message_to_pydantic_model(message, WithdrawPlayerResponse)
 
     # --- a session, to what a store holds, and back --------------------------
 

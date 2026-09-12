@@ -20,6 +20,8 @@ from idl.game.dto.rules_pb2 import (
     ReadBoundsResponse,
     ReadViewRequest,
     ReadViewResponse,
+    WithdrawParticipantRequest,
+    WithdrawParticipantResponse,
 )
 from idl.game.service.rules_pb2_grpc import RulesServiceServicer
 
@@ -55,6 +57,17 @@ class GrpcRulesService(RulesServiceServicer):
             ChessRulesAdapters.apply_request_to_action(request),
         )
         return ChessRulesAdapters.game_state_to_apply_response(state)
+
+    async def WithdrawParticipant(
+        self,
+        request: WithdrawParticipantRequest,
+        context: grpc.aio.ServicerContext[WithdrawParticipantRequest, WithdrawParticipantResponse],
+    ) -> WithdrawParticipantResponse:
+        state = await self._rules.withdraw_participant(
+            ChessRulesAdapters.withdraw_request_to_state(request),
+            ChessRulesAdapters.withdraw_request_to_participant(request),
+        )
+        return ChessRulesAdapters.game_state_to_withdraw_response(state)
 
     async def ReadView(
         self,

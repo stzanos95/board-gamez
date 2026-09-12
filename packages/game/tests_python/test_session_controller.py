@@ -5,6 +5,7 @@ from idl.game.model.game_result_pb2 import ParticipantOutcome
 from idl.game.model.game_type_pb2 import GameType
 from idl.game.model.participant_pb2 import Participant
 from idl.game.model.session_pb2 import SessionView
+from idl.game.model.withdrawal_result_pb2 import WithdrawalOutcome
 
 from game.controller.rules_registry import RulesRegistry
 from game.controller.session_controller import SessionController
@@ -271,3 +272,67 @@ class SessionControllerTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(third.state.participant_to_act, SECOND_PARTICIPANT)
         self.assertEqual(third.version, started.version + 3)
         self.assertEqual(ScriptedRules.view_text(third.state.payload), "3:1")
+
+    # --- withdrawing from a game ---------------------------------------------
+
+    async def test_withdrawing_hands_the_game_to_the_rules_and_writes_a_new_version(self) -> None:
+        await self.start()
+
+        result = await self.controller.withdraw_player(TABLE_ID, SECOND_PLAYER)
+
+        self.assertIs(result.outcome, WithdrawalOutcome.WITHDRAWAL_OUTCOME_WITHDRAWN)
+        self.assertEqual(result.session.version, SECOND_STORED_VERSION)
+        self.assertEqual(result.session.participant, SECOND_PARTICIPANT)
+        outcomes = {
+            one.participant: one.outcome for one in result.session.state.result.participant_items
+        }
+        self.assertIs(outcomes[SECOND_PARTICIPANT], ParticipantOutcome.PARTICIPANT_OUTCOME_LOST)
+        self.assertIs(outcomes[FIRST_PARTICIPANT], ParticipantOutcome.PARTICIPANT_OUTCOME_WON)
+
+    async def test_withdrawing_is_allowed_out_of_turn(self) -> None:
+        started = await self.start()
+        self.assertEqual(started.state.participant_to_act, FIRST_PARTICIPANT)
+
+        result = await self.controller.withdraw_player(TABLE_ID, SECOND_PLAYER)
+
+        self.assertIs(result.outcome, WithdrawalOutcome.WITHDRAWAL_OUTCOME_WITHDRAWN)
+
+    async def test_withdrawing_keeps_the_last_command_id(self) -> None:
+        await self.start()
+        await self.applied(FIRST_PLAYER, MOVE, FIRST_STORED_VERSION)
+
+        result = await self.controller.withdraw_player(TABLE_ID, FIRST_PLAYER)
+
+        self.assertEqual(result.session.last_command_id, f"{OTHER_COMMAND_ID}-1")
+
+    async def test_withdrawing_from_a_game_that_is_not_there(self) -> None:
+        result = await self.controller.withdraw_player(TABLE_ID, FIRST_PLAYER)
+
+        self.assertIs(result.outcome, WithdrawalOutcome.WITHDRAWAL_OUTCOME_SESSION_NOT_FOUND)
+        self.assertFalse(result.HasField("session"))
+
+    async def test_someone_not_playing_cannot_withdraw(self) -> None:
+        await self.start()
+
+        result = await self.controller.withdraw_player(TABLE_ID, ONLOOKER)
+
+        self.assertIs(result.outcome, WithdrawalOutcome.WITHDRAWAL_OUTCOME_NOT_A_PARTICIPANT)
+        self.assertEqual(result.session.version, FIRST_STORED_VERSION)
+
+    async def test_a_game_with_a_result_is_left_as_it_is(self) -> None:
+        await self.start()
+        won = await self.applied(FIRST_PLAYER, WIN, FIRST_STORED_VERSION)
+
+        result = await self.controller.withdraw_player(TABLE_ID, SECOND_PLAYER)
+
+        self.assertIs(result.outcome, WithdrawalOutcome.WITHDRAWAL_OUTCOME_GAME_OVER)
+        self.assertEqual(result.session.version, won.version)
+
+    async def test_a_write_that_loses_once_is_made_again(self) -> None:
+        await self.start()
+        self.repository.refuse_next_write = True
+
+        result = await self.controller.withdraw_player(TABLE_ID, FIRST_PLAYER)
+
+        self.assertIs(result.outcome, WithdrawalOutcome.WITHDRAWAL_OUTCOME_WITHDRAWN)
+        self.assertEqual(result.session.version, SECOND_STORED_VERSION)

@@ -17,6 +17,8 @@ from idl.game.dto.session_pb2 import (
     CreateSessionResponse,
     ReadSessionRequest,
     ReadSessionResponse,
+    WithdrawPlayerRequest,
+    WithdrawPlayerResponse,
 )
 from idl.game.service.session_pb2_grpc import SessionServiceServicer
 
@@ -69,3 +71,14 @@ class GrpcSessionService(SessionServiceServicer):
             SessionAdapters.apply_request_to_expected_version(request),
         )
         return SessionAdapters.command_result_to_apply_response(result)
+
+    async def WithdrawPlayer(
+        self,
+        request: WithdrawPlayerRequest,
+        context: grpc.aio.ServicerContext[WithdrawPlayerRequest, WithdrawPlayerResponse],
+    ) -> WithdrawPlayerResponse:
+        result = await self._controller.withdraw_player(
+            SessionAdapters.withdraw_request_to_session_id(request),
+            SessionAdapters.withdraw_request_to_player_id(request),
+        )
+        return SessionAdapters.withdrawal_result_to_withdraw_response(result)

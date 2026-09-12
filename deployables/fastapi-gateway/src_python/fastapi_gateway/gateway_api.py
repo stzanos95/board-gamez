@@ -50,6 +50,7 @@ class GatewayAPI:
             root_path=config.root_path,
         )
         application.include_router(LobbyRouters.table_service(clients.table))
+        application.include_router(LobbyRouters.seat_service(clients.seat))
         application.include_router(GameRouters.session_service(clients.session))
         application.include_router(GameRouters.game_spec_service(clients.game_spec))
         application.include_router(ProductChessRouters.chess_service(clients.chess))

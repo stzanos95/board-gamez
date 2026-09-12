@@ -19,6 +19,8 @@ from idl.game.dto.session_pb2 import (
     CreateSessionResponse,
     ReadSessionRequest,
     ReadSessionResponse,
+    WithdrawPlayerRequest,
+    WithdrawPlayerResponse,
 )
 from idl.game.service.session_pb2_grpc import SessionServiceAsyncStub, SessionServiceStub
 
@@ -63,6 +65,9 @@ class GrpcSessionClient:
 
     async def apply_command(self, request: ApplyCommandRequest) -> ApplyCommandResponse:
         return await self._connected_stub().ApplyCommand(request)
+
+    async def withdraw_player(self, request: WithdrawPlayerRequest) -> WithdrawPlayerResponse:
+        return await self._connected_stub().WithdrawPlayer(request)
 
     def _connected_stub(self) -> SessionServiceAsyncStub:
         if self._stub is None:

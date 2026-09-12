@@ -86,6 +86,34 @@ class ScriptedRules(BaseRules):
             )
         return None
 
+    async def withdraw_participant(self, state: GameState, participant: int) -> GameState | None:
+        """
+        A participant who leaves loses, and everyone else wins. A number the
+        game was not created with is not in the game.
+        """
+        standing = ScriptedRules._unpack_position(state.payload)
+        if not FIRST_PARTICIPANT <= participant <= standing.participant_count:
+            return None
+        return GameState(
+            payload=ScriptedRules.position_payload(
+                standing.position + 1, standing.participant_count
+            ),
+            participant_to_act=NOBODY,
+            result=GameResult(
+                participant_items=[
+                    ParticipantResult(
+                        participant=number,
+                        outcome=(
+                            ParticipantOutcome.PARTICIPANT_OUTCOME_LOST
+                            if number == participant
+                            else ParticipantOutcome.PARTICIPANT_OUTCOME_WON
+                        ),
+                    )
+                    for number in range(FIRST_PARTICIPANT, standing.participant_count + 1)
+                ]
+            ),
+        )
+
     async def read_view(self, state: GameState, participant: int) -> any_pb2.Any:
         standing = ScriptedRules._unpack_position(state.payload)
         return ScriptedRules.word_payload(f"{standing.position}{VIEW_SEPARATOR}{participant}")

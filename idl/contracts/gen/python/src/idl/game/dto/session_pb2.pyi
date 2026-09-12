@@ -1,6 +1,7 @@
 from idl.game.model import game_type_pb2 as _game_type_pb2
 from idl.game.model import participant_pb2 as _participant_pb2
 from idl.game.model import session_pb2 as _session_pb2
+from idl.game.model import withdrawal_result_pb2 as _withdrawal_result_pb2
 from google.protobuf.internal import containers as _containers
 from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
@@ -39,3 +40,17 @@ class ReadSessionResponse(_message.Message):
     SESSION_FIELD_NUMBER: _ClassVar[int]
     session: _session_pb2.SessionView
     def __init__(self, session: _Optional[_Union[_session_pb2.SessionView, _Mapping]] = ...) -> None: ...
+
+class WithdrawPlayerRequest(_message.Message):
+    __slots__ = ("session_id", "player_id")
+    SESSION_ID_FIELD_NUMBER: _ClassVar[int]
+    PLAYER_ID_FIELD_NUMBER: _ClassVar[int]
+    session_id: str
+    player_id: str
+    def __init__(self, session_id: _Optional[str] = ..., player_id: _Optional[str] = ...) -> None: ...
+
+class WithdrawPlayerResponse(_message.Message):
+    __slots__ = ("result",)
+    RESULT_FIELD_NUMBER: _ClassVar[int]
+    result: _withdrawal_result_pb2.WithdrawalResult
+    def __init__(self, result: _Optional[_Union[_withdrawal_result_pb2.WithdrawalResult, _Mapping]] = ...) -> None: ...

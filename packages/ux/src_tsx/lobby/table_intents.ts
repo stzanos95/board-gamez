@@ -9,19 +9,18 @@ import { mintIdentifier } from "../format/mint_identifier";
  * The only place in this application that produces a new table.
  *
  * TableService is a store: it writes whole tables, guarded by the version they
- * were read at, and has no verb for joining a table, standing up or leaving.
- * Nothing between it and a browser decides those today, so the decision is
- * made here — a read, a change, and a write.
+ * were read at, and has no verb for opening a table or joining one. Nothing
+ * between it and a browser decides those today, so the decision is made here —
+ * a read, a change, and a write.
  *
  * This is business logic in the presentation layer. It is confined to this file
- * so that JoinTable, StandUp and LeaveTable operations on the lobby replace it:
- * every function below becomes one call, and no component changes.
+ * so that CreateTable and JoinTable operations on the lobby replace it: every
+ * function below becomes one call, and no component changes.
  *
- * Taking a seat is not here. A seat is taken through the game's own service,
- * as one of the choices the game offered, and the lobby writes it.
- *
- * A seated player is always at the table, and leaving the table gives up the
- * seat.
+ * Taking a seat, giving one up and leaving are not here. Each is a lobby or
+ * game verb, because each has a consequence the browser must not decide: a
+ * seat is taken as one of the choices the game offered, and a player who gives
+ * up a seat is withdrawn from the game being played.
  *
  * Every function is pure. Nothing here reads the network, the clock, or a
  * cache, and a table handed in is never changed.
@@ -32,18 +31,14 @@ const NEVER_STORED_VERSION = 0n;
 const VACANT = "";
 
 export const TableRefusal = {
-  NOT_SEATED: "not_seated",
   ALREADY_AT_TABLE: "already_at_table",
-  NOT_AT_TABLE: "not_at_table",
   NOT_ACCEPTING_PLAYERS: "not_accepting_players",
 } as const;
 
 export type TableRefusal = (typeof TableRefusal)[keyof typeof TableRefusal];
 
 export const TABLE_REFUSAL_MESSAGES: Record<TableRefusal, string> = {
-  [TableRefusal.NOT_SEATED]: "You are not seated at this table.",
   [TableRefusal.ALREADY_AT_TABLE]: "You are already at this table.",
-  [TableRefusal.NOT_AT_TABLE]: "You are not at this table.",
   [TableRefusal.NOT_ACCEPTING_PLAYERS]: "This table is no longer taking players.",
 };
 
@@ -85,37 +80,14 @@ export function withPlayerJoined(table: Table, playerId: string): TableIntent {
   }
   return {
     kind: "changed",
-    table: withPlayers(table, table.seats, [...table.playerIds, playerId]),
-  };
-}
-
-/**
- * Give up the seat and stay at the table.
- */
-export function withPlayerStood(table: Table, playerId: string): TableIntent {
-  if (seatOf(table, playerId) === null) {
-    return { kind: "refused", refusal: TableRefusal.NOT_SEATED };
-  }
-  return {
-    kind: "changed",
-    table: withPlayers(table, seatsWithout(table, playerId), table.playerIds),
-  };
-}
-
-/**
- * Leave the table, giving up a seat on the way out.
- */
-export function withPlayerLeft(table: Table, playerId: string): TableIntent {
-  if (!isAtTable(table, playerId)) {
-    return { kind: "refused", refusal: TableRefusal.NOT_AT_TABLE };
-  }
-  return {
-    kind: "changed",
-    table: withPlayers(
-      table,
-      seatsWithout(table, playerId),
-      table.playerIds.filter((atTable: string) => atTable !== playerId),
-    ),
+    table: create(TableSchema, {
+      id: table.id,
+      gameType: table.gameType,
+      status: table.status,
+      seats: [...table.seats],
+      version: table.version,
+      playerIds: [...table.playerIds, playerId],
+    }),
   };
 }
 
@@ -148,27 +120,4 @@ function openSeats(seatCount: number): Seat[] {
       playerId: VACANT,
     }),
   );
-}
-
-function seatsWithout(table: Table, playerId: string): Seat[] {
-  return table.seats.map((seat) => (seat.playerId === playerId ? vacated(seat) : seat));
-}
-
-function vacated(seat: Seat): Seat {
-  return create(SeatSchema, {
-    number: seat.number,
-    status: SeatStatus.OPEN,
-    playerId: VACANT,
-  });
-}
-
-function withPlayers(table: Table, seats: readonly Seat[], playerIds: readonly string[]): Table {
-  return create(TableSchema, {
-    id: table.id,
-    gameType: table.gameType,
-    status: table.status,
-    seats: [...seats],
-    version: table.version,
-    playerIds: [...playerIds],
-  });
 }

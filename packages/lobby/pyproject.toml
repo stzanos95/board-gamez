@@ -12,6 +12,8 @@ dependencies = [
     # Every reach for the protobuf runtime: one shape of a message to another,
     # and a message to the bytes a store holds.
     "core",
+    # The game played at a table, which a player giving up a seat is withdrawn from.
+    "game",
     # The store tables are kept in, spoken to from the event loop that serves.
     "redis>=5.2",
     # A repository's settings are a dataclass parsed from the app's YAML file.
@@ -23,6 +25,7 @@ dependencies = [
 idl-fastapi = { path = "../../idl/contracts/gen/fastapi", editable = true }
 board-gamez-idl = { path = "../../idl/contracts/gen/python", editable = true }
 core = { path = "../core", editable = true }
+game = { path = "../game", editable = true }
 
 [build-system]
 requires = ["hatchling"]
@@ -75,6 +78,7 @@ select = [
 # gRPC dispatches on the method names the schema declares, so a servicer keeps
 # protobuf's casing. This is the only file where that is true.
 "src_python/lobby/service/grpc_table_service.py" = ["N802"]
+"src_python/lobby/service/grpc_seat_service.py" = ["N802"]
 
 [tool.ruff.lint.flake8-tidy-imports.banned-api]
 "__future__.annotations" = { msg = "Annotations must stay real runtime objects — see the python-style skill, rule 1. Use a string forward ref such as -> \"HttpTableService\" instead." }

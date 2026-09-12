@@ -10,10 +10,11 @@ import "idl/game/dto/session.proto";
 
 option go_package = "boardgamez/contracts/gen/go/idl/game/service;gameservice";
 
-// A game being played, and the one way to change one.
+// A game being played, and the two ways to change one.
 //
-// A game changes by applying a command and in no other way. There is no write of
-// a state, so no caller can set one.
+// A game changes by a participant applying a command, or by a player being
+// withdrawn from it, and in no other way. There is no write of a state, so no
+// caller can set one.
 service SessionService {
   rpc CreateSession(idl.game.dto.CreateSessionRequest) returns (idl.game.dto.CreateSessionResponse) {
     option (google.api.http) = {
@@ -32,6 +33,13 @@ service SessionService {
   rpc ApplyCommand(idl.game.dto.ApplyCommandRequest) returns (idl.game.dto.ApplyCommandResponse) {
     option (google.api.http) = {
       post: "/internal/platform/game/apply/command"
+      body: "*"
+    };
+  }
+
+  rpc WithdrawPlayer(idl.game.dto.WithdrawPlayerRequest) returns (idl.game.dto.WithdrawPlayerResponse) {
+    option (google.api.http) = {
+      post: "/internal/platform/game/withdraw/player"
       body: "*"
     };
   }

@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from core.grpc.channel_options import ChannelOptions
 from game.service.grpc_game_spec_client import GrpcGameSpecClient
 from game.service.grpc_session_client import GrpcSessionClient
+from lobby.service.grpc_seat_client import GrpcSeatClient
 from lobby.service.grpc_table_client import GrpcTableClient
 from product_chess.service.grpc_chess_client import GrpcChessClient
 
@@ -23,6 +24,7 @@ class GatewayClients:
     """
 
     table: GrpcTableClient
+    seat: GrpcSeatClient
     session: GrpcSessionClient
     game_spec: GrpcGameSpecClient
     chess: GrpcChessClient
@@ -31,6 +33,7 @@ class GatewayClients:
     def unconnected() -> "GatewayClients":
         return GatewayClients(
             table=GrpcTableClient(),
+            seat=GrpcSeatClient(),
             session=GrpcSessionClient(),
             game_spec=GrpcGameSpecClient(),
             chess=GrpcChessClient(),
@@ -43,12 +46,14 @@ class GatewayClients:
         """
         options = GatewayClients._channel_options(config)
         await self.table.connect(config.address, options)
+        await self.seat.connect(config.address, options)
         await self.session.connect(config.address, options)
         await self.game_spec.connect(config.address, options)
         await self.chess.connect(config.address, options)
 
     async def close(self) -> None:
         await self.table.close()
+        await self.seat.close()
         await self.session.close()
         await self.game_spec.close()
         await self.chess.close()

@@ -82,3 +82,20 @@ class TableCollection(BaseModel):
         populate_by_name=True,
     )
     table_items: list[Table] | None = Field(default=None, alias='tableItems')
+
+
+class SeatResult(BaseModel):
+    """
+    What happened to a player's place at a table, and the table as it now stands.
+
+     The table is carried whatever the outcome, and is unset only when no table has
+     the id the change named.
+    """
+
+    model_config = ConfigDict(
+        populate_by_name=True,
+    )
+    outcome: Literal['SEAT_OUTCOME_UNSPECIFIED', 'SEAT_OUTCOME_TAKEN', 'SEAT_OUTCOME_TABLE_NOT_FOUND', 'SEAT_OUTCOME_NOT_OFFERED', 'SEAT_OUTCOME_VERSION_MOVED', 'SEAT_OUTCOME_VACATED', 'SEAT_OUTCOME_LEFT', 'SEAT_OUTCOME_NOT_SEATED', 'SEAT_OUTCOME_NOT_AT_TABLE'] | None = (
+        None
+    )
+    table: Table | None = None

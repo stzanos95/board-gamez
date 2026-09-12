@@ -9,4 +9,8 @@ export const SEAT_OUTCOME_PROBLEMS: Record<SeatOutcome, string | null> = {
   [SeatOutcome.TABLE_NOT_FOUND]: "That table is no longer there.",
   [SeatOutcome.NOT_OFFERED]: "That seat is no longer on offer.",
   [SeatOutcome.VERSION_MOVED]: "The table changed while you were acting. Try again.",
+  [SeatOutcome.VACATED]: null,
+  [SeatOutcome.LEFT]: null,
+  [SeatOutcome.NOT_SEATED]: "You are not seated at this table.",
+  [SeatOutcome.NOT_AT_TABLE]: "You are not at this table.",
 };

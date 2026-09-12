@@ -167,6 +167,38 @@ wheels = [
 ]
 
 [[package]]
+name = "game"
+version = "0.1.0"
+source = { editable = "../game" }
+dependencies = [
+    { name = "board-gamez-idl" },
+    { name = "core" },
+    { name = "grpcio" },
+    { name = "idl-fastapi" },
+    { name = "mashumaro", extra = ["yaml"] },
+    { name = "redis" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "board-gamez-idl", editable = "../../idl/contracts/gen/python" },
+    { name = "core", editable = "../core" },
+    { name = "grpcio", specifier = ">=1.68.1" },
+    { name = "idl-fastapi", editable = "../../idl/contracts/gen/fastapi" },
+    { name = "mashumaro", extras = ["yaml"], specifier = ">=3.22" },
+    { name = "redis", specifier = ">=5.2" },
+]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "mypy", specifier = ">=2.3.1" },
+    { name = "pytest", specifier = ">=9.1.1" },
+    { name = "ruff", specifier = ">=0.16.6" },
+    { name = "types-grpcio", specifier = ">=1.83" },
+    { name = "types-protobuf", specifier = ">=5.28" },
+]
+
+[[package]]
 name = "googleapis-common-protos"
 version = "1.75.0"
 source = { registry = "https://pypi.org/simple" }
@@ -335,6 +367,7 @@ source = { editable = "." }
 dependencies = [
     { name = "board-gamez-idl" },
     { name = "core" },
+    { name = "game" },
     { name = "grpcio" },
     { name = "idl-fastapi" },
     { name = "mashumaro", extra = ["yaml"] },
@@ -354,6 +387,7 @@ dev = [
 requires-dist = [
     { name = "board-gamez-idl", editable = "../../idl/contracts/gen/python" },
     { name = "core", editable = "../core" },
+    { name = "game", editable = "../game" },
     { name = "grpcio", specifier = ">=1.68.1" },
     { name = "idl-fastapi", editable = "../../idl/contracts/gen/fastapi" },
     { name = "mashumaro", extras = ["yaml"], specifier = ">=3.22" },

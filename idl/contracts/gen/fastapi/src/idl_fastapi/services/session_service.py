@@ -18,6 +18,8 @@ from idl_fastapi.idl.game.dto import (
     CreateSessionResponse,
     ReadSessionRequest,
     ReadSessionResponse,
+    WithdrawPlayerRequest,
+    WithdrawPlayerResponse,
 )
 
 
@@ -54,6 +56,15 @@ class BaseSessionService(ABC):
     ) -> ReadSessionResponse:
         """
         POST /internal/platform/game/read/session
+        """
+
+    @abstractmethod
+    async def withdraw_player(
+        self,
+        request: WithdrawPlayerRequest,
+    ) -> WithdrawPlayerResponse:
+        """
+        POST /internal/platform/game/withdraw/player
         """
 
 
@@ -108,6 +119,20 @@ class SessionServiceRouter:
             request: ReadSessionRequest,
         ) -> ReadSessionResponse:
             return await service.read_session(
+                request=request,
+            )
+
+        @router.post(
+            "/internal/platform/game/withdraw/player",
+            operation_id="SessionService_WithdrawPlayer",
+            response_model=WithdrawPlayerResponse,
+            response_model_exclude_none=True,
+            responses={"default": {"model": Status}},
+        )
+        async def withdraw_player(
+            request: WithdrawPlayerRequest,
+        ) -> WithdrawPlayerResponse:
+            return await service.withdraw_player(
                 request=request,
             )
 

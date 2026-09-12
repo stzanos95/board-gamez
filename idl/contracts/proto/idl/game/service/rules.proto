@@ -23,5 +23,7 @@ service RulesService {
 
   rpc ReadView(idl.game.dto.ReadViewRequest) returns (idl.game.dto.ReadViewResponse);
 
+  rpc WithdrawParticipant(idl.game.dto.WithdrawParticipantRequest) returns (idl.game.dto.WithdrawParticipantResponse);
+
   rpc ReadBounds(idl.game.dto.ReadBoundsRequest) returns (idl.game.dto.ReadBoundsResponse);
 }
