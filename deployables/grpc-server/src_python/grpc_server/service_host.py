@@ -6,7 +6,6 @@ that expires a game's deadline.
 import asyncio
 import logging
 import signal
-from dataclasses import dataclass
 
 import grpc
 from core.clock.base_clock import BaseClock
@@ -21,17 +20,15 @@ from game.repository.provider import SessionRepositoryProvider
 from game.service.deadline_ticker import DeadlineTicker
 from game.service.game_servicers import GameServicers
 from grpc_reflection.v1alpha import reflection
-from idl.game.model.game_type_pb2 import GameType
 from lobby.controller.seat_controller import SeatController
 from lobby.controller.seating_registry import SeatingRegistry
 from lobby.controller.table_controller import TableController
 from lobby.repository.provider import TableRepositoryProvider
 from lobby.service.lobby_servicers import LobbyServicers
-from product_chess.controller.chess_rules import ChessRules
-from product_chess.controller.chess_seating import ChessSeating
-from product_chess.controller.chess_session_controller import ChessSessionController
-from product_chess.service.product_chess_servicers import ProductChessServicers
 
+from grpc_server.platform_controllers import PlatformControllers
+from grpc_server.products.base_hosted_product import BaseHostedProduct
+from grpc_server.products.hosted_products import HostedProducts
 from grpc_server.service_host_config import (
     GameConfig,
     LobbyConfig,
@@ -41,24 +38,6 @@ from grpc_server.service_host_config import (
 
 SHUTDOWN_SIGNALS = (signal.SIGINT, signal.SIGTERM)
 LOG_FORMAT = "%(asctime)s %(levelname)s %(name)s %(message)s"
-
-
-@dataclass(frozen=True, slots=True)
-class Controllers:
-    """
-    Every controller this process serves, built once from the configuration.
-
-    Every one that writes publishes through the one publisher, and the chess
-    rules are the same object the session controller holds and RulesService
-    answers with.
-    """
-
-    tables: TableController
-    seats: SeatController
-    sessions: SessionController
-    game_specs: GameSpecController
-    chess_rules: ChessRules
-    chess_sessions: ChessSessionController
 
 
 class ServiceHost:
@@ -97,10 +76,11 @@ class ServiceHost:
         """
         server = ServiceHost._build_server(self._server)
         queue_publisher = QueueProvider.get_publisher(self._queue)
+        products = HostedProducts.build()
         controllers = ServiceHost._build_controllers(
-            self._lobby, self._game, queue_publisher, SystemClock()
+            self._lobby, self._game, queue_publisher, SystemClock(), products
         )
-        service_names = ServiceHost._register_services(server, controllers)
+        service_names = ServiceHost._register_services(server, controllers, products)
         if self._server.reflection:
             reflection.enable_server_reflection([*service_names, reflection.SERVICE_NAME], server)
         address = ServiceHost._address(self._server)
@@ -138,24 +118,26 @@ class ServiceHost:
         game: GameConfig,
         queue_publisher: BaseQueuePublisher,
         clock: BaseClock,
-    ) -> Controllers:
+        products: tuple[BaseHostedProduct, ...],
+    ) -> PlatformControllers:
         """
-        Each controller and everything it depends on, built from the
-        configuration. Adding a domain is a dependency and one more field;
-        adding a game is a product dependency and one entry each in the rules
-        registry and the seating registry.
+        Each platform controller and everything it depends on, built from the
+        configuration. Adding a domain is a dependency and one more field.
 
-        A product's rules are held in-process: the session controller calls
-        them directly, and the same object answers RulesService for a tool that
-        reaches it through this server.
+        Every product's rules are held in-process: the session controller
+        calls them directly, and the same object answers RulesService for a
+        tool that reaches it through this server.
         """
         table_repository = TableRepositoryProvider.get_table_repository(lobby.table_repository)
         session_repository = SessionRepositoryProvider.get_session_repository(
             game.session_repository
         )
-        chess_rules = ChessRules()
-        rules = RulesRegistry({GameType.GAME_TYPE_CHESS: chess_rules})
-        seating = SeatingRegistry({GameType.GAME_TYPE_CHESS: ChessSeating()})
+        rules = RulesRegistry(
+            {product.get_game_type(): product.get_rules() for product in products}
+        )
+        seating = SeatingRegistry(
+            {product.get_game_type(): product.get_seating() for product in products}
+        )
         tables = TableController(repository=table_repository, queue_publisher=queue_publisher)
         sessions = SessionController(
             repository=session_repository,
@@ -170,28 +152,33 @@ class ServiceHost:
             rules=rules,
             queue_publisher=queue_publisher,
         )
-        return Controllers(
+        return PlatformControllers(
             tables=tables,
             seats=seats,
             sessions=sessions,
             game_specs=GameSpecController(rules=rules),
-            chess_rules=chess_rules,
-            chess_sessions=ChessSessionController(tables=tables, seats=seats, sessions=sessions),
         )
 
     @staticmethod
-    def _register_services(server: grpc.aio.Server, controllers: Controllers) -> tuple[str, ...]:
+    def _register_services(
+        server: grpc.aio.Server,
+        controllers: PlatformControllers,
+        products: tuple[BaseHostedProduct, ...],
+    ) -> tuple[str, ...]:
         """
-        Every servicer this process serves, and the names it serves them under.
+        Every servicer this process serves, and the names it serves them under:
+        the platform's, then each product's.
         """
-        return (
+        platform_names = (
             LobbyServicers.add_table_service(server, controllers.tables),
             LobbyServicers.add_seat_service(server, controllers.seats),
             GameServicers.add_session_service(server, controllers.sessions),
             GameServicers.add_game_spec_service(server, controllers.game_specs),
-            ProductChessServicers.add_rules_service(server, controllers.chess_rules),
-            ProductChessServicers.add_chess_service(server, controllers.chess_sessions),
         )
+        product_names = tuple(
+            name for product in products for name in product.add_servicers(server, controllers)
+        )
+        return platform_names + product_names
 
     @staticmethod
     def _address(config: ServerConfig) -> str:

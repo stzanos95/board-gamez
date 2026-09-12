@@ -5,6 +5,10 @@ description: The layer a component belongs to, and what it may depend on. Load b
 
 # Backend development
 
+These rules address whoever writes the code, a developer or an assistant. A
+step a rule leaves to "the user" — running the generator, committing — is the
+developer's own when they work alone.
+
 `ARCHITECTURE.md` at the repository root defines the layers and maps every path
 to one. This skill is the working rule set: what you may write in the layer you
 are standing in, and what belongs one layer down.
@@ -156,7 +160,10 @@ packages/product-<game>    the product. The only package that imports both
 
 There is no product process. `grpc-server` depends on the product, builds its
 rules at bringup, registers its servicers beside the platform's, and hands the
-session controller the rules in-process through `RulesRegistry`. A product
+session controller the rules in-process through `RulesRegistry`. What a
+product supplies to be hosted is one `BaseHostedProduct` in the server's
+`products/` and one `BaseGatewayProduct` in the gateway's; `HostedProducts`
+and `GatewayProducts` list them, and bringup reads nothing else. A product
 reached over a network later is another implementation of `BaseRules`.
 
 What goes where, by the question it answers:
@@ -201,8 +208,9 @@ What goes where, by the question it answers:
 - A role is packed and opened in exactly one adapter in the product. No file in
   `lobby`, `game` or the browser reads one.
 - `packages/game` imports no product. Adding a game is a `GameType` member, a
-  product package, a dependency of both deployables, and one entry each in the
-  rules registry and the seating registry in `grpc-server`.
+  rules package, a product package, a dependency and one product file in each
+  deployable, and the browser's records. Every file, in order, is in
+  `adding-a-game`; load it before starting one.
 
 ## SOLID decides the boundaries
 

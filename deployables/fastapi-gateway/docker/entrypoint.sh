@@ -22,6 +22,17 @@ case "$COMMAND" in
     test)
         cd "$APP_DIR" && exec python -m pytest "$@"
         ;;
+    test-packages)
+        # Every package under /app/packages with a pyproject.toml, run from its
+        # own directory so its own pytest settings apply. This image installs
+        # every package editable, so it is where the packages' suites run.
+        for package in /app/packages/*/; do
+            if [ -f "$package/pyproject.toml" ]; then
+                echo "== $package"
+                (cd "$package" && python -m pytest "$@") || exit 1
+            fi
+        done
+        ;;
     lint)
         # Both halves of what the pre-commit hook runs, so a green container is
         # a green commit: the rules, then the formatting.

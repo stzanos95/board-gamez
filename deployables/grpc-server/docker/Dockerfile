@@ -1,10 +1,11 @@
 # syntax=docker/dockerfile:1
 
 # The build context is the repository ROOT, not this directory: this deployable
-# reaches its domain package, the shared utilities and the generated contracts
-# through relative paths, so all four trees must be present. Those dependencies
-# are installed editable, which records the path rather than copying the code,
-# so the runtime stage needs the same trees at the same places.
+# reaches the domain packages, the products, the shared utilities and the
+# generated contracts through relative paths, so every tree must be present.
+# Those dependencies are installed editable, which records the path rather than
+# copying the code, so the runtime stage needs the same trees at the same
+# places. `packages/` is copied whole, so adding a package changes nothing here.
 # infra/compose/docker-compose.yml sets that context.
 
 FROM ghcr.io/astral-sh/uv:python3.13-bookworm-slim AS builder
@@ -19,11 +20,7 @@ ENV UV_PROJECT_ENVIRONMENT=/opt/venv \
 WORKDIR /app
 COPY idl/contracts/gen/python /app/idl/contracts/gen/python
 COPY idl/contracts/gen/fastapi /app/idl/contracts/gen/fastapi
-COPY packages/core /app/packages/core
-COPY packages/lobby /app/packages/lobby
-COPY packages/game /app/packages/game
-COPY packages/chess /app/packages/chess
-COPY packages/product-chess /app/packages/product-chess
+COPY packages /app/packages
 COPY deployables/grpc-server /app/deployables/grpc-server
 
 WORKDIR /app/deployables/grpc-server
@@ -46,11 +43,7 @@ RUN useradd --create-home --uid 1000 server
 COPY --from=builder --chown=server:server /opt/venv /opt/venv
 COPY --chown=server:server idl/contracts/gen/python /app/idl/contracts/gen/python
 COPY --chown=server:server idl/contracts/gen/fastapi /app/idl/contracts/gen/fastapi
-COPY --chown=server:server packages/core /app/packages/core
-COPY --chown=server:server packages/lobby /app/packages/lobby
-COPY --chown=server:server packages/game /app/packages/game
-COPY --chown=server:server packages/chess /app/packages/chess
-COPY --chown=server:server packages/product-chess /app/packages/product-chess
+COPY --chown=server:server packages /app/packages
 COPY --chown=server:server deployables/grpc-server /app/deployables/grpc-server
 COPY deployables/grpc-server/docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh

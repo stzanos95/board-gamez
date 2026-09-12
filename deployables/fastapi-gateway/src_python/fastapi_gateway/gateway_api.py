@@ -9,11 +9,11 @@ import uvicorn
 from fastapi import FastAPI
 from game.service.game_routers import GameRouters
 from lobby.service.lobby_routers import LobbyRouters
-from product_chess.service.product_chess_routers import ProductChessRouters
 
 from fastapi_gateway.gateway_api_config import ApplicationConfig, GatewayAPIConfig, ServerConfig
 from fastapi_gateway.gateway_clients import GatewayClients
 from fastapi_gateway.payload_types import PayloadTypeRegistry
+from fastapi_gateway.products.gateway_products import GatewayProducts
 
 
 class GatewayAPI:
@@ -40,7 +40,8 @@ class GatewayAPI:
     @staticmethod
     def build_application(config: ApplicationConfig, clients: GatewayClients) -> FastAPI:
         """
-        The application, with the routers each domain publishes.
+        The application, with the routers each domain publishes and the router
+        each product publishes.
 
         Adding a domain is a dependency and one more line.
         """
@@ -53,17 +54,19 @@ class GatewayAPI:
         application.include_router(LobbyRouters.seat_service(clients.seat))
         application.include_router(GameRouters.session_service(clients.session))
         application.include_router(GameRouters.game_spec_service(clients.game_spec))
-        application.include_router(ProductChessRouters.chess_service(clients.chess))
+        for product in clients.products:
+            application.include_router(product.get_router())
         return application
 
     async def _serve(self) -> None:
-        clients = GatewayClients.unconnected()
+        clients = GatewayClients.unconnected(GatewayProducts.build())
         await clients.open(self._config.grpc)
         try:
             application = GatewayAPI.build_application(self._config.application, clients)
             server = GatewayAPI._build_server(application, self._config.server)
             logging.getLogger(self._config.application.title).info(
-                "translating %d payload types", len(PayloadTypeRegistry.get_type_names())
+                "translating %d payload types",
+                len(PayloadTypeRegistry.get_type_names(clients.products)),
             )
             await server.serve()
         finally:

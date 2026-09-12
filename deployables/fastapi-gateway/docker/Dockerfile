@@ -1,10 +1,11 @@
 # syntax=docker/dockerfile:1
 
 # The build context is the repository ROOT, not this directory: this deployable
-# reaches its domain package, the shared utilities and the generated contracts
-# through relative paths, so all four trees must be present. Those dependencies
-# are installed editable, which records the path rather than copying the code,
-# so the runtime stage needs the same trees at the same places.
+# reaches the domain packages, the products, the shared utilities and the
+# generated contracts through relative paths, so every tree must be present.
+# Those dependencies are installed editable, which records the path rather than
+# copying the code, so the runtime stage needs the same trees at the same
+# places. `packages/` is copied whole, so adding a package changes nothing here.
 # infra/compose/docker-compose.yml sets that context.
 
 FROM ghcr.io/astral-sh/uv:python3.13-bookworm-slim AS builder
@@ -19,11 +20,7 @@ ENV UV_PROJECT_ENVIRONMENT=/opt/venv \
 WORKDIR /app
 COPY idl/contracts/gen/python /app/idl/contracts/gen/python
 COPY idl/contracts/gen/fastapi /app/idl/contracts/gen/fastapi
-COPY packages/core /app/packages/core
-COPY packages/lobby /app/packages/lobby
-COPY packages/game /app/packages/game
-COPY packages/chess /app/packages/chess
-COPY packages/product-chess /app/packages/product-chess
+COPY packages /app/packages
 COPY deployables/fastapi-gateway /app/deployables/fastapi-gateway
 
 WORKDIR /app/deployables/fastapi-gateway
@@ -46,11 +43,7 @@ RUN useradd --create-home --uid 1000 gateway
 COPY --from=builder --chown=gateway:gateway /opt/venv /opt/venv
 COPY --chown=gateway:gateway idl/contracts/gen/python /app/idl/contracts/gen/python
 COPY --chown=gateway:gateway idl/contracts/gen/fastapi /app/idl/contracts/gen/fastapi
-COPY --chown=gateway:gateway packages/core /app/packages/core
-COPY --chown=gateway:gateway packages/lobby /app/packages/lobby
-COPY --chown=gateway:gateway packages/game /app/packages/game
-COPY --chown=gateway:gateway packages/chess /app/packages/chess
-COPY --chown=gateway:gateway packages/product-chess /app/packages/product-chess
+COPY --chown=gateway:gateway packages /app/packages
 COPY --chown=gateway:gateway deployables/fastapi-gateway /app/deployables/fastapi-gateway
 COPY deployables/fastapi-gateway/docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh

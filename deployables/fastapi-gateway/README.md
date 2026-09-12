@@ -15,14 +15,21 @@ tests/        the gateway's own tests
 
 ```
 fastapi_gateway/
-├── gateway_api_config.py   the settings, as dataclasses
-├── gateway_api.py          the FastAPI application and the server around it
-└── log_level.py            the levels uvicorn accepts
+├── gateway_api_config.py         the settings, as dataclasses
+├── gateway_api.py                the FastAPI application and the server around it
+├── gateway_clients.py            every client the gateway calls the server through
+├── payload_types.py              the packed types the products declare translatable
+├── products/
+│   ├── base_gateway_product.py   what a game supplies to be served
+│   ├── chess_gateway_product.py  chess: its client, its router, its packed types
+│   └── gateway_products.py       every game this gateway serves
+└── log_level.py                  the levels uvicorn accepts
 ```
 
 `main.py` reads the configuration file named on the command line and hands it to
-`GatewayAPI`, which builds the application, builds the server around it, and
-serves. Each of those is its own method, so a change to one is a change to one.
+`GatewayAPI`, which opens the clients, builds the application, builds the
+server around it, and serves. Each of those is its own method, so a change to
+one is a change to one.
 
 ## Routes
 
@@ -30,12 +37,20 @@ The gateway declares none of its own. A domain package publishes a ready-made
 router, generated from the schema, and bringup includes it:
 
 ```python
-application.include_router(LobbyRouters.table_service())
+application.include_router(LobbyRouters.table_service(clients.table))
 ```
 
 Adding a domain is a dependency and one more line. No path, no request model and
 no handler is written here — those belong to the schema and to the domain that
 owns them.
+
+A game is a product, and a product is one `BaseGatewayProduct` in `products/`:
+the client it calls the server through, the router it answers, and the schema
+files declaring every type it packs into a payload. `GatewayProducts.build`
+lists them; bringup dials each, includes each router, and translates the
+payload types each declares. Adding a game is a dependency in `pyproject.toml`,
+one file in `products/`, and one entry in `GatewayProducts`. See
+`.claude/skills/adding-a-game/`.
 
 `TableService`'s methods are not written yet, so calling one raises.
 

@@ -44,16 +44,13 @@ the URL an operation is served at is stated once, in the `.proto` that declares
 the operation. Bodies and answers are proto3 canonical JSON, produced and read
 by the schema.
 
-## The one decision made here
+## No decision is made here
 
-`lobby/table_intents.ts` produces new tables, and `lobby/seat_writer.ts` writes
-them. `TableService` is a store with four methods and no verb for taking a seat,
-and nothing between it and a browser decides, so taking a seat is a read, a
-change, and a write guarded by the version that was read.
-
-This is business logic in the presentation layer. It is confined to those two
-files: a `JoinSeat` operation on the lobby turns each function into one call,
-and no component changes.
+The browser never writes a table. Opening one and joining one are the lobby's
+`CreateTable` and `JoinTable`; a seat is taken through the game's own service
+as one of the choices it offered; a seat is given up through the lobby's
+`SeatService`. Every one of those is decided by a controller behind the
+gateway, and the browser sends what was asked and draws what came back.
 
 ## Two screens, and which one you are on
 
@@ -69,10 +66,16 @@ a screen you can be on. Opening a table seats the player who opened it.
 A table's name is derived from its identifier. `idl.lobby.model.Table` has no
 name field; adding one is a schema change.
 
-## Playing chess
+## Playing a game
 
-A full table shows its game's screen above the seats. `components/table/GameScreen.tsx`
-picks the screen by `GameType`; chess is `components/chess/ChessScreen.tsx`.
+A table shows its game's screen above the seats. Five records keyed by
+`GameType` bind a game into the shell, and none compiles until every game has
+an entry: `components/table/GameScreen.tsx` picks the screen,
+`components/common/GameArtwork.tsx` the picture, `lobby/table_labels.ts` the
+name and whether a table of it can be opened,
+`runtime/game_change_keys_registry.ts` the queries a change to the table
+reaches, and `runtime/packed_types.ts` the types the game packs into a payload.
+Chess is `chess/` and `components/chess/`.
 
 The screen holds three things: which square is picked up, whether a promotion
 is being chosen, and whether a resignation is being confirmed. What a piece may
@@ -92,15 +95,15 @@ player's own pick is kept in local storage.
 
 ## Freshness
 
-The lobby list and a table are polled, at intervals the deployable's settings
-name. Polling stops while the tab is hidden, so a background tab issues no
-requests and holds no timer.
+A change reaches the browser as a `TableChanged` or `SessionChanged` frame on
+the socket, carrying an id and a version. `lobby/use_table_changes.ts` and
+`lobby/use_lobby_changes.ts` compare the version with what the cache holds and
+read the affected queries again through the gateway. Nothing is written into
+the cache from a frame; it carries nothing to write.
 
-A chess session is polled on `freshness.gameIntervalMs` while someone else can
-change it: before the game starts and during the other side's turn. Only the
-side to move can act, so the poll stops during the viewer's own turn and once
-the game has a result. Real-time state over the WebSocket server replaces this
-poll when it exists.
+While the socket is down, the lobby list, a table and a game are polled at the
+intervals the deployable's settings name under `freshness`. Polling stops while
+the tab is hidden, and a game is polled only while someone else can change it.
 
 ## Identity
 

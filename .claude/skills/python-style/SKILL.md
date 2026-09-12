@@ -5,6 +5,10 @@ description: Coding standards for ALL Python in this repository. Load before wri
 
 # Python style
 
+These rules address whoever writes the code, a developer or an assistant. A
+step a rule leaves to "the user" — running the generator, committing — is the
+developer's own when they work alone.
+
 Non-negotiables first — these are absolute and have no exceptions.
 
 ## 1. Imports

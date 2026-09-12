@@ -5,6 +5,10 @@ description: How to model this system in protobuf. Load before writing or changi
 
 # Modelling
 
+These rules address whoever writes the code, a developer or an assistant. A
+step a rule leaves to "the user" — running the generator, committing — is the
+developer's own when they work alone.
+
 Modelling is where this system's design gets decided. A schema is not a
 transcription of what the code already does — it is the argument about what the
 parts are, who owns them, and what they are allowed to know about each other.
@@ -12,10 +16,12 @@ Getting it wrong is expensive later, so it is worth many rounds now.
 
 ## The two hard rules
 
-**Never generate.** Do not run `./idl/scripts/generate.sh`, and never write or
-edit anything under `idl/contracts/gen`. Generation is the user's, always. Write
-the `.proto` files, say what changed, and stop. `lint.sh`, `format.sh` and
-`breaking.sh` are fine — they produce no generated code — but say what you ran.
+**Never generate.** An assistant does not run `./idl/scripts/generate.sh`,
+and never writes or edits anything under `idl/contracts/gen`. Generation is the
+developer's, always: an assistant writes the `.proto` files, says what changed,
+and stops. A developer working alone writes the schema, reads it back, and then
+runs the generator themselves. `lint.sh`, `format.sh` and `breaking.sh` are
+fine for either — they produce no generated code — but say what you ran.
 
 The reason is not ceremony. Generated output is a large diff that hides the small
 one that matters, and a modelling session should end with the user reading six

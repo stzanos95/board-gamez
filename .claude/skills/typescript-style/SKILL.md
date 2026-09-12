@@ -5,6 +5,10 @@ description: Coding standards for ALL TypeScript and TSX in this repository. Loa
 
 # TypeScript style
 
+These rules address whoever writes the code, a developer or an assistant. A
+step a rule leaves to "the user" — running the generator, committing — is the
+developer's own when they work alone.
+
 The Python half of this repository is governed by `python-style`. This is the
 same rule set for the language on the other side of the wire, and the rules that
 have a Python counterpart are deliberately worded to match it.

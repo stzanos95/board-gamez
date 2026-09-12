@@ -2,9 +2,25 @@
 #
 #   ../scripts/test.sh
 #   ../scripts/lint.sh
+#
+# Every suite in the repository runs from here: each deployable's own, and every
+# package's through the gateway image, which installs all of them.
 
 services:
   fastapi-gateway:
+    command: ["test"]
+
+  package-tests:
+    image: board-gamez/fastapi-gateway:latest
+    build:
+      context: ../..
+      dockerfile: deployables/fastapi-gateway/docker/Dockerfile
+    command: ["test-packages"]
+
+  grpc-server:
+    command: ["test"]
+
+  websocket-server:
     command: ["test"]
 
   gateway-lint:

@@ -9,14 +9,22 @@ against it properly.
 ## Layering
 
 ```
-core → models → contracts → movement → pieces → board → rules → notation → engine
+core → contracts → movement → pieces → board → rules → notation → engine
+                                                                    ↕ adapters
 ```
 
-- **`core`** depends on nothing: board dimensions and the error hierarchy.
-- **`models`** is the domain vocabulary — every enum and every frozen dataclass,
-  one per file. Pure data: a model never imports a board or a rule.
+Every type is the schema's: a square, a move, a piece, a position and a game
+are `idl.chess.model` messages and enums, and this package declares none of
+its own for anything the schema names.
+
+- **`core`** depends on nothing: board dimensions, the error hierarchy, and
+  static lookups over the schema's values — `Colors.opponent`,
+  `Squares.shifted`, `MoveTypes.is_capture`.
 - **`contracts`** is `BoardStateView`, the read-only face a piece is handed.
-- Everything above is behaviour.
+- **`adapters`** converts between the schema's record of a position or a game
+  and the board and engine that compute over it. Reading a game back recomputes
+  the legal moves and the status from the position.
+- Everything else is behaviour.
 
 ## Where the rules live
 
@@ -55,13 +63,14 @@ keeping the engine you already had.
 ## Running the checks
 
 ```bash
-PYTHONPATH=src_python python3 -m unittest discover -s tests_python -t .
-CHESS_SLOW_TESTS=1 PYTHONPATH=src_python python3 -m unittest discover -s tests_python -t .
+uv run python -m pytest
+CHESS_SLOW_TESTS=1 uv run python -m pytest
 uv run ruff check . && uv run mypy
 ```
 
-The suite is stdlib `unittest`, so it runs with nothing installed; pytest collects
-the same classes unchanged inside the container.
+The suite is written with stdlib `unittest` classes, which pytest collects
+unchanged. `./infra/scripts/test.sh` runs the same suite in a container, and the
+pre-push hook runs it before a push that touches this package.
 
 The most valuable test is `tests_python/perft/`, which counts every legal move
 sequence to a given depth in four standard positions and compares against published

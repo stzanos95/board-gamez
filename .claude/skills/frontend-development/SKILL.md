@@ -5,6 +5,10 @@ description: The presentation layer — what it may do, what it must push to the
 
 # Frontend development
 
+These rules address whoever writes the code, a developer or an assistant. A
+step a rule leaves to "the user" — running the generator, committing — is the
+developer's own when they work alone.
+
 `ARCHITECTURE.md` names five layers. This is layer 1, presentation, and it is the
 only layer that runs on a machine this project does not control.
 

@@ -142,9 +142,11 @@ side it plays, the token it moves — is a `role` on the seat, carried the same
 way: packed by the product when the seat is taken, handed to the rules when the
 game starts, and never opened by `lobby` or `game`. Which seats a player may
 take, and with which role, is answered by the product's `BaseSeating`, found
-by game type in the lobby's `SeatingRegistry`. Adding a game requires a
-`GameType` member, a product package, and one entry each in the rules registry
-and the seating registry at bringup. No file in `lobby` or `game` changes.
+by game type in the lobby's `SeatingRegistry`. Adding a game touches the
+schema, a rules package, a product package, one product file and one list entry
+in each of `grpc-server` and `fastapi-gateway`, and the enum-keyed records in
+the browser. `.claude/skills/adding-a-game/` lists every file in order. No
+file in `lobby` or `game` changes.
 
 A game is two packages. `packages/chess` is the rules and performs no I/O: no
 printing, no reading, no storage, so it is callable from a CLI, a server, or a
@@ -253,3 +255,5 @@ Redis, so a write built on a version that has since moved on changes nothing.
 3. `.claude/skills/backend-development/SKILL.md` — rules for working in a layer.
 4. `.claude/skills/python-style/SKILL.md` — rules for writing the code.
 5. `.claude/skills/modeling/SKILL.md` — rules for changing the schema.
+6. `.claude/skills/adding-a-game/SKILL.md` — every file a new game touches, in
+   order, when that is the work.

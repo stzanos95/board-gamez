@@ -37,11 +37,18 @@ second tab to take the seat opposite yourself.
 Which gateway it calls, which theme it wears and how often it polls are in
 [`deployables/gamez-ux/config/gamez_ux.json`](deployables/gamez-ux/config/gamez_ux.json).
 
-Run the checks the same way CI does:
+Run the checks the same way CI does. `test.sh` runs every package's suite and
+every deployable's:
 
 ```bash
 ./infra/scripts/test.sh
 ./infra/scripts/lint.sh
+```
+
+One project on this machine:
+
+```bash
+uv run --directory packages/game python -m pytest
 ```
 
 ## Architecture
@@ -62,13 +69,21 @@ setup.sh                       prepare this machine — idempotent, safe to re-r
 ARCHITECTURE.md                the layers, and which one a file belongs to
 .pre-commit-config.yaml        what has to pass before a commit lands, and a push
 .claude/skills/python-style/   the house style, loaded before any .py is written
+.claude/skills/typescript-style/  the same, for .ts and .tsx
 .claude/skills/modeling/       how the system is modelled, loaded before any .proto
 .claude/skills/backend-development/  the layers, loaded before adding a component
+.claude/skills/frontend-development/  the presentation layer's rules
+.claude/skills/adding-a-game/  every file a new game touches, in order
 idl/contracts/                 the schema every layer shares, and what it generates
-packages/chess/                the chess engine — rules only, no input or output
+packages/core/                 what every domain needs and no domain owns: the queue, the clock
+packages/game/                 the platform: a game being played, whatever game it is
 packages/lobby/                tables and seats — rules only, in the schema's own types
+packages/chess/                the chess engine — rules only, no input or output
+packages/product-chess/        chess as the platform hosts it
+packages/ux/                   the browser: every line of frontend TypeScript
 deployables/grpc-server/       the gRPC server — owns its environment and its config
 deployables/fastapi-gateway/   the HTTP gateway — owns its environment and its config
+deployables/websocket-server/  turns each event into a frame for the browsers watching
 deployables/gamez-ux/          the browser interface — owns its environment and its config
 infra/                         compose files and the scripts that drive them
 ```
@@ -90,8 +105,9 @@ running it once did. It never removes or overwrites anything you already have.
 ./infra/scripts/serve.sh                               # in a container
 ```
 
-The gateway carries no routes yet; it answers `/openapi.json` and `/docs` with
-the title and version its config file names.
+The gateway answers every path the schema declares under `/internal`, and
+`/openapi.json` and `/docs` document them under the title and version its
+config file names.
 
 ## The shared vocabulary
 
@@ -119,9 +135,9 @@ toolchain. See [idl/README.md](idl/README.md).
   configuration; consumers are typed against the base class only.
 - **One schema, many languages.** Anything that crosses a process boundary is
   described once in `idl/contracts/proto` and generated into
-  `idl/contracts/gen`. The generated types are the wire; `packages/chess` keeps
-  its own models, because those carry behaviour a generated class cannot.
-  Converting between them is an adapter.
+  `idl/contracts/gen`. The generated types are the vocabulary everywhere: a
+  package computes over them and adds behaviour beside them, and declares no
+  type of its own for anything the schema names.
 - **Dependencies point one way**: `deployable → package → models`.
 - **There is no workspace root.** Each `pyproject.toml` stands alone; a deployable
   reaches a package through a relative `[tool.uv.sources]` path. Python 3.13 is
@@ -136,10 +152,11 @@ function-level imports, no magic values, no `Any` — are enforced by the ruff a
 mypy settings in each `pyproject.toml`, not by good intentions.
 
 `setup.sh` wires those checks into git, so they run without being remembered:
-ruff lints and formats what you commit, and mypy type-checks every project the
-commit touches. Ruff finds its settings by walking up from each file, so a commit
-spanning two projects is judged by each project's own rules — there is still no
-workspace root.
+ruff lints and formats what you commit, mypy type-checks every project the
+commit touches, and pytest runs the suite of every project a push touches. Ruff
+finds its settings by walking up from each file, so a commit spanning two
+projects is judged by each project's own rules — there is still no workspace
+root.
 
 ```bash
 pre-commit run --all-files              # check the whole tree now

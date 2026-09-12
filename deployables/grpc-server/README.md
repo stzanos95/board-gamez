@@ -16,15 +16,20 @@ tests/        the server's own tests
 
 ```
 grpc_server/
-├── service_host_config.py   the settings, as dataclasses
-├── service_host.py          the gRPC server and the servicers on it
-├── channel_options.py       the channel arguments gRPC accepts, modelled
-└── log_level.py             the levels the logging module accepts
+├── service_host_config.py       the settings, as dataclasses
+├── service_host.py              the gRPC server, the servicers on it, and the deadline tick
+├── platform_controllers.py      the controllers every hosted game shares
+├── products/
+│   ├── base_hosted_product.py   what a game supplies to be hosted
+│   ├── chess_hosted_product.py  chess: its rules, its seating, its servicers
+│   └── hosted_products.py       every game this process hosts
+└── log_level.py                 the levels the logging module accepts
 ```
 
 `main.py` reads the configuration file named on the command line and hands it to
-`ServiceHost`, which builds the server, registers the servicers, and serves. Each
-of those is its own method, so a change to one is a change to one.
+`ServiceHost`, which builds the server, registers the servicers, starts the
+tick that expires a game's deadlines, and serves. Each of those is its own
+method, so a change to one is a change to one.
 
 ## Services
 
@@ -32,18 +37,24 @@ The server declares none of its own. A domain package publishes a ready-made
 servicer, generated from the schema, and bringup registers it:
 
 ```python
-return (LobbyServicers.add_table_service(server),)
+LobbyServicers.add_table_service(server, controllers.tables)
 ```
 
 Adding a domain is a dependency and one more line. No message, no method and no
 handler is written here — those belong to the schema and to the domain that owns
 them.
 
+A game is a product, and a product is one `BaseHostedProduct` in `products/`:
+its game type, the rules the session controller asks, the seating the lobby
+asks, and the servicers it answers. `HostedProducts.build` lists them, and
+bringup fills the rules registry and the seating registry from that list and
+registers each product's servicers after the platform's. Adding a game is a
+dependency in `pyproject.toml`, one file in `products/`, and one entry in
+`HostedProducts`. See `.claude/skills/adding-a-game/`.
+
 Registration mutates the server and answers the service's full name, which is
 what gRPC offers in place of the router an HTTP framework returns. The names come
 back so reflection can publish them without spelling any of them out again.
-
-`TableService`'s methods are not written yet, so calling one raises.
 
 ## Transport
 

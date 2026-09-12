@@ -52,8 +52,9 @@ contracts/proto/idl/
 `game` never imports `chess`. A game's state and actions reach the session layer
 packed into `google.protobuf.Any`, stored and relayed without being opened, which
 is what lets one server host every game. A seat's role — the side it plays, the
-token it moves — reaches the lobby the same way. Adding a game is a `GameType`
-member and one implementation each of `RulesService` and `SeatingService`.
+token it moves — reaches the lobby the same way. A new game is a `GameType`
+member and a domain of its own beside `chess`, with a service a browser plays
+it through; `.claude/skills/adding-a-game/` lists what it declares.
 
 Every write that succeeds is one event in `<domain>/model/event.proto`, in that
 domain's vocabulary and with the version after the write. Events are published

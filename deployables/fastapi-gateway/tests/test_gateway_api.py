@@ -15,6 +15,7 @@ from fastapi_gateway.gateway_api_config import (
 from fastapi_gateway.gateway_clients import GatewayClients
 from fastapi_gateway.log_level import LogLevel
 from fastapi_gateway.payload_types import PayloadTypeRegistry
+from fastapi_gateway.products.gateway_products import GatewayProducts
 
 CONFIGURED_PORT = 9091
 UPSTREAM_PORT = 50051
@@ -60,7 +61,7 @@ class BringupTest(unittest.TestCase):
 
     def test_the_application_is_named_by_the_configuration(self) -> None:
         application = GatewayAPI.build_application(
-            application_config(), GatewayClients.unconnected()
+            application_config(), GatewayClients.unconnected(GatewayProducts.build())
         )
         self.assertEqual(application.title, "test gateway")
         self.assertEqual(application.version, "9.9.9")
@@ -72,7 +73,7 @@ class BringupTest(unittest.TestCase):
         held unexpanded in `routes` until a request is matched against it.
         """
         application = GatewayAPI.build_application(
-            application_config(), GatewayClients.unconnected()
+            application_config(), GatewayClients.unconnected(GatewayProducts.build())
         )
         paths = application.openapi()["paths"]
         self.assertIn(A_LOBBY_PATH, paths)
@@ -92,7 +93,10 @@ class PayloadTypeTest(unittest.TestCase):
         Resolving an `@type` needs the type's module imported, which is what
         the registry is for.
         """
-        self.assertIn("idl.chess.model.ChessAction", PayloadTypeRegistry.get_type_names())
+        self.assertIn(
+            "idl.chess.model.ChessAction",
+            PayloadTypeRegistry.get_type_names(GatewayProducts.build()),
+        )
         request = ProtobufMessageUtils.message_from_pydantic_model(
             ApplyCommandRequest(
                 sessionId="t-1",

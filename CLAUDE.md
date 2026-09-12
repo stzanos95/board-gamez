@@ -8,6 +8,7 @@ Skills are loaded before the work they govern, not after:
 - `.claude/skills/backend-development/` — before adding or changing any component
 - `.claude/skills/python-style/` — before writing or editing any `.py`
 - `.claude/skills/modeling/` — before writing or changing any `.proto`
+- `.claude/skills/adding-a-game/` — before adding a game: the files, in order
 
 ## Write in plain language
 

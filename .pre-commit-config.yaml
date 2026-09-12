@@ -138,3 +138,81 @@ repos:
         types: [python]
         files: ^deployables/websocket-server/
         pass_filenames: false
+
+  # The suites run at push, one per project, so a test that fails is reported
+  # against the branch that carries it and a commit stays fast. `files` keeps a
+  # push that touched one project from paying for every other. The same
+  # projects, in the same order, as the mypy hooks above.
+  - repo: local
+    hooks:
+      - id: pytest-core
+        name: pytest (packages/core)
+        entry: uv run --directory packages/core --quiet python -m pytest --quiet
+        language: system
+        types: [python]
+        files: ^packages/core/
+        pass_filenames: false
+        stages: [pre-push]
+
+      - id: pytest-chess
+        name: pytest (packages/chess)
+        entry: uv run --directory packages/chess --quiet python -m pytest --quiet
+        language: system
+        types: [python]
+        files: ^packages/chess/
+        pass_filenames: false
+        stages: [pre-push]
+
+      - id: pytest-lobby
+        name: pytest (packages/lobby)
+        entry: uv run --directory packages/lobby --quiet python -m pytest --quiet
+        language: system
+        types: [python]
+        files: ^packages/lobby/
+        pass_filenames: false
+        stages: [pre-push]
+
+      - id: pytest-game
+        name: pytest (packages/game)
+        entry: uv run --directory packages/game --quiet python -m pytest --quiet
+        language: system
+        types: [python]
+        files: ^packages/game/
+        pass_filenames: false
+        stages: [pre-push]
+
+      - id: pytest-product-chess
+        name: pytest (packages/product-chess)
+        entry: uv run --directory packages/product-chess --quiet python -m pytest --quiet
+        language: system
+        types: [python]
+        files: ^packages/product-chess/
+        pass_filenames: false
+        stages: [pre-push]
+
+      - id: pytest-fastapi-gateway
+        name: pytest (deployables/fastapi-gateway)
+        entry: uv run --directory deployables/fastapi-gateway --quiet python -m pytest --quiet
+        language: system
+        types: [python]
+        files: ^deployables/fastapi-gateway/
+        pass_filenames: false
+        stages: [pre-push]
+
+      - id: pytest-grpc-server
+        name: pytest (deployables/grpc-server)
+        entry: uv run --directory deployables/grpc-server --quiet python -m pytest --quiet
+        language: system
+        types: [python]
+        files: ^deployables/grpc-server/
+        pass_filenames: false
+        stages: [pre-push]
+
+      - id: pytest-websocket-server
+        name: pytest (deployables/websocket-server)
+        entry: uv run --directory deployables/websocket-server --quiet python -m pytest --quiet
+        language: system
+        types: [python]
+        files: ^deployables/websocket-server/
+        pass_filenames: false
+        stages: [pre-push]

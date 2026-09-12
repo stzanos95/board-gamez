@@ -16,6 +16,7 @@ from lobby.repository.config import (
 )
 
 from grpc_server.log_level import LogLevel
+from grpc_server.products.hosted_products import HostedProducts
 from grpc_server.service_host import ServiceHost
 from grpc_server.service_host_config import (
     ApplicationConfig,
@@ -114,13 +115,15 @@ class RegistrationTest(unittest.IsolatedAsyncioTestCase):
 
     async def test_every_service_is_registered_under_its_full_name(self) -> None:
         server = grpc.aio.server()
+        products = HostedProducts.build()
         controllers = ServiceHost._build_controllers(
             lobby_config(),
             game_config(),
             QueueProvider.get_publisher(queue_config()),
             SystemClock(),
+            products,
         )
-        names = ServiceHost._register_services(server, controllers)
+        names = ServiceHost._register_services(server, controllers, products)
         self.assertEqual(
             names,
             (

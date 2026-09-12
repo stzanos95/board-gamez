@@ -41,7 +41,9 @@ sources = ["src_python"]
 [dependency-groups]
 # The ruff floor matches the rev pinned in .pre-commit-config.yaml, so the
 # hook, this environment and ./infra/scripts/lint.sh format identically.
-dev = ["pytest>=9.1.1", "mypy>=2.3.1", "ruff>=0.16.6"]
+# protobuf ships no type information of its own, so the stubs are what keeps
+# a schema file's descriptor from being Any to a type checker.
+dev = ["pytest>=9.1.1", "mypy>=2.3.1", "ruff>=0.16.6", "types-protobuf>=5.28"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

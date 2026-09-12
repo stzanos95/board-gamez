@@ -1,29 +1,23 @@
 """
 The payload types this gateway can translate.
-
-A game's state and actions cross the platform's paths as `google.protobuf.Any`.
-Translating one between JSON and a message resolves its `@type` against the
-types this process has imported, so a type that is not imported here cannot be
-sent or answered as JSON. One line per game.
 """
 
-from idl.chess.model import action_pb2, game_pb2
-
-PAYLOAD_MODULES = (action_pb2, game_pb2)
+from fastapi_gateway.products.base_gateway_product import BaseGatewayProduct
 
 
 class PayloadTypeRegistry:
     """
-    What the payload modules imported above declare.
+    What the products served here declare as packable.
     """
 
     @staticmethod
-    def get_type_names() -> tuple[str, ...]:
+    def get_type_names(products: tuple[BaseGatewayProduct, ...]) -> tuple[str, ...]:
         """
         The full name of every message a payload may carry.
         """
         return tuple(
             descriptor.full_name
-            for module in PAYLOAD_MODULES
-            for descriptor in module.DESCRIPTOR.message_types_by_name.values()
+            for product in products
+            for file in product.get_payload_files()
+            for descriptor in file.message_types_by_name.values()
         )
