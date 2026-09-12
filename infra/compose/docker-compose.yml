@@ -1,20 +1,6 @@
 name: board-gamez
 
 services:
-  chess-cli:
-    build:
-      # The repository root, so the engine package is inside the context.
-      context: ../..
-      dockerfile: deployables/chess-cli/docker/Dockerfile
-    image: board-gamez/chess-cli:latest
-    # Both are needed for an interactive prompt. Start it with
-    # `docker compose run --rm chess-cli`, not `up`; the profile keeps a bare
-    # `up` from starting it.
-    profiles: ["cli"]
-    stdin_open: true
-    tty: true
-    command: ["play"]
-
   fastapi-gateway:
     build:
       # The repository root, so the root .dockerignore applies.

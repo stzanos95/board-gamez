@@ -15,18 +15,12 @@ require_docker() {
     if ! command -v docker >/dev/null 2>&1; then
         echo "docker is not installed. Either:" >&2
         echo "  ./setup.sh --with-docker" >&2
-        echo "or play without a container:" >&2
-        echo "  ./deployables/chess-cli/scripts/local-play.sh" >&2
+        echo "or serve without a container:" >&2
+        echo "  ./deployables/fastapi-gateway/scripts/local-serve.sh" >&2
         exit 1
     fi
 }
 
-# The .env file is optional and holds only test switches; app settings live in
-# the deployable's YAML config, not in the environment.
 compose() {
-    local env_arguments=()
-    if [ -f "$INFRA_DIR/.env" ]; then
-        env_arguments=(--env-file "$INFRA_DIR/.env")
-    fi
-    docker compose "${env_arguments[@]}" "$@"
+    docker compose "$@"
 }

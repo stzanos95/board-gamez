@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# setup.sh — prepare this machine to build, test and play everything in this repo.
+# setup.sh — prepare this machine to build, test and serve everything in this repo.
 #
 # Idempotent by construction. Every step is an "ensure": it checks the state it
 # wants before touching anything, reports what it found, and acts only on the
@@ -24,7 +24,6 @@ ENGINE_DIR="$REPO_ROOT/packages/chess"
 LOBBY_DIR="$REPO_ROOT/packages/lobby"
 GAME_DIR="$REPO_ROOT/packages/game"
 PRODUCT_CHESS_DIR="$REPO_ROOT/packages/product-chess"
-APP_DIR="$REPO_ROOT/deployables/chess-cli"
 SERVER_DIR="$REPO_ROOT/deployables/grpc-server"
 GATEWAY_DIR="$REPO_ROOT/deployables/fastapi-gateway"
 INFRA_DIR="$REPO_ROOT/infra"
@@ -169,8 +168,8 @@ ensure_uv() {
 
 # --- python environments ---------------------------------------------------
 
-# A virtualenv is not relocatable. Its console scripts — ruff, mypy, pytest, the
-# `chess` entry point — carry the absolute path of the interpreter that created
+# A virtualenv is not relocatable. Its console scripts — ruff, mypy, pytest —
+# carry the absolute path of the interpreter that created
 # them in their shebang, so renaming or moving the checkout breaks every one of
 # them. uv cannot see this: .venv/bin/python is a symlink that still resolves, so
 # the environment looks healthy and a plain `uv sync` leaves the stale scripts
@@ -237,7 +236,6 @@ ensure_project_environments() {
     ensure_project_environment "$LOBBY_DIR" "packages/lobby"
     ensure_project_environment "$GAME_DIR" "packages/game"
     ensure_project_environment "$PRODUCT_CHESS_DIR" "packages/product-chess"
-    ensure_project_environment "$APP_DIR" "deployables/chess-cli"
     ensure_project_environment "$SERVER_DIR" "deployables/grpc-server"
     ensure_project_environment "$GATEWAY_DIR" "deployables/fastapi-gateway"
 }
@@ -261,7 +259,6 @@ DEV_VENV_PROJECTS=(
     "$LOBBY_DIR"
     "$GAME_DIR"
     "$PRODUCT_CHESS_DIR"
-    "$APP_DIR"
     "$SERVER_DIR"
     "$GATEWAY_DIR"
 )
@@ -482,16 +479,6 @@ ensure_docker_image() {
     fi
 }
 
-ensure_infra_env_file() {
-    step "Local settings"
-    if [ -f "$INFRA_DIR/.env" ]; then
-        already "infra/.env"
-        return 0
-    fi
-    cp "$INFRA_DIR/.env.example" "$INFRA_DIR/.env"
-    changed "created infra/.env from .env.example"
-}
-
 # --- verification ----------------------------------------------------------
 
 run_test_suites() {
@@ -504,7 +491,8 @@ run_test_suites() {
         warn "skipped — no python 3.$MINIMUM_PYTHON_MINOR or newer, and no uv"
         return 0
     fi
-    if "$APP_DIR/scripts/local-test.sh" >/tmp/board-gamez-setup-tests.log 2>&1 &&
+    if (cd "$ENGINE_DIR" && uv run --quiet python -m unittest discover -s tests_python -t .) \
+            >/tmp/board-gamez-setup-tests.log 2>&1 &&
         "$GATEWAY_DIR/scripts/local-test.sh" >>/tmp/board-gamez-setup-tests.log 2>&1 &&
         (cd "$LOBBY_DIR" && uv run --quiet python -m unittest discover -s tests_python -t .) \
             >>/tmp/board-gamez-setup-tests.log 2>&1; then
@@ -523,18 +511,15 @@ summarise() {
         ok "nothing needed changing — this machine was already set up"
     fi
     echo
-    echo "  Play now, with no container:"
-    echo "      ./deployables/chess-cli/scripts/local-play.sh"
-    echo
     echo "  Serve the gateway, with no container:"
     echo "      ./deployables/fastapi-gateway/scripts/local-serve.sh"
     echo
     echo "  Run the tests:"
-    echo "      ./deployables/chess-cli/scripts/local-test.sh"
+    echo "      ./deployables/grpc-server/scripts/local-test.sh"
     echo "      ./deployables/fastapi-gateway/scripts/local-test.sh"
     echo
     echo "  Settings live in a file, not the environment:"
-    echo "      deployables/chess-cli/config/chess_cli.yaml"
+    echo "      deployables/grpc-server/config/grpc_server.yaml"
     echo "      deployables/fastapi-gateway/config/fastapi_gateway.yaml"
     echo
     echo "  Commits are checked for you — ruff on commit, mypy on push:"
@@ -544,9 +529,8 @@ summarise() {
     echo "      $DEV_VENV_PYTHON"
     echo
     if [ "$DOCKER_USABLE" -eq 1 ]; then
-        echo "  Play in the container, or serve the gateway from one:"
-        echo "      ./infra/scripts/play.sh"
-        echo "      ./infra/scripts/serve.sh"
+        echo "  Serve the stack from containers:"
+        echo "      ./infra/scripts/up.sh"
         echo
         echo "  Check everything the way CI would:"
         echo "      ./infra/scripts/test.sh"
@@ -571,7 +555,6 @@ main() {
     ensure_dev_venv || true
     ensure_git_hooks || true
     ensure_docker
-    ensure_infra_env_file
     ensure_docker_image || true
     run_test_suites
     summarise

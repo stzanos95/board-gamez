@@ -115,14 +115,6 @@ repos:
         files: ^packages/product-chess/
         pass_filenames: false
 
-      - id: mypy-chess-cli
-        name: mypy (deployables/chess-cli)
-        entry: uv run --directory deployables/chess-cli --quiet python -m mypy
-        language: system
-        types: [python]
-        files: ^deployables/chess-cli/
-        pass_filenames: false
-
       - id: mypy-fastapi-gateway
         name: mypy (deployables/fastapi-gateway)
         entry: uv run --directory deployables/fastapi-gateway --quiet python -m mypy

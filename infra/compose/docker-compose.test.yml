@@ -1,34 +1,9 @@
-# Overlay: run the checks instead of the game.
+# Overlay: run the checks instead of the app.
 #
 #   ../scripts/test.sh
 #   ../scripts/lint.sh
-#
-# CHESS_SLOW_TESTS selects the deep perft counts. It is a test switch, not app
-# configuration — the app itself is brought up from its YAML config and reads no
-# environment at all.
 
 services:
-  chess-cli:
-    stdin_open: false
-    tty: false
-    environment:
-      CHESS_SLOW_TESTS: ${CHESS_SLOW_TESTS:-0}
-    command: ["test"]
-
-  chess-lint:
-    image: board-gamez/chess-cli:latest
-    build:
-      context: ../..
-      dockerfile: deployables/chess-cli/docker/Dockerfile
-    command: ["lint"]
-
-  chess-typecheck:
-    image: board-gamez/chess-cli:latest
-    build:
-      context: ../..
-      dockerfile: deployables/chess-cli/docker/Dockerfile
-    command: ["typecheck"]
-
   fastapi-gateway:
     command: ["test"]
 

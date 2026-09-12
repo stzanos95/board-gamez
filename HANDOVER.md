@@ -50,8 +50,7 @@ Without containers, with Redis on 6379 (the compose `redis` service is enough):
 The frontend has no test suite. `tsc --noEmit` and driving the screen are the
 checks.
 
-Every backend project is green: chess 150 (+1 skipped perft), chess-cli 58,
-lobby 19, game 35, product-chess 28, grpc-server 5, gateway 7;
+Every backend project is green: chess 150 (+1 skipped perft), lobby 19, game 35, product-chess 28, grpc-server 5, gateway 7;
 `pre-commit run --all-files` passes.
 
 ## What exists

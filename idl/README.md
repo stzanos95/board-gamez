@@ -157,7 +157,7 @@ contracts/gen/python/
 └── src/idl/chess/model/  protoc's output
 ```
 
-A consumer depends on it the way `deployables/chess-cli` depends on
+A consumer depends on it the way `packages/product-chess` depends on
 `packages/chess` — a relative path, no workspace, nothing published anywhere:
 
 ```toml

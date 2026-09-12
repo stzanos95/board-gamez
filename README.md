@@ -67,8 +67,9 @@ ARCHITECTURE.md                the layers, and which one a file belongs to
 idl/contracts/                 the schema every layer shares, and what it generates
 packages/chess/                the chess engine — rules only, no input or output
 packages/lobby/                tables and seats — rules only, in the schema's own types
-deployables/chess-cli/         the terminal game — owns its environment and its config
+deployables/grpc-server/       the gRPC server — owns its environment and its config
 deployables/fastapi-gateway/   the HTTP gateway — owns its environment and its config
+deployables/gamez-ux/          the browser interface — owns its environment and its config
 infra/                         compose files and the scripts that drive them
 ```
 
@@ -81,13 +82,6 @@ infra/                         compose files and the scripts that drive them
 
 Every step checks its target state before acting, so running it twice does what
 running it once did. It never removes or overwrites anything you already have.
-
-## Playing
-
-```bash
-./deployables/chess-cli/scripts/local-play.sh   # on this machine
-./infra/scripts/play.sh                         # in a container
-```
 
 ## Serving
 
@@ -120,7 +114,7 @@ toolchain. See [idl/README.md](idl/README.md).
   dependency set and its `config/`. Nothing has to be installed on the host.
 - **An app is brought up from a YAML file** parsed into a dataclass by a
   mashumaro mixin. Nothing reads the environment.
-- **Swappable collaborators go through a provider.** A display or a console is a
+- **Swappable collaborators go through a provider.** A repository is a
   `config.py` / `base_*.py` / concrete / `provider.py` package, selected by
   configuration; consumers are typed against the base class only.
 - **One schema, many languages.** Anything that crosses a process boundary is

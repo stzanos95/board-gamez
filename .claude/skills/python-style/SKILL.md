@@ -257,7 +257,7 @@ constants edited before a deploy. One file, parsed once, into one type.
 **The settings type is a frozen dataclass with a mashumaro YAML mixin:**
 
 ```python
-# chess_cli/cli_settings.py
+# grpc_server/service_host_config.py
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -265,17 +265,19 @@ from mashumaro.mixins.yaml import DataClassYAMLMixin
 
 
 @dataclass(frozen=True, slots=True)
-class DisplaySettings(DataClassYAMLMixin):
-    use_unicode: bool
+class ServerConfig(DataClassYAMLMixin):
+    host: str
+    port: int
 
 
 @dataclass(frozen=True, slots=True)
-class CliSettings(DataClassYAMLMixin):
-    players: PlayerSettings
-    display: DisplaySettings
+class ServiceHostConfig(DataClassYAMLMixin):
+    application: ApplicationConfig
+    server: ServerConfig
+    lobby: LobbyConfig
 
     @staticmethod
-    def from_yaml_file(path: Path) -> "CliSettings": ...
+    def from_yaml_file(path: Path) -> "ServiceHostConfig": ...
 
     def to_yaml_file(self, path: Path) -> None: ...
 ```
@@ -283,8 +285,8 @@ class CliSettings(DataClassYAMLMixin):
 - **One settings module per app, and it is the only place a config file is read
   or written.** `from_yaml_file` to bring up, `to_yaml_file` to emit. No other
   module opens the file, and no other module reads a setting from anywhere else.
-- **Group settings into nested dataclasses that name a concern** — `players`,
-  `display` — rather than one flat bag of twenty fields.
+- **Group settings into nested dataclasses that name a concern** — `server`,
+  `lobby` — rather than one flat bag of twenty fields.
 - **The entry point takes a path and nothing else.** `--config <path>`, with a
   default beside the app. The path is the only thing the outside world gets to
   say.
@@ -325,9 +327,8 @@ hoping you found them all.
 
 ### Dependency inversion, concretely
 
-**Where an app has a choice to make — how it displays, where it reads input,
-which store it writes to — that choice is a package of four files and nothing
-else:**
+**Where an app has a choice to make — which store it writes to, which client
+it calls through — that choice is a package of four files and nothing else:**
 
 ```
 <thing>/
@@ -344,29 +345,32 @@ selector with no way to see what selecting it implies. The container carries one
 optional field per option:
 
 ```python
-class DisplayType(Enum):
-    TEXT = "text"
+class TableRepositoryType(StrEnum):
+    REDIS = "redis"
 
 @dataclass(frozen=True, slots=True)
-class TextDisplayConfig(DataClassYAMLMixin):
-    use_unicode: bool
+class RedisTableRepositoryConfig(DataClassYAMLMixin):
+    host: str
+    port: int
 
 @dataclass(frozen=True, slots=True)
-class DisplayConfig(DataClassYAMLMixin):
-    display: DisplayType
-    text_config: "TextDisplayConfig | None" = None
+class TableRepositoryConfig(DataClassYAMLMixin):
+    repository: TableRepositoryType
+    redis_config: RedisTableRepositoryConfig | None = None
 ```
 
 `provider.py` is a registry and a static factory, never a chain of `if`s:
 
 ```python
-DISPLAY_BUILDERS: dict[DisplayType, Callable[[DisplayConfig], BaseDisplay]] = {
-    DisplayType.TEXT: _build_text_display,
-}
-
-class DisplayProvider:
+class TableRepositoryProvider:
     @staticmethod
-    def get_display(config: DisplayConfig) -> BaseDisplay: ...
+    def get_table_repository(config: TableRepositoryConfig) -> BaseTableRepository: ...
+
+TABLE_REPOSITORY_BUILDERS_BY_TYPE: dict[
+    TableRepositoryType, Callable[[TableRepositoryConfig], BaseTableRepository]
+] = {
+    TableRepositoryType.REDIS: TableRepositoryProvider._build_redis_table_repository,
+}
 ```
 
 What makes this pay:
@@ -375,16 +379,16 @@ What makes this pay:
   implementation the settings that belong to it and nothing else.
 - **A selected option with no configuration is a hard error**, raised at bringup
   and naming the section that is missing. Never a silent default.
-- **Consumers are typed against the base class only.** The game loop holds a
-  `BaseDisplay` and a `BaseConsole`; it cannot name a concrete class, so it
-  cannot grow a dependency on one.
+- **Consumers are typed against the base class only.** The controller holds a
+  `BaseTableRepository`; it cannot name a concrete class, so it cannot grow a
+  dependency on one.
 - **Construction happens once, at the entry point**, and the collaborators are
   passed in. Nothing reaches for a provider part-way down a call stack.
 - **Adding an option is purely additive**: a member, a config, a module, a
   registry entry. If adding one makes you edit an existing branch, the shape is
   wrong.
 
-Worked examples: `chess_cli/display/`, `chess_cli/console/`.
+Worked examples: `lobby/repository/`, `game/repository/`.
 
 ## 6. Clean code
 

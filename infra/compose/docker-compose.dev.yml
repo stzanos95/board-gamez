@@ -4,14 +4,10 @@
 #
 # Safe because the virtualenv lives at /opt/venv, outside the mounted trees. The
 # app's settings file is mounted with everything else, so editing
-# deployables/chess-cli/config/chess_cli.yaml takes effect on the next run.
+# deployables/fastapi-gateway/config/fastapi_gateway.yaml takes effect on the
+# next run.
 
 services:
-  chess-cli:
-    volumes:
-      - ../../packages/chess:/app/packages/chess:ro
-      - ../../deployables/chess-cli:/app/deployables/chess-cli:ro
-
   fastapi-gateway:
     volumes:
       - ../../deployables/fastapi-gateway:/app/deployables/fastapi-gateway:ro
