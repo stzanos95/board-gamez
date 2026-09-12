@@ -1,6 +1,7 @@
 import unittest
 
 import grpc
+from core.clock.system_clock import SystemClock
 from core.queue.config import QueueConfig, QueueType, RedisQueueConfig
 from core.queue.provider import QueueProvider
 from game.repository.config import (
@@ -18,6 +19,7 @@ from grpc_server.log_level import LogLevel
 from grpc_server.service_host import ServiceHost
 from grpc_server.service_host_config import (
     ApplicationConfig,
+    DeadlineConfig,
     GameConfig,
     LobbyConfig,
     ServerConfig,
@@ -25,6 +27,7 @@ from grpc_server.service_host_config import (
 )
 
 CONFIGURED_PORT = 50999
+POLL_INTERVAL_SECONDS = 0.5
 REDIS_PORT = 6379
 REDIS_DATABASE = 0
 RECEIVE_LIMIT = 1024
@@ -69,6 +72,7 @@ def game_config() -> GameConfig:
                 key_prefix="board-gamez-test",
             ),
         ),
+        deadlines=DeadlineConfig(poll_interval_seconds=POLL_INTERVAL_SECONDS),
     )
 
 
@@ -110,9 +114,13 @@ class RegistrationTest(unittest.IsolatedAsyncioTestCase):
 
     async def test_every_service_is_registered_under_its_full_name(self) -> None:
         server = grpc.aio.server()
-        names = ServiceHost._register_services(
-            server, lobby_config(), game_config(), QueueProvider.get_publisher(queue_config())
+        controllers = ServiceHost._build_controllers(
+            lobby_config(),
+            game_config(),
+            QueueProvider.get_publisher(queue_config()),
+            SystemClock(),
         )
+        names = ServiceHost._register_services(server, controllers)
         self.assertEqual(
             names,
             (

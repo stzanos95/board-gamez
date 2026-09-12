@@ -165,10 +165,21 @@ What goes where, by the question it answers:
   `packages/<game>`. It computes over `idl.<game>.model` types and declares no
   type the schema already names; it may be reimplemented in another language
   against the same schema.
-- "Which participant is white, what is `participant_to_act` after this ply, how
-  does a `GameResult` read for participant 2, how is a `GameState` payload
-  unpacked" — `packages/product-<game>`. Anything that names a participant, a
-  session, a `GameState` or an `Action` is the product's, never the rules'.
+- "Which participant is white, who is in `participants_to_act` after this
+  ply, how does a `GameResult` read for participant 2, how is a `GameState`
+  payload unpacked" — `packages/product-<game>`. Anything that names a
+  participant, a session, a `GameState` or an `Action` is the product's, never
+  the rules'.
+- "What a state becomes when it stands too long with nobody acting" —
+  `packages/product-<game>`, as `BaseRules.expire_deadline`. A state that
+  carries `acts_within` is handed here once that has run out and no write has
+  replaced it; a game with no clock answers `None` and sets no `acts_within`.
+  The platform stamps `acts_by`, keeps the deadline index, and ticks; the rules
+  never read a clock.
+- "What the game draws its chance from" — `BaseRules.create_game` takes a
+  `seed` the platform mints. Rules stay pure: a state carries whatever the
+  sequence needs to continue, and no rules implementation calls a random
+  source of its own.
 - "What a participant leaving the game does to it" —
   `packages/product-<game>`, as `BaseRules.withdraw_participant`. Asked by
   the session controller in or out of turn and never once there is a result;

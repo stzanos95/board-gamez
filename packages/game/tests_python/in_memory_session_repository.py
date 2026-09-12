@@ -6,6 +6,8 @@ need a running Redis. It guards the version the same way.
 """
 
 from core.protobuf.message_utils import ProtobufMessageUtils
+from google.protobuf.timestamp_pb2 import Timestamp
+from idl.game.obj.deadline_pb2 import DeadlineObj
 from idl.game.obj.session_pb2 import SessionObj
 
 from game.repository.base_session_repository import BaseSessionRepository
@@ -23,6 +25,7 @@ class InMemorySessionRepository(BaseSessionRepository):
 
     def __init__(self) -> None:
         self._sessions: SessionObjsById = {}
+        self._removed_deadlines: set[str] = set()
 
     async def upsert(self, session: SessionObj) -> SessionObj | None:
         if session.metadata.version != self._version_of(session.metadata.id):
@@ -30,10 +33,25 @@ class InMemorySessionRepository(BaseSessionRepository):
         written = ProtobufMessageUtils.copy_of_message(session)
         written.metadata.version = session.metadata.version + VERSION_INCREMENT
         self._sessions[session.metadata.id] = written
+        self._removed_deadlines.discard(session.metadata.id)
         return written
 
     async def read(self, session_id: str) -> SessionObj | None:
         return self._sessions.get(session_id)
+
+    async def list_due_deadline(self, before: Timestamp) -> tuple[DeadlineObj, ...]:
+        due = [
+            DeadlineObj(metadata=stored.metadata, acts_by=stored.acts_by)
+            for stored in self._sessions.values()
+            if stored.HasField("acts_by")
+            and stored.acts_by.ToDatetime() <= before.ToDatetime()
+            and stored.metadata.id not in self._removed_deadlines
+        ]
+        due.sort(key=lambda deadline: deadline.acts_by.ToDatetime())
+        return tuple(due)
+
+    async def delete_deadline(self, session_id: str) -> None:
+        self._removed_deadlines.add(session_id)
 
     def _version_of(self, session_id: str) -> int:
         stored = self._sessions.get(session_id)

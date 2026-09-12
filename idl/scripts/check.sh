@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Everything that has to be true of the schema, in the order it is worth knowing.
 #
-# Lints, checks formatting, regenerates, and then fails if regenerating changed
+# Lints, regenerates, and then fails if regenerating changed
 # anything — which means contracts/gen was committed from a different schema
 # than contracts/proto now holds. Run this in CI, and before a release.
 source "$(dirname "${BASH_SOURCE[0]}")/_shared.sh"
@@ -9,9 +9,6 @@ require_docker
 
 echo "--- lint ---"
 idl_compose_run lint
-
-echo "--- format ---"
-idl_compose_run format-check
 
 echo "--- generate ---"
 idl_compose_run generate

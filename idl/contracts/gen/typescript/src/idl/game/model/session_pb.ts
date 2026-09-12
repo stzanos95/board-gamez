@@ -6,6 +6,8 @@
 
 import type { GenFile, GenMessage } from "@bufbuild/protobuf/codegenv1";
 import { fileDesc, messageDesc } from "@bufbuild/protobuf/codegenv1";
+import type { Timestamp } from "@bufbuild/protobuf/wkt";
+import { file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
 import type { GameState } from "./game_state_pb";
 import { file_idl_game_model_game_state } from "./game_state_pb";
 import type { GameType } from "./game_type_pb";
@@ -18,7 +20,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file idl/game/model/session.proto.
  */
 export const file_idl_game_model_session: GenFile = /*@__PURE__*/
-  fileDesc("ChxpZGwvZ2FtZS9tb2RlbC9zZXNzaW9uLnByb3RvEg5pZGwuZ2FtZS5tb2RlbCLJAQoHU2Vzc2lvbhIKCgJpZBgBIAEoCRIrCglnYW1lX3R5cGUYAiABKA4yGC5pZGwuZ2FtZS5tb2RlbC5HYW1lVHlwZRIxCgxwYXJ0aWNpcGFudHMYAyADKAsyGy5pZGwuZ2FtZS5tb2RlbC5QYXJ0aWNpcGFudBIoCgVzdGF0ZRgEIAEoCzIZLmlkbC5nYW1lLm1vZGVsLkdhbWVTdGF0ZRIXCg9sYXN0X2NvbW1hbmRfaWQYBSABKAkSDwoHdmVyc2lvbhgGIAEoBCLiAQoLU2Vzc2lvblZpZXcSCgoCaWQYASABKAkSKwoJZ2FtZV90eXBlGAIgASgOMhguaWRsLmdhbWUubW9kZWwuR2FtZVR5cGUSMQoMcGFydGljaXBhbnRzGAMgAygLMhsuaWRsLmdhbWUubW9kZWwuUGFydGljaXBhbnQSEwoLcGFydGljaXBhbnQYBCABKA0SKAoFc3RhdGUYBSABKAsyGS5pZGwuZ2FtZS5tb2RlbC5HYW1lU3RhdGUSFwoPbGFzdF9jb21tYW5kX2lkGAYgASgJEg8KB3ZlcnNpb24YByABKARCNlo0Ym9hcmRnYW1lei9jb250cmFjdHMvZ2VuL2dvL2lkbC9nYW1lL21vZGVsO2dhbWVtb2RlbGIGcHJvdG8z", [file_idl_game_model_game_state, file_idl_game_model_game_type, file_idl_game_model_participant]);
+  fileDesc("ChxpZGwvZ2FtZS9tb2RlbC9zZXNzaW9uLnByb3RvEg5pZGwuZ2FtZS5tb2RlbCL2AQoHU2Vzc2lvbhIKCgJpZBgBIAEoCRIrCglnYW1lX3R5cGUYAiABKA4yGC5pZGwuZ2FtZS5tb2RlbC5HYW1lVHlwZRIxCgxwYXJ0aWNpcGFudHMYAyADKAsyGy5pZGwuZ2FtZS5tb2RlbC5QYXJ0aWNpcGFudBIoCgVzdGF0ZRgEIAEoCzIZLmlkbC5nYW1lLm1vZGVsLkdhbWVTdGF0ZRIXCg9sYXN0X2NvbW1hbmRfaWQYBSABKAkSDwoHdmVyc2lvbhgGIAEoBBIrCgdhY3RzX2J5GAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCKPAgoLU2Vzc2lvblZpZXcSCgoCaWQYASABKAkSKwoJZ2FtZV90eXBlGAIgASgOMhguaWRsLmdhbWUubW9kZWwuR2FtZVR5cGUSMQoMcGFydGljaXBhbnRzGAMgAygLMhsuaWRsLmdhbWUubW9kZWwuUGFydGljaXBhbnQSEwoLcGFydGljaXBhbnQYBCABKA0SKAoFc3RhdGUYBSABKAsyGS5pZGwuZ2FtZS5tb2RlbC5HYW1lU3RhdGUSFwoPbGFzdF9jb21tYW5kX2lkGAYgASgJEg8KB3ZlcnNpb24YByABKAQSKwoHYWN0c19ieRgIIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBCNlo0Ym9hcmRnYW1lei9jb250cmFjdHMvZ2VuL2dvL2lkbC9nYW1lL21vZGVsO2dhbWVtb2RlbGIGcHJvdG8z", [file_google_protobuf_timestamp, file_idl_game_model_game_state, file_idl_game_model_game_type, file_idl_game_model_participant]);
 
 /**
  * One game being played, in full.
@@ -32,6 +34,11 @@ export const file_idl_game_model_session: GenFile = /*@__PURE__*/
  *
  * `state.payload` is the whole game, including anything a participant is not
  * allowed to see. What a client is answered with is a SessionView.
+ *
+ * `acts_by` is the instant `state.acts_within` runs out, fixed by the write
+ * that stored the state. When it passes and no write has replaced the state,
+ * the rules are asked what the state becomes. Unset when the state has no
+ * `acts_within`.
  *
  * @generated from message idl.game.model.Session
  */
@@ -69,6 +76,11 @@ export type Session = Message<"idl.game.model.Session"> & {
    * @generated from field: uint64 version = 6;
    */
   version: bigint;
+
+  /**
+   * @generated from field: google.protobuf.Timestamp acts_by = 7;
+   */
+  actsBy?: Timestamp;
 };
 
 /**
@@ -84,6 +96,9 @@ export const SessionSchema: GenMessage<Session> = /*@__PURE__*/
  * `state.payload` is the game projected for `participant`, which in a game with
  * hidden information is less than the whole game. A view is rendered, never
  * written back, and never handed to a game's rules.
+ *
+ * `state.participants_to_act` says whether the viewer may act now, and
+ * `acts_by` says until when. Both are the game's, unprojected.
  *
  * A view arrives both as an answer and unasked, so two of them can cross. A
  * client renders one only when its version is above the version it is showing.
@@ -127,6 +142,11 @@ export type SessionView = Message<"idl.game.model.SessionView"> & {
    * @generated from field: uint64 version = 7;
    */
   version: bigint;
+
+  /**
+   * @generated from field: google.protobuf.Timestamp acts_by = 8;
+   */
+  actsBy?: Timestamp;
 };
 
 /**

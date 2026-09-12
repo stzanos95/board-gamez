@@ -7,7 +7,7 @@ from idl.chess.model.session_pb2 import ChessSession
 from idl.chess.model.table_pb2 import ChessSeatChoice
 from idl.game.model.command_result_pb2 import CommandOutcome
 from idl.game.model.game_type_pb2 import GameType
-from idl.lobby.model.event_pb2 import PlayerLeft, SeatTaken, SeatVacated
+from idl.lobby.model.event_pb2 import PlayerLeft, SeatTaken, SeatVacated, TableStarted
 from idl.lobby.model.seat_pb2 import Seat, SeatStatus
 from idl.lobby.model.seat_result_pb2 import SeatOutcome
 from idl.lobby.model.table_pb2 import Table, TableStatus
@@ -20,6 +20,7 @@ from product_chess.controller.chess_rules import ChessRules
 from product_chess.controller.chess_seating import ChessSeating
 from product_chess.controller.chess_session_controller import ChessSessionController
 from tests_python.chess_actions import move, resignation
+from tests_python.fixed_clock import FixedClock
 from tests_python.in_memory_queue_publisher import InMemoryQueuePublisher
 from tests_python.in_memory_repositories import InMemorySessionRepository, InMemoryTableRepository
 
@@ -47,6 +48,7 @@ PARTICIPANT_WITHDRAWN_TYPE = "idl.game.model.ParticipantWithdrawn"
 TABLE_CREATED_TYPE = "idl.lobby.model.TableCreated"
 PLAYER_JOINED_TYPE = "idl.lobby.model.PlayerJoined"
 PLAYER_LEFT_TYPE = "idl.lobby.model.PlayerLeft"
+TABLE_STARTED_TYPE = "idl.lobby.model.TableStarted"
 COMMAND_ID = "c-1"
 OTHER_COMMAND_ID = "c-2"
 
@@ -85,6 +87,7 @@ class ChessSessionControllerTest(unittest.IsolatedAsyncioTestCase):
             repository=InMemorySessionRepository(),
             rules=rules,
             queue_publisher=self.queue_publisher,
+            clock=FixedClock(),
         )
         self.seats = SeatController(
             tables=self.tables,
@@ -154,6 +157,27 @@ class ChessSessionControllerTest(unittest.IsolatedAsyncioTestCase):
 
     async def test_a_missing_table_cannot_start(self) -> None:
         self.assertIsNone(await self.controller.start_game(MISSING_TABLE_ID, WHITE_PLAYER))
+
+    async def test_starting_puts_the_table_in_progress(self) -> None:
+        await self.start()
+        table = await self.tables.read_table(TABLE_ID)
+        assert table is not None
+        self.assertEqual(table.status, TableStatus.TABLE_STATUS_IN_PROGRESS)
+        self.assertEqual(table.version, SECOND_STORED_VERSION)
+
+    async def test_a_finished_table_cannot_start(self) -> None:
+        table = await self.tables.read_table(TABLE_ID)
+        assert table is not None
+        table.status = TableStatus.TABLE_STATUS_FINISHED
+        await self.tables.upsert_table(table)
+        self.assertIsNone(await self.controller.start_game(TABLE_ID, WHITE_PLAYER))
+        self.assertIsNone(await self.controller.read_game(TABLE_ID, WHITE_PLAYER))
+
+    async def test_a_seat_given_up_mid_game_is_not_offered_again(self) -> None:
+        await self.start()
+        await self.seats.vacate_seat(TABLE_ID, BLACK_PLAYER)
+        choices = await self.controller.list_seat_choices(TABLE_ID, ONLOOKER)
+        self.assertEqual(len(choices.chess_seat_choice_items), 0)
 
     async def test_starting_twice_answers_the_game_already_there(self) -> None:
         first = await self.start()
@@ -483,6 +507,25 @@ class ChessSessionControllerTest(unittest.IsolatedAsyncioTestCase):
         left = PlayerLeft()
         self.assertTrue(self.queue_publisher.published[-1].envelope.payload.Unpack(left))
         self.assertEqual(left.seat_number, NO_SEAT)
+
+    async def test_starting_is_published_on_the_table_and_the_lobby(self) -> None:
+        await self.start()
+
+        self.assertEqual(
+            [published.channel for published in self.queue_publisher.published],
+            [SESSION_CHANNEL, TABLE_CHANNEL, LOBBY_CHANNEL],
+        )
+        self.assertEqual(self.queue_publisher.get_types_on(TABLE_CHANNEL), [TABLE_STARTED_TYPE])
+        self.assertEqual(self.queue_publisher.get_types_on(LOBBY_CHANNEL), [TABLE_STARTED_TYPE])
+        started = TableStarted()
+        self.assertTrue(self.queue_publisher.published[-1].envelope.payload.Unpack(started))
+        self.assertEqual(started.table_id, TABLE_ID)
+        self.assertEqual(started.version, SECOND_STORED_VERSION)
+
+    async def test_starting_twice_publishes_once(self) -> None:
+        await self.start()
+        await self.start(BLACK_PLAYER)
+        self.assertEqual(self.queue_publisher.get_types_on(LOBBY_CHANNEL), [TABLE_STARTED_TYPE])
 
     async def test_a_refused_seat_change_publishes_nothing(self) -> None:
         await self.controller.take_seat(

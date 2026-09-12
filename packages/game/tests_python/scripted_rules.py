@@ -6,11 +6,16 @@ always legal and passes the turn to the next participant, WIN ends the game with
 the acting participant winning, and anything else is illegal. The view a
 participant gets names both the position and the participant, so a test can see
 that projection happened for the right one.
+
+Given `acts_within`, every state still being played carries it, and a state
+that runs out passes the turn as a MOVE by the first participant to act would.
+The seed handed at creation is kept, so a test can see it arrived.
 """
 
 from dataclasses import dataclass
 
 from google.protobuf import any_pb2
+from google.protobuf.duration_pb2 import Duration
 from google.protobuf.wrappers_pb2 import StringValue, UInt32Value
 from idl.game.model.action_pb2 import Action
 from idl.game.model.game_result_pb2 import GameResult, ParticipantOutcome, ParticipantResult
@@ -45,16 +50,22 @@ class ScriptedRules(BaseRules):
     Rules that a test can predict, for a game of a configurable size.
     """
 
-    def __init__(self, minimum: int, maximum: int) -> None:
+    def __init__(self, minimum: int, maximum: int, acts_within: Duration | None = None) -> None:
         self._bounds = ParticipantBounds(minimum=minimum, maximum=maximum)
+        self._acts_within = acts_within
+        self.seeds_received: list[int] = []
 
-    async def create_game(self, participant_roles: tuple[ParticipantRole, ...]) -> GameState | None:
+    async def create_game(
+        self, participant_roles: tuple[ParticipantRole, ...], seed: int
+    ) -> GameState | None:
+        self.seeds_received.append(seed)
         participant_count = len(participant_roles)
         if not self._bounds.minimum <= participant_count <= self._bounds.maximum:
             return None
         return GameState(
             payload=ScriptedRules.position_payload(OPENING_POSITION, participant_count),
-            participant_to_act=FIRST_PARTICIPANT,
+            participants_to_act=[FIRST_PARTICIPANT],
+            acts_within=self._acts_within,
         )
 
     async def apply_action(self, state: GameState, action: Action) -> GameState | None:
@@ -64,12 +75,11 @@ class ScriptedRules(BaseRules):
         standing = ScriptedRules._unpack_position(state.payload)
         advanced = ScriptedRules.position_payload(standing.position + 1, standing.participant_count)
         if word.value == MOVE:
-            following = action.participant % standing.participant_count + FIRST_PARTICIPANT
-            return GameState(payload=advanced, participant_to_act=following)
+            return self._get_turn_passed(advanced, action.participant, standing.participant_count)
         if word.value == WIN:
             return GameState(
                 payload=advanced,
-                participant_to_act=NOBODY,
+                participants_to_act=[],
                 result=GameResult(
                     participant_items=[
                         ParticipantResult(
@@ -98,7 +108,7 @@ class ScriptedRules(BaseRules):
             payload=ScriptedRules.position_payload(
                 standing.position + 1, standing.participant_count
             ),
-            participant_to_act=NOBODY,
+            participants_to_act=[],
             result=GameResult(
                 participant_items=[
                     ParticipantResult(
@@ -114,12 +124,32 @@ class ScriptedRules(BaseRules):
             ),
         )
 
+    async def expire_deadline(self, state: GameState) -> GameState | None:
+        if not state.HasField("acts_within"):
+            return None
+        standing = ScriptedRules._unpack_position(state.payload)
+        advanced = ScriptedRules.position_payload(standing.position + 1, standing.participant_count)
+        return self._get_turn_passed(
+            advanced, state.participants_to_act[0], standing.participant_count
+        )
+
     async def read_view(self, state: GameState, participant: int) -> any_pb2.Any:
         standing = ScriptedRules._unpack_position(state.payload)
         return ScriptedRules.word_payload(f"{standing.position}{VIEW_SEPARATOR}{participant}")
 
     async def read_bounds(self) -> ParticipantBounds:
         return self._bounds
+
+    def _get_turn_passed(
+        self, advanced: any_pb2.Any, acting: int, participant_count: int
+    ) -> GameState:
+        """
+        The state after `acting` took a turn: the next participant acts.
+        """
+        following = acting % participant_count + FIRST_PARTICIPANT
+        return GameState(
+            payload=advanced, participants_to_act=[following], acts_within=self._acts_within
+        )
 
     @staticmethod
     def word_payload(word: str) -> any_pb2.Any:

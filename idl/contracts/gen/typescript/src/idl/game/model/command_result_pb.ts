@@ -48,7 +48,8 @@ export const CommandResultSchema: GenMessage<CommandResult> = /*@__PURE__*/
  *
  * APPLIED and ALREADY_APPLIED both mean the command's action is in the game.
  * VERSION_MOVED means the caller read an earlier state, and the command is worth
- * building again on the state answered with it. The rest are worth telling the
+ * building again on the state answered with it. OUT_OF_TURN means the sender is
+ * not among the state's `participants_to_act`. The rest are worth telling the
  * player about, and sending again unchanged will end the same way.
  *
  * @generated from enum idl.game.model.CommandOutcome

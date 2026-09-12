@@ -58,7 +58,7 @@ carrying:
 
 ```
 idl.lobby.model.TableChanged   { table_id,   version }   every table event; TableClosed is version 0
-idl.game.model.SessionChanged  { session_id, version }   every game event
+idl.game.model.SessionChanged  { session_id, version }   every game event, a deadline expiring included
 ```
 
 sent as bytes to every socket watching the channel the event arrived on. A

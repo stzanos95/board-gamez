@@ -62,6 +62,11 @@ class RulesServiceStub(object):
                 request_serializer=idl_dot_game_dot_dto_dot_rules__pb2.WithdrawParticipantRequest.SerializeToString,
                 response_deserializer=idl_dot_game_dot_dto_dot_rules__pb2.WithdrawParticipantResponse.FromString,
                 _registered_method=True)
+        self.ExpireDeadline = channel.unary_unary(
+                '/idl.game.service.RulesService/ExpireDeadline',
+                request_serializer=idl_dot_game_dot_dto_dot_rules__pb2.ExpireDeadlineRequest.SerializeToString,
+                response_deserializer=idl_dot_game_dot_dto_dot_rules__pb2.ExpireDeadlineResponse.FromString,
+                _registered_method=True)
         self.ReadBounds = channel.unary_unary(
                 '/idl.game.service.RulesService/ReadBounds',
                 request_serializer=idl_dot_game_dot_dto_dot_rules__pb2.ReadBoundsRequest.SerializeToString,
@@ -104,6 +109,12 @@ class RulesServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def ExpireDeadline(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
     def ReadBounds(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -132,6 +143,11 @@ def add_RulesServiceServicer_to_server(servicer, server):
                     servicer.WithdrawParticipant,
                     request_deserializer=idl_dot_game_dot_dto_dot_rules__pb2.WithdrawParticipantRequest.FromString,
                     response_serializer=idl_dot_game_dot_dto_dot_rules__pb2.WithdrawParticipantResponse.SerializeToString,
+            ),
+            'ExpireDeadline': grpc.unary_unary_rpc_method_handler(
+                    servicer.ExpireDeadline,
+                    request_deserializer=idl_dot_game_dot_dto_dot_rules__pb2.ExpireDeadlineRequest.FromString,
+                    response_serializer=idl_dot_game_dot_dto_dot_rules__pb2.ExpireDeadlineResponse.SerializeToString,
             ),
             'ReadBounds': grpc.unary_unary_rpc_method_handler(
                     servicer.ReadBounds,
@@ -255,6 +271,33 @@ class RulesService(object):
             '/idl.game.service.RulesService/WithdrawParticipant',
             idl_dot_game_dot_dto_dot_rules__pb2.WithdrawParticipantRequest.SerializeToString,
             idl_dot_game_dot_dto_dot_rules__pb2.WithdrawParticipantResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def ExpireDeadline(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/idl.game.service.RulesService/ExpireDeadline',
+            idl_dot_game_dot_dto_dot_rules__pb2.ExpireDeadlineRequest.SerializeToString,
+            idl_dot_game_dot_dto_dot_rules__pb2.ExpireDeadlineResponse.FromString,
             options,
             channel_credentials,
             insecure,

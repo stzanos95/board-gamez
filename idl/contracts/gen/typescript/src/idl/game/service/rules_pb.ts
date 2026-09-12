@@ -6,14 +6,14 @@
 
 import type { GenFile, GenService } from "@bufbuild/protobuf/codegenv1";
 import { fileDesc, serviceDesc } from "@bufbuild/protobuf/codegenv1";
-import type { ApplyActionRequestSchema, ApplyActionResponseSchema, CreateGameRequestSchema, CreateGameResponseSchema, ReadBoundsRequestSchema, ReadBoundsResponseSchema, ReadViewRequestSchema, ReadViewResponseSchema, WithdrawParticipantRequestSchema, WithdrawParticipantResponseSchema } from "../dto/rules_pb";
+import type { ApplyActionRequestSchema, ApplyActionResponseSchema, CreateGameRequestSchema, CreateGameResponseSchema, ExpireDeadlineRequestSchema, ExpireDeadlineResponseSchema, ReadBoundsRequestSchema, ReadBoundsResponseSchema, ReadViewRequestSchema, ReadViewResponseSchema, WithdrawParticipantRequestSchema, WithdrawParticipantResponseSchema } from "../dto/rules_pb";
 import { file_idl_game_dto_rules } from "../dto/rules_pb";
 
 /**
  * Describes the file idl/game/service/rules.proto.
  */
 export const file_idl_game_service_rules: GenFile = /*@__PURE__*/
-  fileDesc("ChxpZGwvZ2FtZS9zZXJ2aWNlL3J1bGVzLnByb3RvEhBpZGwuZ2FtZS5zZXJ2aWNlMrsDCgxSdWxlc1NlcnZpY2USTwoKQ3JlYXRlR2FtZRIfLmlkbC5nYW1lLmR0by5DcmVhdGVHYW1lUmVxdWVzdBogLmlkbC5nYW1lLmR0by5DcmVhdGVHYW1lUmVzcG9uc2USUgoLQXBwbHlBY3Rpb24SIC5pZGwuZ2FtZS5kdG8uQXBwbHlBY3Rpb25SZXF1ZXN0GiEuaWRsLmdhbWUuZHRvLkFwcGx5QWN0aW9uUmVzcG9uc2USSQoIUmVhZFZpZXcSHS5pZGwuZ2FtZS5kdG8uUmVhZFZpZXdSZXF1ZXN0Gh4uaWRsLmdhbWUuZHRvLlJlYWRWaWV3UmVzcG9uc2USagoTV2l0aGRyYXdQYXJ0aWNpcGFudBIoLmlkbC5nYW1lLmR0by5XaXRoZHJhd1BhcnRpY2lwYW50UmVxdWVzdBopLmlkbC5nYW1lLmR0by5XaXRoZHJhd1BhcnRpY2lwYW50UmVzcG9uc2USTwoKUmVhZEJvdW5kcxIfLmlkbC5nYW1lLmR0by5SZWFkQm91bmRzUmVxdWVzdBogLmlkbC5nYW1lLmR0by5SZWFkQm91bmRzUmVzcG9uc2VCOlo4Ym9hcmRnYW1lei9jb250cmFjdHMvZ2VuL2dvL2lkbC9nYW1lL3NlcnZpY2U7Z2FtZXNlcnZpY2ViBnByb3RvMw", [file_idl_game_dto_rules]);
+  fileDesc("ChxpZGwvZ2FtZS9zZXJ2aWNlL3J1bGVzLnByb3RvEhBpZGwuZ2FtZS5zZXJ2aWNlMpgECgxSdWxlc1NlcnZpY2USTwoKQ3JlYXRlR2FtZRIfLmlkbC5nYW1lLmR0by5DcmVhdGVHYW1lUmVxdWVzdBogLmlkbC5nYW1lLmR0by5DcmVhdGVHYW1lUmVzcG9uc2USUgoLQXBwbHlBY3Rpb24SIC5pZGwuZ2FtZS5kdG8uQXBwbHlBY3Rpb25SZXF1ZXN0GiEuaWRsLmdhbWUuZHRvLkFwcGx5QWN0aW9uUmVzcG9uc2USSQoIUmVhZFZpZXcSHS5pZGwuZ2FtZS5kdG8uUmVhZFZpZXdSZXF1ZXN0Gh4uaWRsLmdhbWUuZHRvLlJlYWRWaWV3UmVzcG9uc2USagoTV2l0aGRyYXdQYXJ0aWNpcGFudBIoLmlkbC5nYW1lLmR0by5XaXRoZHJhd1BhcnRpY2lwYW50UmVxdWVzdBopLmlkbC5nYW1lLmR0by5XaXRoZHJhd1BhcnRpY2lwYW50UmVzcG9uc2USWwoORXhwaXJlRGVhZGxpbmUSIy5pZGwuZ2FtZS5kdG8uRXhwaXJlRGVhZGxpbmVSZXF1ZXN0GiQuaWRsLmdhbWUuZHRvLkV4cGlyZURlYWRsaW5lUmVzcG9uc2USTwoKUmVhZEJvdW5kcxIfLmlkbC5nYW1lLmR0by5SZWFkQm91bmRzUmVxdWVzdBogLmlkbC5nYW1lLmR0by5SZWFkQm91bmRzUmVzcG9uc2VCOlo4Ym9hcmRnYW1lei9jb250cmFjdHMvZ2VuL2dvL2lkbC9nYW1lL3NlcnZpY2U7Z2FtZXNlcnZpY2ViBnByb3RvMw", [file_idl_game_dto_rules]);
 
 /**
  * What a game answers, whatever game it is.
@@ -59,6 +59,14 @@ export const RulesService: GenService<{
     methodKind: "unary";
     input: typeof WithdrawParticipantRequestSchema;
     output: typeof WithdrawParticipantResponseSchema;
+  },
+  /**
+   * @generated from rpc idl.game.service.RulesService.ExpireDeadline
+   */
+  expireDeadline: {
+    methodKind: "unary";
+    input: typeof ExpireDeadlineRequestSchema;
+    output: typeof ExpireDeadlineResponseSchema;
   },
   /**
    * @generated from rpc idl.game.service.RulesService.ReadBounds

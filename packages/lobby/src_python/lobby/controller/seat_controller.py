@@ -2,13 +2,15 @@
 What is done to a player's place at a table.
 
 The one place the lobby decides how a table is opened and come to, who may sit
-where, and what giving a seat up does. The rules every game shares are here: a
-table is opened for a hosted game with a seat count the game allows, a table
-that is finished or abandoned takes nobody, a seat is taken only while the
-table waits for players, a player holds one seat at a time, a seat is taken
-only as one of the choices its game offered, and a player who gives up a seat
-in a game being played is withdrawn from that game first. Which choices a game
-offers, how many seats it takes, and what a withdrawal does to it, is the
+where, when the game at it begins, and what giving a seat up does. The rules
+every game shares are here: a table is opened for a hosted game with a seat
+count the game allows, a table that is finished or abandoned takes nobody, a
+seat is taken only while the table waits for players, a player holds one seat
+at a time, a seat is taken only as one of the choices its game offered, a game
+is started only at a table that waits and the table is in progress from then
+on, and a player who gives up a seat in a game being played is withdrawn from
+that game first. Which choices a game offers, how many seats it takes, which
+seats become which participants, and what a withdrawal does to it, is the
 game's.
 """
 
@@ -20,6 +22,8 @@ from game.controller.rules_registry import RulesRegistry
 from game.controller.session_controller import SessionController
 from google.protobuf.message import Message
 from idl.game.model.game_type_pb2 import GameType
+from idl.game.model.participant_pb2 import Participant
+from idl.game.model.session_pb2 import SessionView
 from idl.game.model.withdrawal_result_pb2 import WithdrawalOutcome
 from idl.lobby.model.seat_pb2 import SeatChoice, SeatChoiceCollection, SeatStatus
 from idl.lobby.model.seat_result_pb2 import SeatOutcome, SeatResult
@@ -35,6 +39,7 @@ NO_CHOICES: tuple[SeatChoice, ...] = ()
 NO_SEAT_NUMBER = 0
 # The statuses under which a table takes players.
 ACCEPTING_STATUSES = (TableStatus.TABLE_STATUS_WAITING, TableStatus.TABLE_STATUS_IN_PROGRESS)
+START_ATTEMPTS = 3
 
 
 class SeatController:
@@ -151,6 +156,48 @@ class SeatController:
             return SeatResult(outcome=SeatOutcome.SEAT_OUTCOME_VERSION_MOVED, table=table)
         await self._publish(stored, EventAdapters.table_to_seat_taken(stored, player_id, choice))
         return SeatResult(outcome=SeatOutcome.SEAT_OUTCOME_TAKEN, table=stored)
+
+    async def start_game(
+        self, table_id: str, participants: tuple[Participant, ...], player_id: str
+    ) -> SessionView | None:
+        """
+        Start the game at this table for these participants, put the table in
+        progress, and answer the game as the caller may see it.
+
+        A table already in progress is answered the game being played at it.
+        None comes back when no table has that id, when the table is finished
+        or abandoned, or when the game does not take these participants.
+
+        The game is written before the table. A table write that loses to
+        another writer is read and made again, up to START_ATTEMPTS times; a
+        table found in progress on the way is another caller's start of the
+        same game.
+        """
+        table = await self._tables.read_table(table_id)
+        if table is None:
+            return None
+        if table.status == TableStatus.TABLE_STATUS_IN_PROGRESS:
+            return await self._sessions.read_session(table_id, player_id)
+        if table.status != TableStatus.TABLE_STATUS_WAITING:
+            return None
+        view = await self._sessions.create_session(
+            table_id, table.game_type, participants, player_id
+        )
+        if view is None:
+            return None
+        attempts = 0
+        while attempts < START_ATTEMPTS:
+            attempts += 1
+            stored = await self._tables.upsert_table(SeatAdapters.table_to_table_in_progress(table))
+            if stored is not None:
+                await self._publish(stored, EventAdapters.table_to_table_started(stored))
+                return view
+            table = await self._tables.read_table(table_id)
+            if table is None:
+                return None
+            if table.status == TableStatus.TABLE_STATUS_IN_PROGRESS:
+                return view
+        return None
 
     async def vacate_seat(self, table_id: str, player_id: str) -> SeatResult:
         """

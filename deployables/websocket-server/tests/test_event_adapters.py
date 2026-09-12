@@ -5,6 +5,7 @@ from google.protobuf.wrappers_pb2 import StringValue
 from idl.core.dto.queue_pb2 import QueueMessageEnvelope
 from idl.game.model.event_pb2 import (
     CommandApplied,
+    DeadlineExpired,
     ParticipantWithdrawn,
     SessionChanged,
     SessionStarted,
@@ -18,6 +19,7 @@ from idl.lobby.model.event_pb2 import (
     TableChanged,
     TableClosed,
     TableCreated,
+    TableStarted,
 )
 
 from websocket_server.adapters.event_adapters import EventAdapters
@@ -74,6 +76,12 @@ class GameEventTest(unittest.TestCase):
         self.assertEqual(changed.version, VERSION)
         self.assertNotIn(b"only the sender", frame.SerializeToString())
 
+    def test_deadline_expired(self) -> None:
+        event = DeadlineExpired(session_id=TABLE_ID, is_over=True, version=VERSION)
+        changed = session_changed_from(QueueMessageUtils.pack(event))
+        self.assertEqual(changed.session_id, TABLE_ID)
+        self.assertEqual(changed.version, VERSION)
+
     def test_participant_withdrawn(self) -> None:
         event = ParticipantWithdrawn(
             session_id=TABLE_ID, participant=PARTICIPANT, is_over=True, version=VERSION
@@ -120,6 +128,10 @@ class TableEventTest(unittest.TestCase):
         event = PlayerLeft(
             table_id=TABLE_ID, player_id=PLAYER_ID, seat_number=SEAT_NUMBER, version=VERSION
         )
+        self.assertEqual(table_changed_from(QueueMessageUtils.pack(event)).version, VERSION)
+
+    def test_table_started(self) -> None:
+        event = TableStarted(table_id=TABLE_ID, version=VERSION)
         self.assertEqual(table_changed_from(QueueMessageUtils.pack(event)).version, VERSION)
 
     def test_table_closed_is_version_zero(self) -> None:

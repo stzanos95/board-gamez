@@ -4,6 +4,7 @@ syntax = "proto3";
 
 package idl.game.obj;
 
+import "google/protobuf/timestamp.proto";
 import "idl/core/obj/object_metadata.proto";
 import "idl/game/model/game_state.proto";
 import "idl/game/model/game_type.proto";
@@ -27,4 +28,5 @@ message SessionObj {
   repeated idl.game.model.Participant participants = 3;
   idl.game.model.GameState state = 4;
   string last_command_id = 5;
+  google.protobuf.Timestamp acts_by = 6;  // Unset when the state has no deadline.
 }

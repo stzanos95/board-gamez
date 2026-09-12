@@ -19,11 +19,15 @@ option go_package = "boardgamez/contracts/gen/go/idl/game/model;gamemodel";
 // is never sent to a browser: an action may carry what only its sender is
 // allowed to see. SessionChanged is what a browser is sent.
 
+// `seed` is what the game's chance was taken from. With the actions that
+// follow it is the whole game, hidden hands included, so it is answered to no
+// viewer.
 message SessionStarted {
   string session_id = 1;
   GameType game_type = 2;
   repeated Participant participants = 3;
   uint64 version = 4;
+  uint64 seed = 5;
 }
 
 // An action is the game's own type, packed by the client that sent it and
@@ -42,6 +46,13 @@ message ParticipantWithdrawn {
   uint32 participant = 2;
   bool is_over = 3;  // True when the withdrawal gave the game its result.
   uint64 version = 4;
+}
+
+// The state stood until its deadline, and the rules replaced it.
+message DeadlineExpired {
+  string session_id = 1;
+  bool is_over = 2;  // True when the expiry gave the game its result.
+  uint64 version = 3;
 }
 
 // The game changed, and this is its version now.

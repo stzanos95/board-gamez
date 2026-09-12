@@ -123,6 +123,16 @@ player from the game being played before it opens the seat. What a withdrawal
 does to the game is answered by the game's rules through
 `RulesService.WithdrawParticipant`: in chess the leaver resigns.
 
+Who may act on a state, what the game draws its chance from, and how long a
+state stands are the platform's to enforce and the game's to decide. Every
+state names its `participants_to_act`, and a command from anyone else is
+refused before the rules are asked; several may be named, and the first to
+write moves the version the rest must re-read. A game is created with a `seed`
+the platform mints and the event log records. A state may carry `acts_within`;
+the platform stamps `acts_by` when it writes, and a tick in `grpc-server`
+hands a state that has run out to `RulesService.ExpireDeadline`, guarded by
+the version it ran out at.
+
 ### The platform does not interpret games
 
 A table names a `GameType` and seats N players. A game's rules, position and
@@ -169,7 +179,7 @@ A table is written in one place, guarded by the version it was read at.
 ### Every write is an event, and a browser is told only that something changed
 
 Each controller write that succeeds publishes one event — `SeatTaken`,
-`CommandApplied`, `ParticipantWithdrawn` — declared in the domain's
+`CommandApplied`, `ParticipantWithdrawn`, `DeadlineExpired` — declared in the domain's
 `model/event.proto`, carrying the version after the write. Events travel in
 `QueueMessageEnvelope` through `core.queue`, whose publisher and consumer are
 selected by configuration; the controller holds a `BaseQueuePublisher` and
@@ -205,7 +215,7 @@ boundaries between layers.
   implementation. A new domain is a package and one line at bringup. Editing an
   existing branch to add something indicates a design problem.
 - **Liskov** — implementations of a contract are substitutable. Every game
-  service answers `CreateGame`, `ApplyAction` and `ListLegalActions` with the same
+  service answers `CreateGame`, `ApplyAction` and `ReadView` with the same
   meaning, and the session layer does not check which game it holds.
 - **Interface segregation** — each layer receives only what it uses. A controller
   receives a `table_id`, not a request. A chess piece receives a

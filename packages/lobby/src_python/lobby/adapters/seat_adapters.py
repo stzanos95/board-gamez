@@ -3,9 +3,10 @@ A seat, between the shapes it takes.
 
 A choice is a seat number and a role; taking it produces a table with that seat
 occupied, and giving it up produces one with that seat open. Opening a table
-produces one with every seat open, and joining one produces one with one more
-player at it. Building those tables is a conversion and runs here, so the
-controller that decides whether a change may be made never assembles one.
+produces one with every seat open, joining one produces one with one more
+player at it, and starting the game produces one in progress. Building those
+tables is a conversion and runs here, so the controller that decides whether a
+change may be made never assembles one.
 
 A contract also produces two families of type — protobuf messages for gRPC and
 pydantic models for HTTP — and a caller crossing between them converts here too.
@@ -182,6 +183,21 @@ class SeatAdapters:
             seats=table.seats,
             version=table.version,
             player_ids=(*table.player_ids, player_id),
+        )
+
+    @staticmethod
+    def table_to_table_in_progress(table: Table) -> Table:
+        """
+        The table with its game being played. The table handed in is not
+        changed.
+        """
+        return Table(
+            id=table.id,
+            game_type=table.game_type,
+            status=TableStatus.TABLE_STATUS_IN_PROGRESS,
+            seats=table.seats,
+            version=table.version,
+            player_ids=table.player_ids,
         )
 
     @staticmethod

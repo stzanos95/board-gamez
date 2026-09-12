@@ -6,8 +6,8 @@
 
 import type { GenFile, GenMessage } from "@bufbuild/protobuf/codegenv1";
 import { fileDesc, messageDesc } from "@bufbuild/protobuf/codegenv1";
-import type { Any } from "@bufbuild/protobuf/wkt";
-import { file_google_protobuf_any } from "@bufbuild/protobuf/wkt";
+import type { Any, Duration } from "@bufbuild/protobuf/wkt";
+import { file_google_protobuf_any, file_google_protobuf_duration } from "@bufbuild/protobuf/wkt";
 import type { GameResult } from "./game_result_pb";
 import { file_idl_game_model_game_result } from "./game_result_pb";
 import type { Message } from "@bufbuild/protobuf";
@@ -16,14 +16,24 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file idl/game/model/game_state.proto.
  */
 export const file_idl_game_model_game_state: GenFile = /*@__PURE__*/
-  fileDesc("Ch9pZGwvZ2FtZS9tb2RlbC9nYW1lX3N0YXRlLnByb3RvEg5pZGwuZ2FtZS5tb2RlbCJ6CglHYW1lU3RhdGUSJQoHcGF5bG9hZBgBIAEoCzIULmdvb2dsZS5wcm90b2J1Zi5BbnkSGgoScGFydGljaXBhbnRfdG9fYWN0GAIgASgNEioKBnJlc3VsdBgDIAEoCzIaLmlkbC5nYW1lLm1vZGVsLkdhbWVSZXN1bHRCNlo0Ym9hcmRnYW1lei9jb250cmFjdHMvZ2VuL2dvL2lkbC9nYW1lL21vZGVsO2dhbWVtb2RlbGIGcHJvdG8z", [file_google_protobuf_any, file_idl_game_model_game_result]);
+  fileDesc("Ch9pZGwvZ2FtZS9tb2RlbC9nYW1lX3N0YXRlLnByb3RvEg5pZGwuZ2FtZS5tb2RlbCKrAQoJR2FtZVN0YXRlEiUKB3BheWxvYWQYASABKAsyFC5nb29nbGUucHJvdG9idWYuQW55EhsKE3BhcnRpY2lwYW50c190b19hY3QYAiADKA0SKgoGcmVzdWx0GAMgASgLMhouaWRsLmdhbWUubW9kZWwuR2FtZVJlc3VsdBIuCgthY3RzX3dpdGhpbhgEIAEoCzIZLmdvb2dsZS5wcm90b2J1Zi5EdXJhdGlvbkI2WjRib2FyZGdhbWV6L2NvbnRyYWN0cy9nZW4vZ28vaWRsL2dhbWUvbW9kZWw7Z2FtZW1vZGVsYgZwcm90bzM", [file_google_protobuf_any, file_google_protobuf_duration, file_idl_game_model_game_result]);
 
 /**
- * One game, and the two things about it that are true whatever game it is.
+ * One game, and the things about it that are true whatever game it is.
  *
  * `payload` is the game's own state. It is kept and handed back to that game's
  * rules unopened, and only that game can read it. Its type is what `Any` carries
  * and is not repeated here.
+ *
+ * `participants_to_act` is everyone who may act on this state. A game of turns
+ * names one; a game where others may react to what was just done names each of
+ * them. Whichever of them acts first produces the next state, and the rest act
+ * on that one. Empty once the game has a result.
+ *
+ * `acts_within` is how long this state stands with nobody acting before the
+ * rules are asked what it becomes. It is measured from the write that stores
+ * the state, and each state the rules answer carries its own. Unset when the
+ * state stands until someone acts.
  *
  * @generated from message idl.game.model.GameState
  */
@@ -34,11 +44,9 @@ export type GameState = Message<"idl.game.model.GameState"> & {
   payload?: Any;
 
   /**
-   * Who may act next; 0 once the game has a result.
-   *
-   * @generated from field: uint32 participant_to_act = 2;
+   * @generated from field: repeated uint32 participants_to_act = 2;
    */
-  participantToAct: number;
+  participantsToAct: number[];
 
   /**
    * Unset while the game is still being played.
@@ -46,6 +54,11 @@ export type GameState = Message<"idl.game.model.GameState"> & {
    * @generated from field: idl.game.model.GameResult result = 3;
    */
   result?: GameResult;
+
+  /**
+   * @generated from field: google.protobuf.Duration acts_within = 4;
+   */
+  actsWithin?: Duration;
 };
 
 /**

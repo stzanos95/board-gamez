@@ -16,6 +16,7 @@ from idl.core.dto.queue_pb2 import QueueMessageEnvelope
 from idl.core.dto.websocket_pb2 import WebsocketMessageEnvelope
 from idl.game.model.event_pb2 import (
     CommandApplied,
+    DeadlineExpired,
     ParticipantWithdrawn,
     SessionChanged,
     SessionStarted,
@@ -28,6 +29,7 @@ from idl.lobby.model.event_pb2 import (
     TableChanged,
     TableClosed,
     TableCreated,
+    TableStarted,
 )
 
 CLOSED_TABLE_VERSION = 0
@@ -79,6 +81,13 @@ class EventAdapters:
             return None
         return SessionChanged(session_id=event.session_id, version=event.version)
 
+    @staticmethod
+    def _deadline_expired_to_session_changed(envelope: QueueMessageEnvelope) -> Message | None:
+        event = ProtobufMessageUtils.message_from_any(envelope.payload, DeadlineExpired)
+        if event is None:
+            return None
+        return SessionChanged(session_id=event.session_id, version=event.version)
+
     # --- table events, to TableChanged ----------------------------------------
 
     @staticmethod
@@ -117,6 +126,13 @@ class EventAdapters:
         return TableChanged(table_id=event.table_id, version=event.version)
 
     @staticmethod
+    def _table_started_to_table_changed(envelope: QueueMessageEnvelope) -> Message | None:
+        event = ProtobufMessageUtils.message_from_any(envelope.payload, TableStarted)
+        if event is None:
+            return None
+        return TableChanged(table_id=event.table_id, version=event.version)
+
+    @staticmethod
     def _table_closed_to_table_changed(envelope: QueueMessageEnvelope) -> Message | None:
         """
         A closed table has no version after it, and version 0 is how the frame
@@ -132,10 +148,12 @@ class EventAdapters:
         SessionStarted.DESCRIPTOR.full_name: _session_started_to_session_changed,
         CommandApplied.DESCRIPTOR.full_name: _command_applied_to_session_changed,
         ParticipantWithdrawn.DESCRIPTOR.full_name: _participant_withdrawn_to_session_changed,
+        DeadlineExpired.DESCRIPTOR.full_name: _deadline_expired_to_session_changed,
         TableCreated.DESCRIPTOR.full_name: _table_created_to_table_changed,
         PlayerJoined.DESCRIPTOR.full_name: _player_joined_to_table_changed,
         SeatTaken.DESCRIPTOR.full_name: _seat_taken_to_table_changed,
         SeatVacated.DESCRIPTOR.full_name: _seat_vacated_to_table_changed,
         PlayerLeft.DESCRIPTOR.full_name: _player_left_to_table_changed,
+        TableStarted.DESCRIPTOR.full_name: _table_started_to_table_changed,
         TableClosed.DESCRIPTOR.full_name: _table_closed_to_table_changed,
     }

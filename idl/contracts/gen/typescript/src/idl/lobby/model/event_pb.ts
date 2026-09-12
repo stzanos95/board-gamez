@@ -16,7 +16,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file idl/lobby/model/event.proto.
  */
 export const file_idl_lobby_model_event: GenFile = /*@__PURE__*/
-  fileDesc("ChtpZGwvbG9iYnkvbW9kZWwvZXZlbnQucHJvdG8SD2lkbC5sb2JieS5tb2RlbCJxCgxUYWJsZUNyZWF0ZWQSEAoIdGFibGVfaWQYASABKAkSKwoJZ2FtZV90eXBlGAIgASgOMhguaWRsLmdhbWUubW9kZWwuR2FtZVR5cGUSEQoJcGxheWVyX2lkGAMgASgJEg8KB3ZlcnNpb24YBCABKAQiRAoMUGxheWVySm9pbmVkEhAKCHRhYmxlX2lkGAEgASgJEhEKCXBsYXllcl9pZBgCIAEoCRIPCgd2ZXJzaW9uGAMgASgEInoKCVNlYXRUYWtlbhIQCgh0YWJsZV9pZBgBIAEoCRIRCglwbGF5ZXJfaWQYAiABKAkSEwoLc2VhdF9udW1iZXIYAyABKA0SIgoEcm9sZRgEIAEoCzIULmdvb2dsZS5wcm90b2J1Zi5BbnkSDwoHdmVyc2lvbhgFIAEoBCJYCgtTZWF0VmFjYXRlZBIQCgh0YWJsZV9pZBgBIAEoCRIRCglwbGF5ZXJfaWQYAiABKAkSEwoLc2VhdF9udW1iZXIYAyABKA0SDwoHdmVyc2lvbhgEIAEoBCJXCgpQbGF5ZXJMZWZ0EhAKCHRhYmxlX2lkGAEgASgJEhEKCXBsYXllcl9pZBgCIAEoCRITCgtzZWF0X251bWJlchgDIAEoDRIPCgd2ZXJzaW9uGAQgASgEIh8KC1RhYmxlQ2xvc2VkEhAKCHRhYmxlX2lkGAEgASgJIjEKDFRhYmxlQ2hhbmdlZBIQCgh0YWJsZV9pZBgBIAEoCRIPCgd2ZXJzaW9uGAIgASgEQjhaNmJvYXJkZ2FtZXovY29udHJhY3RzL2dlbi9nby9pZGwvbG9iYnkvbW9kZWw7bG9iYnltb2RlbGIGcHJvdG8z", [file_google_protobuf_any, file_idl_game_model_game_type]);
+  fileDesc("ChtpZGwvbG9iYnkvbW9kZWwvZXZlbnQucHJvdG8SD2lkbC5sb2JieS5tb2RlbCJxCgxUYWJsZUNyZWF0ZWQSEAoIdGFibGVfaWQYASABKAkSKwoJZ2FtZV90eXBlGAIgASgOMhguaWRsLmdhbWUubW9kZWwuR2FtZVR5cGUSEQoJcGxheWVyX2lkGAMgASgJEg8KB3ZlcnNpb24YBCABKAQiRAoMUGxheWVySm9pbmVkEhAKCHRhYmxlX2lkGAEgASgJEhEKCXBsYXllcl9pZBgCIAEoCRIPCgd2ZXJzaW9uGAMgASgEInoKCVNlYXRUYWtlbhIQCgh0YWJsZV9pZBgBIAEoCRIRCglwbGF5ZXJfaWQYAiABKAkSEwoLc2VhdF9udW1iZXIYAyABKA0SIgoEcm9sZRgEIAEoCzIULmdvb2dsZS5wcm90b2J1Zi5BbnkSDwoHdmVyc2lvbhgFIAEoBCJYCgtTZWF0VmFjYXRlZBIQCgh0YWJsZV9pZBgBIAEoCRIRCglwbGF5ZXJfaWQYAiABKAkSEwoLc2VhdF9udW1iZXIYAyABKA0SDwoHdmVyc2lvbhgEIAEoBCJXCgpQbGF5ZXJMZWZ0EhAKCHRhYmxlX2lkGAEgASgJEhEKCXBsYXllcl9pZBgCIAEoCRITCgtzZWF0X251bWJlchgDIAEoDRIPCgd2ZXJzaW9uGAQgASgEIjEKDFRhYmxlU3RhcnRlZBIQCgh0YWJsZV9pZBgBIAEoCRIPCgd2ZXJzaW9uGAIgASgEIh8KC1RhYmxlQ2xvc2VkEhAKCHRhYmxlX2lkGAEgASgJIjEKDFRhYmxlQ2hhbmdlZBIQCgh0YWJsZV9pZBgBIAEoCRIPCgd2ZXJzaW9uGAIgASgEQjhaNmJvYXJkZ2FtZXovY29udHJhY3RzL2dlbi9nby9pZGwvbG9iYnkvbW9kZWw7bG9iYnltb2RlbGIGcHJvdG8z", [file_google_protobuf_any, file_idl_game_model_game_type]);
 
 /**
  * @generated from message idl.lobby.model.TableCreated
@@ -185,6 +185,30 @@ export const PlayerLeftSchema: GenMessage<PlayerLeft> = /*@__PURE__*/
   messageDesc(file_idl_lobby_model_event, 4);
 
 /**
+ * The game at the table began, and the table is in progress from here.
+ *
+ * @generated from message idl.lobby.model.TableStarted
+ */
+export type TableStarted = Message<"idl.lobby.model.TableStarted"> & {
+  /**
+   * @generated from field: string table_id = 1;
+   */
+  tableId: string;
+
+  /**
+   * @generated from field: uint64 version = 2;
+   */
+  version: bigint;
+};
+
+/**
+ * Describes the message idl.lobby.model.TableStarted.
+ * Use `create(TableStartedSchema)` to create a new message.
+ */
+export const TableStartedSchema: GenMessage<TableStarted> = /*@__PURE__*/
+  messageDesc(file_idl_lobby_model_event, 5);
+
+/**
  * The table is gone, and no version follows it.
  *
  * @generated from message idl.lobby.model.TableClosed
@@ -201,7 +225,7 @@ export type TableClosed = Message<"idl.lobby.model.TableClosed"> & {
  * Use `create(TableClosedSchema)` to create a new message.
  */
 export const TableClosedSchema: GenMessage<TableClosed> = /*@__PURE__*/
-  messageDesc(file_idl_lobby_model_event, 5);
+  messageDesc(file_idl_lobby_model_event, 6);
 
 /**
  * The table changed, and this is its version now.
@@ -231,5 +255,5 @@ export type TableChanged = Message<"idl.lobby.model.TableChanged"> & {
  * Use `create(TableChangedSchema)` to create a new message.
  */
 export const TableChangedSchema: GenMessage<TableChanged> = /*@__PURE__*/
-  messageDesc(file_idl_lobby_model_event, 6);
+  messageDesc(file_idl_lobby_model_event, 7);
 

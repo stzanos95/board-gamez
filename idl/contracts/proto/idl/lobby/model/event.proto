@@ -52,6 +52,12 @@ message PlayerLeft {
   uint64 version = 4;
 }
 
+// The game at the table began, and the table is in progress from here.
+message TableStarted {
+  string table_id = 1;
+  uint64 version = 2;
+}
+
 // The table is gone, and no version follows it.
 message TableClosed {
   string table_id = 1;

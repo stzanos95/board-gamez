@@ -1144,8 +1144,11 @@ components:
             description: |-
                 One thing a player does in a game.
 
-                 `command_id` is minted by the caller. Sending a command a second time applies
-                 nothing and answers the state the first one produced.
+                 `command_id` is minted by the caller and names one decision. A command sent
+                 again unchanged applies nothing: it is answered the state the first one
+                 produced, or VERSION_MOVED once the game has moved on from it, and the state
+                 answered then already carries what the first one did. A command built again
+                 on a newer state is a new decision and carries a new id.
 
                  `expected_version` is the version of the view the action was built against. A
                  command carrying an earlier one is refused, so an action never reaches a game
@@ -1290,17 +1293,32 @@ components:
             properties:
                 payload:
                     $ref: '#/components/schemas/google.protobuf.Any'
-                participantToAct:
-                    type: integer
-                    format: uint32
+                participantsToAct:
+                    type: array
+                    items:
+                        type: integer
+                        format: uint32
                 result:
                     $ref: '#/components/schemas/idl.game.model.GameResult'
+                actsWithin:
+                    pattern: ^-?(?:0|[1-9][0-9]{0,11})(?:\.[0-9]{1,9})?s$
+                    type: string
             description: |-
-                One game, and the two things about it that are true whatever game it is.
+                One game, and the things about it that are true whatever game it is.
 
                  `payload` is the game's own state. It is kept and handed back to that game's
                  rules unopened, and only that game can read it. Its type is what `Any` carries
                  and is not repeated here.
+
+                 `participants_to_act` is everyone who may act on this state. A game of turns
+                 names one; a game where others may react to what was just done names each of
+                 them. Whichever of them acts first produces the next state, and the rest act
+                 on that one. Empty once the game has a result.
+
+                 `acts_within` is how long this state stands with nobody acting before the
+                 rules are asked what it becomes. It is measured from the write that stores
+                 the state, and each state the rules answer carries its own. Unset when the
+                 state stands until someone acts.
         idl.game.model.Participant:
             type: object
             properties:
@@ -1375,12 +1393,18 @@ components:
                     type: string
                 version:
                     type: string
+                actsBy:
+                    type: string
+                    format: date-time
             description: |-
                 One game as one participant may see it.
 
                  `state.payload` is the game projected for `participant`, which in a game with
                  hidden information is less than the whole game. A view is rendered, never
                  written back, and never handed to a game's rules.
+
+                 `state.participants_to_act` says whether the viewer may act now, and
+                 `acts_by` says until when. Both are the game's, unprojected.
 
                  A view arrives both as an answer and unasked, so two of them can cross. A
                  client renders one only when its version is above the version it is showing.

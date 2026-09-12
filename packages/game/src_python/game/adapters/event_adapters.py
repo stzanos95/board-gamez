@@ -6,7 +6,12 @@ write, so the version an event carries is the version after it.
 """
 
 from google.protobuf import any_pb2
-from idl.game.model.event_pb2 import CommandApplied, ParticipantWithdrawn, SessionStarted
+from idl.game.model.event_pb2 import (
+    CommandApplied,
+    DeadlineExpired,
+    ParticipantWithdrawn,
+    SessionStarted,
+)
 from idl.game.model.session_pb2 import Session
 
 
@@ -16,12 +21,13 @@ class EventAdapters:
     """
 
     @staticmethod
-    def session_to_session_started(session: Session) -> SessionStarted:
+    def session_to_session_started(session: Session, seed: int) -> SessionStarted:
         return SessionStarted(
             session_id=session.id,
             game_type=session.game_type,
             participants=session.participants,
             version=session.version,
+            seed=seed,
         )
 
     @staticmethod
@@ -47,6 +53,14 @@ class EventAdapters:
         return ParticipantWithdrawn(
             session_id=session.id,
             participant=participant,
+            is_over=session.state.HasField("result"),
+            version=session.version,
+        )
+
+    @staticmethod
+    def session_to_deadline_expired(session: Session) -> DeadlineExpired:
+        return DeadlineExpired(
+            session_id=session.id,
             is_over=session.state.HasField("result"),
             version=session.version,
         )

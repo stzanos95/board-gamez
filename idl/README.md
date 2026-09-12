@@ -84,7 +84,6 @@ and static lookups over the schema's values.
 ./idl/scripts/generate.sh              # rewrite every target in contracts/gen
 ./idl/scripts/generate.sh typescript   # or one: python, typescript, openapi, fastapi
 ./idl/scripts/lint.sh                  # naming, enum zero values, RPC shapes
-./idl/scripts/format.sh                # rewrite the .proto files; --check to report
 ./idl/scripts/breaking.sh              # refuse a change that breaks a client on main
 ./idl/scripts/check.sh                 # all of the above, in the order worth knowing
 ```
@@ -305,7 +304,7 @@ Service stubs are not generated. Adding them means pinning one more plugin in
 ## Adding a message
 
 1. Write it in the right file under `contracts/proto/idl/chess/model/`, or add one.
-2. `./idl/scripts/lint.sh`, then `./idl/scripts/format.sh`.
+2. `./idl/scripts/lint.sh`.
 3. `./idl/scripts/generate.sh`.
 4. Commit `contracts/proto` and `contracts/gen` together. They are one change.
 
@@ -317,5 +316,5 @@ code on different days, which is the one thing generated code must never do.
 
 Generation is driven by `protoc` rather than `buf generate`: all three targets
 are plain protoc plugins, and `docker/entrypoint.sh` says exactly what each one
-receives. buf owns linting, formatting and breaking-change detection, which it
-does better than anything else.
+receives. buf owns linting and breaking-change detection, which it does better
+than anything else.

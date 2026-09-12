@@ -1,12 +1,16 @@
 """
-The server: a gRPC server and the servicers each domain publishes.
+The server: a gRPC server, the servicers each domain publishes, and the tick
+that expires a game's deadline.
 """
 
 import asyncio
 import logging
 import signal
+from dataclasses import dataclass
 
 import grpc
+from core.clock.base_clock import BaseClock
+from core.clock.system_clock import SystemClock
 from core.grpc.channel_options import ChannelOptions
 from core.queue.base_queue_publisher import BaseQueuePublisher
 from core.queue.provider import QueueProvider
@@ -14,6 +18,7 @@ from game.controller.game_spec_controller import GameSpecController
 from game.controller.rules_registry import RulesRegistry
 from game.controller.session_controller import SessionController
 from game.repository.provider import SessionRepositoryProvider
+from game.service.deadline_ticker import DeadlineTicker
 from game.service.game_servicers import GameServicers
 from grpc_reflection.v1alpha import reflection
 from idl.game.model.game_type_pb2 import GameType
@@ -36,6 +41,24 @@ from grpc_server.service_host_config import (
 
 SHUTDOWN_SIGNALS = (signal.SIGINT, signal.SIGTERM)
 LOG_FORMAT = "%(asctime)s %(levelname)s %(name)s %(message)s"
+
+
+@dataclass(frozen=True, slots=True)
+class Controllers:
+    """
+    Every controller this process serves, built once from the configuration.
+
+    Every one that writes publishes through the one publisher, and the chess
+    rules are the same object the session controller holds and RulesService
+    answers with.
+    """
+
+    tables: TableController
+    seats: SeatController
+    sessions: SessionController
+    game_specs: GameSpecController
+    chess_rules: ChessRules
+    chess_sessions: ChessSessionController
 
 
 class ServiceHost:
@@ -74,20 +97,28 @@ class ServiceHost:
         """
         server = ServiceHost._build_server(self._server)
         queue_publisher = QueueProvider.get_publisher(self._queue)
-        service_names = ServiceHost._register_services(
-            server, self._lobby, self._game, queue_publisher
+        controllers = ServiceHost._build_controllers(
+            self._lobby, self._game, queue_publisher, SystemClock()
         )
+        service_names = ServiceHost._register_services(server, controllers)
         if self._server.reflection:
             reflection.enable_server_reflection([*service_names, reflection.SERVICE_NAME], server)
         address = ServiceHost._address(self._server)
         server.add_insecure_port(address)
+        ticker = DeadlineTicker(
+            sessions=controllers.sessions,
+            interval_seconds=self._game.deadlines.poll_interval_seconds,
+        )
+        stopping = ServiceHost._stopping_on_signal()
 
         await server.start()
+        ticking = asyncio.create_task(ticker.run(stopping))
         logging.getLogger(self._application.name).info(
             "serving %d services on %s", len(service_names), address
         )
-        await ServiceHost._wait_for_shutdown()
+        await stopping.wait()
         await server.stop(self._server.graceful_shutdown_seconds)
+        await ticking
         await queue_publisher.close()
 
     @staticmethod
@@ -102,20 +133,17 @@ class ServiceHost:
         )
 
     @staticmethod
-    def _register_services(
-        server: grpc.aio.Server,
+    def _build_controllers(
         lobby: LobbyConfig,
         game: GameConfig,
         queue_publisher: BaseQueuePublisher,
-    ) -> tuple[str, ...]:
+        clock: BaseClock,
+    ) -> Controllers:
         """
-        Every servicer this process serves, and the names it serves them under.
-
-        Each controller and everything it depends on is built here, from the
-        configuration. Every controller that writes publishes through the one
-        publisher. Adding a domain is a dependency and one more line; adding a
-        game is a product dependency and one entry each in the rules registry
-        and the seating registry.
+        Each controller and everything it depends on, built from the
+        configuration. Adding a domain is a dependency and one more field;
+        adding a game is a product dependency and one entry each in the rules
+        registry and the seating registry.
 
         A product's rules are held in-process: the session controller calls
         them directly, and the same object answers RulesService for a tool that
@@ -128,31 +156,41 @@ class ServiceHost:
         chess_rules = ChessRules()
         rules = RulesRegistry({GameType.GAME_TYPE_CHESS: chess_rules})
         seating = SeatingRegistry({GameType.GAME_TYPE_CHESS: ChessSeating()})
-        table_controller = TableController(
-            repository=table_repository, queue_publisher=queue_publisher
+        tables = TableController(repository=table_repository, queue_publisher=queue_publisher)
+        sessions = SessionController(
+            repository=session_repository,
+            rules=rules,
+            queue_publisher=queue_publisher,
+            clock=clock,
         )
-        session_controller = SessionController(
-            repository=session_repository, rules=rules, queue_publisher=queue_publisher
-        )
-        seat_controller = SeatController(
-            tables=table_controller,
+        seats = SeatController(
+            tables=tables,
             seating=seating,
-            sessions=session_controller,
+            sessions=sessions,
             rules=rules,
             queue_publisher=queue_publisher,
         )
+        return Controllers(
+            tables=tables,
+            seats=seats,
+            sessions=sessions,
+            game_specs=GameSpecController(rules=rules),
+            chess_rules=chess_rules,
+            chess_sessions=ChessSessionController(tables=tables, seats=seats, sessions=sessions),
+        )
+
+    @staticmethod
+    def _register_services(server: grpc.aio.Server, controllers: Controllers) -> tuple[str, ...]:
+        """
+        Every servicer this process serves, and the names it serves them under.
+        """
         return (
-            LobbyServicers.add_table_service(server, table_controller),
-            LobbyServicers.add_seat_service(server, seat_controller),
-            GameServicers.add_session_service(server, session_controller),
-            GameServicers.add_game_spec_service(server, GameSpecController(rules=rules)),
-            ProductChessServicers.add_rules_service(server, chess_rules),
-            ProductChessServicers.add_chess_service(
-                server,
-                ChessSessionController(
-                    tables=table_controller, seats=seat_controller, sessions=session_controller
-                ),
-            ),
+            LobbyServicers.add_table_service(server, controllers.tables),
+            LobbyServicers.add_seat_service(server, controllers.seats),
+            GameServicers.add_session_service(server, controllers.sessions),
+            GameServicers.add_game_spec_service(server, controllers.game_specs),
+            ProductChessServicers.add_rules_service(server, controllers.chess_rules),
+            ProductChessServicers.add_chess_service(server, controllers.chess_sessions),
         )
 
     @staticmethod
@@ -160,9 +198,9 @@ class ServiceHost:
         return f"{config.host}:{config.port}"
 
     @staticmethod
-    async def _wait_for_shutdown() -> None:
+    def _stopping_on_signal() -> asyncio.Event:
         """
-        Wait until the process is asked to stop.
+        An event set when the process is asked to stop.
 
         A container stops its process with a signal, so the handler is what turns
         that into a graceful shutdown rather than a killed connection.
@@ -171,4 +209,4 @@ class ServiceHost:
         loop = asyncio.get_running_loop()
         for shutdown_signal in SHUTDOWN_SIGNALS:
             loop.add_signal_handler(shutdown_signal, stopping.set)
-        await stopping.wait()
+        return stopping

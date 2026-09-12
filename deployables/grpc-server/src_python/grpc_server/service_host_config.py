@@ -61,12 +61,26 @@ class LobbyConfig(DataClassYAMLMixin):
 
 
 @dataclass(frozen=True, slots=True)
+class DeadlineConfig(DataClassYAMLMixin):
+    """
+    How often states that have run out are looked for.
+
+    A state runs out at the instant it carries, and is handed to its rules on
+    the first look after that, so the interval bounds how late that is.
+    """
+
+    poll_interval_seconds: float
+
+
+@dataclass(frozen=True, slots=True)
 class GameConfig(DataClassYAMLMixin):
     """
-    What the game domain needs, which is somewhere to keep its sessions.
+    What the game domain needs: somewhere to keep its sessions, and how often
+    to look for one that has run out.
     """
 
     session_repository: SessionRepositoryConfig
+    deadlines: DeadlineConfig
 
 
 @dataclass(frozen=True, slots=True)

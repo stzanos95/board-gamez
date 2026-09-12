@@ -1,7 +1,9 @@
 import unittest
+from datetime import UTC, datetime, timedelta
 
+from google.protobuf.duration_pb2 import Duration
 from idl.game.model.command_result_pb2 import CommandOutcome, CommandResult
-from idl.game.model.event_pb2 import CommandApplied, ParticipantWithdrawn
+from idl.game.model.event_pb2 import CommandApplied, ParticipantWithdrawn, SessionStarted
 from idl.game.model.game_result_pb2 import ParticipantOutcome
 from idl.game.model.game_type_pb2 import GameType
 from idl.game.model.participant_pb2 import Participant
@@ -10,6 +12,7 @@ from idl.game.model.withdrawal_result_pb2 import WithdrawalOutcome
 
 from game.controller.rules_registry import RulesRegistry
 from game.controller.session_controller import SessionController
+from tests_python.fixed_clock import START_OF_TEST, FixedClock
 from tests_python.in_memory_queue_publisher import InMemoryQueuePublisher
 from tests_python.in_memory_session_repository import RefusingOnceSessionRepository
 from tests_python.scripted_rules import MOVE, WIN, ScriptedRules
@@ -22,6 +25,9 @@ ONLOOKER = "p-3"
 FIRST_PARTICIPANT = 1
 SECOND_PARTICIPANT = 2
 NOBODY = 0
+NOBODY_TO_ACT: list[int] = []
+TURN_SECONDS = 30
+TURN = Duration(seconds=TURN_SECONDS)
 FIRST_STORED_VERSION = 1
 SECOND_STORED_VERSION = 2
 STALE_VERSION = 9
@@ -46,10 +52,12 @@ class SessionControllerTest(unittest.IsolatedAsyncioTestCase):
         self.repository = RefusingOnceSessionRepository()
         self.rules = ScriptedRules(minimum=2, maximum=2)
         self.queue_publisher = InMemoryQueuePublisher()
+        self.clock = FixedClock()
         self.controller = SessionController(
             repository=self.repository,
             rules=RulesRegistry({GameType.GAME_TYPE_CHESS: self.rules}),
             queue_publisher=self.queue_publisher,
+            clock=self.clock,
         )
         self.commands_sent = 0
 
@@ -96,10 +104,29 @@ class SessionControllerTest(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(started.id, TABLE_ID)
         self.assertEqual(started.version, FIRST_STORED_VERSION)
-        self.assertEqual(started.state.participant_to_act, FIRST_PARTICIPANT)
+        self.assertEqual(list(started.state.participants_to_act), [FIRST_PARTICIPANT])
         self.assertFalse(started.state.HasField("result"))
         self.assertEqual(started.last_command_id, NO_COMMAND_ID)
         self.assertEqual(list(started.participants), list(TWO_PLAYERS))
+
+    async def test_the_rules_are_handed_a_seed_and_the_event_records_it(self) -> None:
+        await self.start()
+
+        self.assertEqual(len(self.rules.seeds_received), 1)
+        started = SessionStarted()
+        self.assertTrue(self.queue_publisher.published[0].envelope.payload.Unpack(started))
+        self.assertEqual(started.seed, self.rules.seeds_received[0])
+
+    async def test_two_games_get_different_seeds(self) -> None:
+        await self.start()
+        await self.controller.create_session(
+            OTHER_TABLE_ID, GameType.GAME_TYPE_CHESS, TWO_PLAYERS, FIRST_PLAYER
+        )
+        self.assertNotEqual(self.rules.seeds_received[0], self.rules.seeds_received[1])
+
+    async def test_a_state_without_a_deadline_has_no_acts_by(self) -> None:
+        started = await self.start()
+        self.assertFalse(started.HasField("acts_by"))
 
     async def test_a_game_is_answered_as_the_caller_may_see_it(self) -> None:
         started = await self.start(player_id=SECOND_PLAYER)
@@ -181,7 +208,7 @@ class SessionControllerTest(unittest.IsolatedAsyncioTestCase):
 
         self.assertIs(result.outcome, CommandOutcome.COMMAND_OUTCOME_APPLIED)
         self.assertEqual(result.session.version, SECOND_STORED_VERSION)
-        self.assertEqual(result.session.state.participant_to_act, SECOND_PARTICIPANT)
+        self.assertEqual(list(result.session.state.participants_to_act), [SECOND_PARTICIPANT])
         self.assertEqual(result.session.last_command_id, COMMAND_ID)
         self.assertEqual(ScriptedRules.view_text(result.session.state.payload), "1:1")
 
@@ -238,6 +265,22 @@ class SessionControllerTest(unittest.IsolatedAsyncioTestCase):
 
         self.assertIs(result.outcome, CommandOutcome.COMMAND_OUTCOME_OUT_OF_TURN)
 
+    async def test_anyone_the_state_names_may_act(self) -> None:
+        """
+        The state names every participant, so the second acts first, and the
+        first is then out of turn on the state that followed.
+        """
+        await self.start()
+        stored = await self.repository.read(TABLE_ID)
+        assert stored is not None
+        stored.state.participants_to_act[:] = [FIRST_PARTICIPANT, SECOND_PARTICIPANT]
+
+        reacted = await self.apply(SECOND_PLAYER, MOVE, FIRST_STORED_VERSION)
+        self.assertIs(reacted.outcome, CommandOutcome.COMMAND_OUTCOME_APPLIED)
+
+        late = await self.apply(FIRST_PLAYER, MOVE, FIRST_STORED_VERSION, OTHER_COMMAND_ID)
+        self.assertIs(late.outcome, CommandOutcome.COMMAND_OUTCOME_VERSION_MOVED)
+
     async def test_an_action_the_rules_refuse_is_illegal(self) -> None:
         await self.start()
 
@@ -250,7 +293,7 @@ class SessionControllerTest(unittest.IsolatedAsyncioTestCase):
         await self.start()
         won = await self.applied(FIRST_PLAYER, WIN, FIRST_STORED_VERSION)
 
-        self.assertEqual(won.state.participant_to_act, NOBODY)
+        self.assertEqual(list(won.state.participants_to_act), NOBODY_TO_ACT)
         outcomes = {one.participant: one.outcome for one in won.state.result.participant_items}
         self.assertIs(outcomes[FIRST_PARTICIPANT], ParticipantOutcome.PARTICIPANT_OUTCOME_WON)
         self.assertIs(outcomes[SECOND_PARTICIPANT], ParticipantOutcome.PARTICIPANT_OUTCOME_LOST)
@@ -274,7 +317,7 @@ class SessionControllerTest(unittest.IsolatedAsyncioTestCase):
         second = await self.applied(SECOND_PLAYER, MOVE, first.version)
         third = await self.applied(FIRST_PLAYER, MOVE, second.version)
 
-        self.assertEqual(third.state.participant_to_act, SECOND_PARTICIPANT)
+        self.assertEqual(list(third.state.participants_to_act), [SECOND_PARTICIPANT])
         self.assertEqual(third.version, started.version + 3)
         self.assertEqual(ScriptedRules.view_text(third.state.payload), "3:1")
 
@@ -296,7 +339,7 @@ class SessionControllerTest(unittest.IsolatedAsyncioTestCase):
 
     async def test_withdrawing_is_allowed_out_of_turn(self) -> None:
         started = await self.start()
-        self.assertEqual(started.state.participant_to_act, FIRST_PARTICIPANT)
+        self.assertEqual(list(started.state.participants_to_act), [FIRST_PARTICIPANT])
 
         result = await self.controller.withdraw_player(TABLE_ID, SECOND_PLAYER)
 
@@ -341,6 +384,106 @@ class SessionControllerTest(unittest.IsolatedAsyncioTestCase):
 
         self.assertIs(result.outcome, WithdrawalOutcome.WITHDRAWAL_OUTCOME_WITHDRAWN)
         self.assertEqual(result.session.version, SECOND_STORED_VERSION)
+
+    # --- deadlines -----------------------------------------------------------
+
+    async def test_every_write_stamps_when_the_state_runs_out(self) -> None:
+        """
+        A timed game's opening state runs out one turn after it was written,
+        and the state after a move runs out one turn after that write.
+        """
+        self.use_timed_rules()
+        started = await self.start()
+        self.assertEqual(started.acts_by.ToDatetime(tzinfo=UTC), self.turn_after(START_OF_TEST))
+
+        self.clock.instant = START_OF_TEST + timedelta(seconds=5)
+        moved = await self.applied(FIRST_PLAYER, MOVE, started.version)
+        self.assertEqual(moved.acts_by.ToDatetime(tzinfo=UTC), self.turn_after(self.clock.instant))
+
+    async def test_a_state_that_ran_out_is_replaced_by_the_rules_and_published(self) -> None:
+        self.use_timed_rules()
+        started = await self.start()
+        self.clock.instant = self.turn_after(START_OF_TEST)
+
+        await self.controller.expire_due_deadlines()
+
+        after = await self.controller.read_session(TABLE_ID, FIRST_PLAYER)
+        assert after is not None
+        self.assertEqual(after.version, started.version + 1)
+        self.assertEqual(list(after.state.participants_to_act), [SECOND_PARTICIPANT])
+        self.assertEqual(after.last_command_id, NO_COMMAND_ID)
+        self.assertEqual(after.acts_by.ToDatetime(tzinfo=UTC), self.turn_after(self.clock.instant))
+        self.assertEqual(
+            self.queue_publisher.get_types_on(SESSION_CHANNEL),
+            ["idl.game.model.SessionStarted", "idl.game.model.DeadlineExpired"],
+        )
+
+    async def test_a_state_that_has_not_run_out_is_left_alone(self) -> None:
+        self.use_timed_rules()
+        started = await self.start()
+        self.clock.instant = self.turn_after(START_OF_TEST) - timedelta(seconds=1)
+
+        await self.controller.expire_due_deadlines()
+
+        after = await self.controller.read_session(TABLE_ID, FIRST_PLAYER)
+        assert after is not None
+        self.assertEqual(after.version, started.version)
+
+    async def test_a_deadline_against_a_version_that_moved_is_not_acted_on(self) -> None:
+        self.use_timed_rules()
+        started = await self.start()
+        moved = await self.applied(FIRST_PLAYER, MOVE, started.version)
+        self.queue_publisher.published.clear()
+
+        await self.controller.expire_deadline(TABLE_ID, started.version)
+
+        after = await self.controller.read_session(TABLE_ID, FIRST_PLAYER)
+        assert after is not None
+        self.assertEqual(after.version, moved.version)
+        self.assertEqual(self.queue_publisher.published, [])
+
+    async def test_a_game_that_is_over_has_its_deadline_removed_and_nothing_written(self) -> None:
+        self.use_timed_rules()
+        started = await self.start()
+        stored = await self.repository.read(TABLE_ID)
+        assert stored is not None
+        stored.state.result.SetInParent()
+        self.clock.instant = self.turn_after(START_OF_TEST)
+
+        await self.controller.expire_due_deadlines()
+        await self.controller.expire_due_deadlines()
+
+        after = await self.controller.read_session(TABLE_ID, FIRST_PLAYER)
+        assert after is not None
+        self.assertEqual(after.version, started.version)
+        self.assertEqual(len(self.queue_publisher.published), 1)
+
+    async def test_an_expiry_whose_write_is_refused_publishes_nothing(self) -> None:
+        self.use_timed_rules()
+        await self.start()
+        self.clock.instant = self.turn_after(START_OF_TEST)
+        self.queue_publisher.published.clear()
+        self.repository.refuse_next_write = True
+
+        await self.controller.expire_due_deadlines()
+
+        self.assertEqual(self.queue_publisher.published, [])
+
+    def use_timed_rules(self) -> None:
+        """
+        Rules whose every state runs out one turn after it is written.
+        """
+        self.rules = ScriptedRules(minimum=2, maximum=2, acts_within=TURN)
+        self.controller = SessionController(
+            repository=self.repository,
+            rules=RulesRegistry({GameType.GAME_TYPE_CHESS: self.rules}),
+            queue_publisher=self.queue_publisher,
+            clock=self.clock,
+        )
+
+    @staticmethod
+    def turn_after(instant: datetime) -> datetime:
+        return instant + timedelta(seconds=TURN_SECONDS)
 
     # --- publishing ----------------------------------------------------------
 

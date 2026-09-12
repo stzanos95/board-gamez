@@ -11,12 +11,14 @@ from typing import ClassVar as _ClassVar, Iterable as _Iterable, Mapping as _Map
 DESCRIPTOR: _descriptor.FileDescriptor
 
 class CreateGameRequest(_message.Message):
-    __slots__ = ("participant_count", "participant_roles")
+    __slots__ = ("participant_count", "participant_roles", "seed")
     PARTICIPANT_COUNT_FIELD_NUMBER: _ClassVar[int]
     PARTICIPANT_ROLES_FIELD_NUMBER: _ClassVar[int]
+    SEED_FIELD_NUMBER: _ClassVar[int]
     participant_count: int
     participant_roles: _containers.RepeatedCompositeFieldContainer[_participant_pb2.ParticipantRole]
-    def __init__(self, participant_count: _Optional[int] = ..., participant_roles: _Optional[_Iterable[_Union[_participant_pb2.ParticipantRole, _Mapping]]] = ...) -> None: ...
+    seed: int
+    def __init__(self, participant_count: _Optional[int] = ..., participant_roles: _Optional[_Iterable[_Union[_participant_pb2.ParticipantRole, _Mapping]]] = ..., seed: _Optional[int] = ...) -> None: ...
 
 class CreateGameResponse(_message.Message):
     __slots__ = ("state",)
@@ -61,6 +63,18 @@ class WithdrawParticipantRequest(_message.Message):
     def __init__(self, state: _Optional[_Union[_game_state_pb2.GameState, _Mapping]] = ..., participant: _Optional[int] = ...) -> None: ...
 
 class WithdrawParticipantResponse(_message.Message):
+    __slots__ = ("state",)
+    STATE_FIELD_NUMBER: _ClassVar[int]
+    state: _game_state_pb2.GameState
+    def __init__(self, state: _Optional[_Union[_game_state_pb2.GameState, _Mapping]] = ...) -> None: ...
+
+class ExpireDeadlineRequest(_message.Message):
+    __slots__ = ("state",)
+    STATE_FIELD_NUMBER: _ClassVar[int]
+    state: _game_state_pb2.GameState
+    def __init__(self, state: _Optional[_Union[_game_state_pb2.GameState, _Mapping]] = ...) -> None: ...
+
+class ExpireDeadlineResponse(_message.Message):
     __slots__ = ("state",)
     STATE_FIELD_NUMBER: _ClassVar[int]
     state: _game_state_pb2.GameState

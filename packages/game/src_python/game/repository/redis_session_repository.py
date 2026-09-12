@@ -3,26 +3,40 @@ Sessions kept in Redis.
 """
 
 from core.protobuf.message_utils import ProtobufMessageUtils
+from google.protobuf.timestamp_pb2 import Timestamp
+from idl.game.obj.deadline_pb2 import DeadlineObj
 from idl.game.obj.session_pb2 import SessionObj
 from redis.asyncio import Redis
 
 from game.repository.base_session_repository import BaseSessionRepository
 from game.repository.config import RedisSessionRepositoryConfig
-from game.repository.redis_session_row import DATA_FIELD, VERSION_FIELD, RedisSessionRow
+from game.repository.redis_session_row import (
+    DATA_FIELD,
+    NO_DEADLINE_SCORE,
+    VERSION_FIELD,
+    RedisSessionRow,
+)
 
 # The script compares the stored version before writing anything, so a caller
 # working from a version that has since moved on writes nothing. A missing hash
 # reads as version 0, which is the version a caller carries when it believes it
-# is creating.
+# is creating. The deadline index is kept in the same step: an empty score
+# removes the session from it, any other score places it there.
 UPSERT_SESSION_SCRIPT = f"""
 local stored = redis.call('HGET', KEYS[1], '{VERSION_FIELD}')
 if (stored or '0') ~= ARGV[1] then return 0 end
 redis.call('HSET', KEYS[1], '{VERSION_FIELD}', ARGV[2], '{DATA_FIELD}', ARGV[3])
+if ARGV[4] == '{NO_DEADLINE_SCORE}' then
+  redis.call('ZREM', KEYS[2], ARGV[5])
+else
+  redis.call('ZADD', KEYS[2], ARGV[4], ARGV[5])
+end
 return 1
 """
 
 SCRIPT_APPLIED = 1
 VERSION_INCREMENT = 1
+EARLIEST_SCORE = "-inf"
 
 
 class RedisSessionRepository(BaseSessionRepository):
@@ -42,11 +56,16 @@ class RedisSessionRepository(BaseSessionRepository):
         written = ProtobufMessageUtils.copy_of_message(session)
         written.metadata.version = session.metadata.version + VERSION_INCREMENT
         applied = await self._upsert_session(
-            keys=[RedisSessionRow.session_key(self._key_prefix, session.metadata.id)],
+            keys=[
+                RedisSessionRow.session_key(self._key_prefix, session.metadata.id),
+                RedisSessionRow.deadline_index_key(self._key_prefix),
+            ],
             args=[
                 str(session.metadata.version),
                 str(written.metadata.version),
                 RedisSessionRow.encode_session(written),
+                RedisSessionRow.encode_deadline_score(written),
+                session.metadata.id,
             ],
         )
         return written if applied == SCRIPT_APPLIED else None
@@ -56,3 +75,28 @@ class RedisSessionRepository(BaseSessionRepository):
             RedisSessionRow.session_key(self._key_prefix, session_id), DATA_FIELD
         )
         return None if data is None else RedisSessionRow.decode_session(data)
+
+    async def list_due_deadline(self, before: Timestamp) -> tuple[DeadlineObj, ...]:
+        """
+        The index is read first and each session's version after it, so a
+        session written between the two reads answers the version it moved to.
+        """
+        entries = await self._client.zrangebyscore(
+            RedisSessionRow.deadline_index_key(self._key_prefix),
+            EARLIEST_SCORE,
+            RedisSessionRow.timestamp_to_score(before),
+            withscores=True,
+        )
+        due: list[DeadlineObj] = []
+        for item in entries:
+            entry = RedisSessionRow.range_item_to_index_entry(item)
+            version = await self._client.hget(
+                RedisSessionRow.session_key(self._key_prefix, entry.session_id), VERSION_FIELD
+            )
+            if version is None:
+                continue
+            due.append(RedisSessionRow.index_entry_to_deadline(entry, version))
+        return tuple(due)
+
+    async def delete_deadline(self, session_id: str) -> None:
+        await self._client.zrem(RedisSessionRow.deadline_index_key(self._key_prefix), session_id)

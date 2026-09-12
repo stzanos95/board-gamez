@@ -29,9 +29,13 @@ class ChessRules(BaseRules):
     Every question the platform asks a game, answered for chess.
 
     Every viewer is shown the whole game: chess has no hidden information.
+    Nothing in chess is drawn by chance, so the seed is not read, and no state
+    runs out, so no deadline is ever expired.
     """
 
-    async def create_game(self, participant_roles: tuple[ParticipantRole, ...]) -> GameState | None:
+    async def create_game(
+        self, participant_roles: tuple[ParticipantRole, ...], seed: int
+    ) -> GameState | None:
         if len(participant_roles) != CHESS_PARTICIPANT_COUNT:
             return None
         roster = ChessRulesAdapters.participant_roles_to_player_roster(participant_roles)
@@ -75,6 +79,9 @@ class ChessRules(BaseRules):
         view = any_pb2.Any()
         view.CopyFrom(state.payload)
         return view
+
+    async def expire_deadline(self, state: GameState) -> GameState | None:
+        return None
 
     async def read_bounds(self) -> ParticipantBounds:
         return ParticipantBounds(minimum=CHESS_PARTICIPANT_COUNT, maximum=CHESS_PARTICIPANT_COUNT)

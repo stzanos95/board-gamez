@@ -2,16 +2,21 @@
 What is done to a game being played.
 
 The one place the platform decides anything about a game: who may act, whether a
-command already applied, whether the caller read the current state, and what an
-outcome is called. What the action means inside the game is the game's rules'.
+command already applied, whether the caller read the current state, when a
+state runs out, and what an outcome is called. What the action means inside the
+game is the game's rules'.
 """
 
+import secrets
+
+from core.clock.base_clock import BaseClock
 from core.queue.base_queue_publisher import BaseQueuePublisher
 from core.queue.message_utils import QueueMessageUtils
 from google.protobuf import any_pb2
 from google.protobuf.message import Message
 from idl.game.model.action_pb2 import Action
 from idl.game.model.command_result_pb2 import CommandOutcome, CommandResult
+from idl.game.model.game_state_pb2 import GameState
 from idl.game.model.game_type_pb2 import GameType
 from idl.game.model.participant_pb2 import Participant
 from idl.game.model.session_pb2 import Session, SessionView
@@ -28,6 +33,8 @@ NO_COMMAND_ID = ""
 NOT_PLAYING = 0
 FIRST_PARTICIPANT = 1
 WITHDRAWAL_ATTEMPTS = 3
+# The width of `CreateGameRequest.seed`.
+SEED_BITS = 64
 
 
 class SessionController:
@@ -41,6 +48,10 @@ class SessionController:
     Every write that is stored is published as one event on the game's
     channel, after the write and never for a refused one.
 
+    Every state written is stamped with when it runs out, measured from the
+    write by the clock this controller holds, and a state that has run out is
+    handed back to the rules by `expire_due_deadlines`.
+
     Built once at the entry point and passed to whatever serves it.
     """
 
@@ -49,10 +60,12 @@ class SessionController:
         repository: BaseSessionRepository,
         rules: RulesRegistry,
         queue_publisher: BaseQueuePublisher,
+        clock: BaseClock,
     ) -> None:
         self._repository = repository
         self._rules = rules
         self._queue_publisher = queue_publisher
+        self._clock = clock
 
     async def create_session(
         self,
@@ -74,18 +87,21 @@ class SessionController:
             return await self._get_session_view(session, player_id)
         if not SessionController._is_numbered_without_gaps(participants):
             return None
+        seed = secrets.randbits(SEED_BITS)
         state = await self._rules.get_rules(game_type).create_game(
-            SessionAdapters.participants_to_participant_roles(participants)
+            SessionAdapters.participants_to_participant_roles(participants), seed
         )
         if state is None:
             return None
-        opening = Session(
-            id=table_id,
-            game_type=game_type,
-            participants=participants,
-            state=state,
-            last_command_id=NO_COMMAND_ID,
-            version=UNSTORED_VERSION,
+        opening = self._get_session_to_write(
+            Session(
+                id=table_id,
+                game_type=game_type,
+                participants=participants,
+                version=UNSTORED_VERSION,
+            ),
+            state,
+            NO_COMMAND_ID,
         )
         stored = await self._repository.upsert(SessionAdapters.session_to_session_obj(opening))
         if stored is None:
@@ -93,7 +109,7 @@ class SessionController:
             # Theirs is the game at this table.
             return await self.read_session(table_id, player_id)
         session = SessionAdapters.session_obj_to_session(stored)
-        await self._publish(session, EventAdapters.session_to_session_started(session))
+        await self._publish(session, EventAdapters.session_to_session_started(session, seed))
         return await self._get_session_view(session, player_id)
 
     async def read_session(self, session_id: str, player_id: str) -> SessionView | None:
@@ -143,7 +159,7 @@ class SessionController:
             return await self._get_command_result(
                 CommandOutcome.COMMAND_OUTCOME_VERSION_MOVED, session, player_id
             )
-        if participant != session.state.participant_to_act:
+        if participant not in session.state.participants_to_act:
             return await self._get_command_result(
                 CommandOutcome.COMMAND_OUTCOME_OUT_OF_TURN, session, player_id
             )
@@ -157,14 +173,7 @@ class SessionController:
                 CommandOutcome.COMMAND_OUTCOME_ILLEGAL_ACTION, session, player_id
             )
 
-        advanced = Session(
-            id=session.id,
-            game_type=session.game_type,
-            participants=session.participants,
-            state=next_state,
-            last_command_id=command_id,
-            version=session.version,
-        )
+        advanced = self._get_session_to_write(session, next_state, command_id)
         stored = await self._repository.upsert(SessionAdapters.session_to_session_obj(advanced))
         if stored is None:
             # The version moved between the read and the write. What is stored
@@ -224,14 +233,7 @@ class SessionController:
                 WithdrawalOutcome.WITHDRAWAL_OUTCOME_NOT_IN_GAME, session, player_id
             )
 
-        withdrawn = Session(
-            id=session.id,
-            game_type=session.game_type,
-            participants=session.participants,
-            state=next_state,
-            last_command_id=session.last_command_id,
-            version=session.version,
-        )
+        withdrawn = self._get_session_to_write(session, next_state, session.last_command_id)
         stored = await self._repository.upsert(SessionAdapters.session_to_session_obj(withdrawn))
         if stored is None:
             return WithdrawalResult(
@@ -242,6 +244,66 @@ class SessionController:
         await self._publish(left, EventAdapters.session_to_participant_withdrawn(left, participant))
         return await self._get_withdrawal_result(
             WithdrawalOutcome.WITHDRAWAL_OUTCOME_WITHDRAWN, left, player_id
+        )
+
+    async def expire_due_deadlines(self) -> None:
+        """
+        Hand every state that has run out back to its rules.
+
+        Asked on an interval. A deadline found against a version the game has
+        moved on from belongs to a state that no longer stands, and is left to
+        the write that replaced it.
+        """
+        now = SessionAdapters.datetime_to_timestamp(self._clock.now())
+        for deadline in await self._repository.list_due_deadline(now):
+            await self.expire_deadline(deadline.metadata.id, deadline.metadata.version)
+
+    async def expire_deadline(self, session_id: str, session_version: int) -> None:
+        """
+        Replace the state stored at this version with what its rules say it
+        becomes once its deadline has passed.
+
+        Nothing is written when the game is not at that version, has a result,
+        or carries no deadline. A game with a result and a deadline, or one
+        whose rules answer nothing, has its deadline removed so it is not asked
+        again.
+        """
+        stored = await self._repository.read(session_id)
+        if stored is None:
+            return
+        session = SessionAdapters.session_obj_to_session(stored)
+        if session.version != session_version or not session.HasField("acts_by"):
+            return
+        if session.state.HasField("result"):
+            await self._repository.delete_deadline(session_id)
+            return
+        next_state = await self._rules.get_rules(session.game_type).expire_deadline(session.state)
+        if next_state is None:
+            await self._repository.delete_deadline(session_id)
+            return
+        expired = self._get_session_to_write(session, next_state, session.last_command_id)
+        stored = await self._repository.upsert(SessionAdapters.session_to_session_obj(expired))
+        if stored is None:
+            # A command landed first, and the state that ran out is gone.
+            return
+        replaced = SessionAdapters.session_obj_to_session(stored)
+        await self._publish(replaced, EventAdapters.session_to_deadline_expired(replaced))
+
+    def _get_session_to_write(
+        self, session: Session, state: GameState, last_command_id: str
+    ) -> Session:
+        """
+        The session carrying this state, at the version it was read, stamped
+        with when the state runs out as of now.
+        """
+        return Session(
+            id=session.id,
+            game_type=session.game_type,
+            participants=session.participants,
+            state=state,
+            last_command_id=last_command_id,
+            version=session.version,
+            acts_by=SessionAdapters.state_to_acts_by(state, self._clock.now()),
         )
 
     async def _publish(self, session: Session, event: Message) -> None:

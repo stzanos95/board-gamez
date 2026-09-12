@@ -21,8 +21,11 @@ export const file_idl_game_dto_command: GenFile = /*@__PURE__*/
 /**
  * One thing a player does in a game.
  *
- * `command_id` is minted by the caller. Sending a command a second time applies
- * nothing and answers the state the first one produced.
+ * `command_id` is minted by the caller and names one decision. A command sent
+ * again unchanged applies nothing: it is answered the state the first one
+ * produced, or VERSION_MOVED once the game has moved on from it, and the state
+ * answered then already carries what the first one did. A command built again
+ * on a newer state is a new decision and carries a new id.
  *
  * `expected_version` is the version of the view the action was built against. A
  * command carrying an earlier one is refused, so an action never reaches a game

@@ -11,6 +11,7 @@ from idl.game.model.session_pb2 import SessionView
 from game.controller.rules_registry import RulesRegistry
 from game.controller.session_controller import SessionController
 from game.service.grpc_session_service import GrpcSessionService
+from tests_python.fixed_clock import FixedClock
 from tests_python.in_memory_queue_publisher import InMemoryQueuePublisher
 from tests_python.in_memory_session_repository import InMemorySessionRepository
 
@@ -31,6 +32,7 @@ class RecordingController(SessionController):
             repository=InMemorySessionRepository(),
             rules=RulesRegistry({}),
             queue_publisher=InMemoryQueuePublisher(),
+            clock=FixedClock(),
         )
         self.callers: list[str] = []
         self.created: list[tuple[str, GameType, tuple[Participant, ...]]] = []

@@ -5,7 +5,7 @@ from __future__ import annotations
 
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, constr
 
 from ...google import protobuf
 
@@ -107,19 +107,34 @@ class GameSpecCollection(BaseModel):
 
 class GameState(BaseModel):
     """
-    One game, and the two things about it that are true whatever game it is.
+    One game, and the things about it that are true whatever game it is.
 
      `payload` is the game's own state. It is kept and handed back to that game's
      rules unopened, and only that game can read it. Its type is what `Any` carries
      and is not repeated here.
+
+     `participants_to_act` is everyone who may act on this state. A game of turns
+     names one; a game where others may react to what was just done names each of
+     them. Whichever of them acts first produces the next state, and the rest act
+     on that one. Empty once the game has a result.
+
+     `acts_within` is how long this state stands with nobody acting before the
+     rules are asked what it becomes. It is measured from the write that stores
+     the state, and each state the rules answer carries its own. Unset when the
+     state stands until someone acts.
     """
 
     model_config = ConfigDict(
         populate_by_name=True,
     )
     payload: protobuf.Any | None = None
-    participant_to_act: int | None = Field(default=None, alias='participantToAct')
+    participants_to_act: list[int] | None = Field(
+        default=None, alias='participantsToAct'
+    )
     result: GameResult | None = None
+    acts_within: (
+        constr(pattern=r'^-?(?:0|[1-9][0-9]{0,11})(?:\.[0-9]{1,9})?s$') | None
+    ) = Field(default=None, alias='actsWithin')
 
 
 class SessionView(BaseModel):
@@ -129,6 +144,9 @@ class SessionView(BaseModel):
      `state.payload` is the game projected for `participant`, which in a game with
      hidden information is less than the whole game. A view is rendered, never
      written back, and never handed to a game's rules.
+
+     `state.participants_to_act` says whether the viewer may act now, and
+     `acts_by` says until when. Both are the game's, unprojected.
 
      A view arrives both as an answer and unasked, so two of them can cross. A
      client renders one only when its version is above the version it is showing.
@@ -146,6 +164,7 @@ class SessionView(BaseModel):
     state: GameState | None = None
     last_command_id: str | None = Field(default=None, alias='lastCommandId')
     version: str | None = None
+    acts_by: AwareDatetime | None = Field(default=None, alias='actsBy')
 
 
 class WithdrawalResult(BaseModel):

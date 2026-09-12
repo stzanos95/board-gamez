@@ -24,6 +24,7 @@ service RulesService {
   rpc ReadView(idl.game.dto.ReadViewRequest) returns (idl.game.dto.ReadViewResponse);
 
   rpc WithdrawParticipant(idl.game.dto.WithdrawParticipantRequest) returns (idl.game.dto.WithdrawParticipantResponse);
+  rpc ExpireDeadline(idl.game.dto.ExpireDeadlineRequest) returns (idl.game.dto.ExpireDeadlineResponse);
 
   rpc ReadBounds(idl.game.dto.ReadBoundsRequest) returns (idl.game.dto.ReadBoundsResponse);
 }

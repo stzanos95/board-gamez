@@ -22,13 +22,14 @@ _runtime_version.ValidateProtobufRuntimeVersion(
 _sym_db = _symbol_database.Default()
 
 
+from google.protobuf import timestamp_pb2 as google_dot_protobuf_dot_timestamp__pb2
 from idl.core.obj import object_metadata_pb2 as idl_dot_core_dot_obj_dot_object__metadata__pb2
 from idl.game.model import game_state_pb2 as idl_dot_game_dot_model_dot_game__state__pb2
 from idl.game.model import game_type_pb2 as idl_dot_game_dot_model_dot_game__type__pb2
 from idl.game.model import participant_pb2 as idl_dot_game_dot_model_dot_participant__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1aidl/game/obj/session.proto\x12\x0cidl.game.obj\x1a\"idl/core/obj/object_metadata.proto\x1a\x1fidl/game/model/game_state.proto\x1a\x1eidl/game/model/game_type.proto\x1a idl/game/model/participant.proto\"\xdf\x01\n\nSessionObj\x12.\n\x08metadata\x18\x01 \x01(\x0b\x32\x1c.idl.core.obj.ObjectMetadata\x12+\n\tgame_type\x18\x02 \x01(\x0e\x32\x18.idl.game.model.GameType\x12\x31\n\x0cparticipants\x18\x03 \x03(\x0b\x32\x1b.idl.game.model.Participant\x12(\n\x05state\x18\x04 \x01(\x0b\x32\x19.idl.game.model.GameState\x12\x17\n\x0flast_command_id\x18\x05 \x01(\tB2Z0boardgamez/contracts/gen/go/idl/game/obj;gameobjb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1aidl/game/obj/session.proto\x12\x0cidl.game.obj\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\"idl/core/obj/object_metadata.proto\x1a\x1fidl/game/model/game_state.proto\x1a\x1eidl/game/model/game_type.proto\x1a idl/game/model/participant.proto\"\x8c\x02\n\nSessionObj\x12.\n\x08metadata\x18\x01 \x01(\x0b\x32\x1c.idl.core.obj.ObjectMetadata\x12+\n\tgame_type\x18\x02 \x01(\x0e\x32\x18.idl.game.model.GameType\x12\x31\n\x0cparticipants\x18\x03 \x03(\x0b\x32\x1b.idl.game.model.Participant\x12(\n\x05state\x18\x04 \x01(\x0b\x32\x19.idl.game.model.GameState\x12\x17\n\x0flast_command_id\x18\x05 \x01(\t\x12+\n\x07\x61\x63ts_by\x18\x06 \x01(\x0b\x32\x1a.google.protobuf.TimestampB2Z0boardgamez/contracts/gen/go/idl/game/obj;gameobjb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -36,6 +37,6 @@ _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'idl.game.obj.session_pb2', 
 if not _descriptor._USE_C_DESCRIPTORS:
   _globals['DESCRIPTOR']._loaded_options = None
   _globals['DESCRIPTOR']._serialized_options = b'Z0boardgamez/contracts/gen/go/idl/game/obj;gameobj'
-  _globals['_SESSIONOBJ']._serialized_start=180
-  _globals['_SESSIONOBJ']._serialized_end=403
+  _globals['_SESSIONOBJ']._serialized_start=213
+  _globals['_SESSIONOBJ']._serialized_end=481
 # @@protoc_insertion_point(module_scope)

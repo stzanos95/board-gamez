@@ -6,6 +6,8 @@
 
 import type { GenFile, GenMessage } from "@bufbuild/protobuf/codegenv1";
 import { fileDesc, messageDesc } from "@bufbuild/protobuf/codegenv1";
+import type { Timestamp } from "@bufbuild/protobuf/wkt";
+import { file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
 import type { ObjectMetadata } from "../../core/obj/object_metadata_pb";
 import { file_idl_core_obj_object_metadata } from "../../core/obj/object_metadata_pb";
 import type { GameState } from "../model/game_state_pb";
@@ -20,7 +22,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file idl/game/obj/session.proto.
  */
 export const file_idl_game_obj_session: GenFile = /*@__PURE__*/
-  fileDesc("ChppZGwvZ2FtZS9vYmovc2Vzc2lvbi5wcm90bxIMaWRsLmdhbWUub2JqIt8BCgpTZXNzaW9uT2JqEi4KCG1ldGFkYXRhGAEgASgLMhwuaWRsLmNvcmUub2JqLk9iamVjdE1ldGFkYXRhEisKCWdhbWVfdHlwZRgCIAEoDjIYLmlkbC5nYW1lLm1vZGVsLkdhbWVUeXBlEjEKDHBhcnRpY2lwYW50cxgDIAMoCzIbLmlkbC5nYW1lLm1vZGVsLlBhcnRpY2lwYW50EigKBXN0YXRlGAQgASgLMhkuaWRsLmdhbWUubW9kZWwuR2FtZVN0YXRlEhcKD2xhc3RfY29tbWFuZF9pZBgFIAEoCUIyWjBib2FyZGdhbWV6L2NvbnRyYWN0cy9nZW4vZ28vaWRsL2dhbWUvb2JqO2dhbWVvYmpiBnByb3RvMw", [file_idl_core_obj_object_metadata, file_idl_game_model_game_state, file_idl_game_model_game_type, file_idl_game_model_participant]);
+  fileDesc("ChppZGwvZ2FtZS9vYmovc2Vzc2lvbi5wcm90bxIMaWRsLmdhbWUub2JqIowCCgpTZXNzaW9uT2JqEi4KCG1ldGFkYXRhGAEgASgLMhwuaWRsLmNvcmUub2JqLk9iamVjdE1ldGFkYXRhEisKCWdhbWVfdHlwZRgCIAEoDjIYLmlkbC5nYW1lLm1vZGVsLkdhbWVUeXBlEjEKDHBhcnRpY2lwYW50cxgDIAMoCzIbLmlkbC5nYW1lLm1vZGVsLlBhcnRpY2lwYW50EigKBXN0YXRlGAQgASgLMhkuaWRsLmdhbWUubW9kZWwuR2FtZVN0YXRlEhcKD2xhc3RfY29tbWFuZF9pZBgFIAEoCRIrCgdhY3RzX2J5GAYgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcEIyWjBib2FyZGdhbWV6L2NvbnRyYWN0cy9nZW4vZ28vaWRsL2dhbWUvb2JqO2dhbWVvYmpiBnByb3RvMw", [file_google_protobuf_timestamp, file_idl_core_obj_object_metadata, file_idl_game_model_game_state, file_idl_game_model_game_type, file_idl_game_model_participant]);
 
 /**
  * One stored game.
@@ -61,6 +63,13 @@ export type SessionObj = Message<"idl.game.obj.SessionObj"> & {
    * @generated from field: string last_command_id = 5;
    */
   lastCommandId: string;
+
+  /**
+   * Unset when the state has no deadline.
+   *
+   * @generated from field: google.protobuf.Timestamp acts_by = 6;
+   */
+  actsBy?: Timestamp;
 };
 
 /**

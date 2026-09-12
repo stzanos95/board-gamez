@@ -1,0 +1,25 @@
+// When a stored game's state runs out.
+
+syntax = "proto3";
+
+package idl.game.obj;
+
+import "google/protobuf/timestamp.proto";
+import "idl/core/obj/object_metadata.proto";
+
+option go_package = "boardgamez/contracts/gen/go/idl/game/obj;gameobj";
+
+// One game's deadline, stored apart from the game so that every deadline that
+// has passed can be found without reading every game.
+//
+// The identity and the version are the game's: the row is the stored game
+// reduced to when it runs out, so a game has at most one. It is written with
+// the game whenever the stored state carries `acts_by`, and removed by the
+// write that stores a state without one.
+//
+// A deadline is acted on only while the game is still at `metadata.version`.
+// One found against a later version belongs to a state that no longer stands.
+message DeadlineObj {
+  idl.core.obj.ObjectMetadata metadata = 1;
+  google.protobuf.Timestamp acts_by = 2;
+}

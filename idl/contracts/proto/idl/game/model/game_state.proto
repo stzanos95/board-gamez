@@ -5,17 +5,29 @@ syntax = "proto3";
 package idl.game.model;
 
 import "google/protobuf/any.proto";
+import "google/protobuf/duration.proto";
 import "idl/game/model/game_result.proto";
 
 option go_package = "boardgamez/contracts/gen/go/idl/game/model;gamemodel";
 
-// One game, and the two things about it that are true whatever game it is.
+// One game, and the things about it that are true whatever game it is.
 //
 // `payload` is the game's own state. It is kept and handed back to that game's
 // rules unopened, and only that game can read it. Its type is what `Any` carries
 // and is not repeated here.
+//
+// `participants_to_act` is everyone who may act on this state. A game of turns
+// names one; a game where others may react to what was just done names each of
+// them. Whichever of them acts first produces the next state, and the rest act
+// on that one. Empty once the game has a result.
+//
+// `acts_within` is how long this state stands with nobody acting before the
+// rules are asked what it becomes. It is measured from the write that stores
+// the state, and each state the rules answer carries its own. Unset when the
+// state stands until someone acts.
 message GameState {
   google.protobuf.Any payload = 1;
-  uint32 participant_to_act = 2;  // Who may act next; 0 once the game has a result.
-  GameResult result = 3;          // Unset while the game is still being played.
+  repeated uint32 participants_to_act = 2;
+  GameResult result = 3;  // Unset while the game is still being played.
+  google.protobuf.Duration acts_within = 4;
 }

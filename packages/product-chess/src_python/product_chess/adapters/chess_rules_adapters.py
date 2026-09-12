@@ -21,7 +21,7 @@ from idl.game.model.participant_pb2 import ParticipantRole
 
 from product_chess.adapters.chess_seat_adapters import ChessSeatAdapters
 
-NOBODY_TO_ACT = 0
+NOBODY_TO_ACT: tuple[int, ...] = ()
 
 
 class ChessRulesAdapters:
@@ -105,16 +105,17 @@ class ChessRulesAdapters:
     def engine_to_game_state(engine: ChessEngine) -> GameState:
         """
         The game as the platform holds it: the whole chess game packed, who acts
-        next, and the result once there is one.
+        next, and the result once there is one. Chess has no clock here, so no
+        state runs out.
         """
         result = engine.result
         return GameState(
             payload=ChessRulesAdapters.chess_game_to_payload(
                 GameAdapters.engine_to_chess_game(engine)
             ),
-            participant_to_act=NOBODY_TO_ACT
-            if engine.is_over
-            else engine.active_player.participant,
+            participants_to_act=(
+                NOBODY_TO_ACT if engine.is_over else (engine.active_player.participant,)
+            ),
             result=(
                 None
                 if result is None
@@ -170,7 +171,15 @@ class ChessRulesAdapters:
         return tuple(request.participant_roles)
 
     @staticmethod
+    def create_request_to_seed(request: rules_pb2.CreateGameRequest) -> int:
+        return request.seed
+
+    @staticmethod
     def apply_request_to_state(request: rules_pb2.ApplyActionRequest) -> GameState:
+        return request.state
+
+    @staticmethod
+    def expire_request_to_state(request: rules_pb2.ExpireDeadlineRequest) -> GameState:
         return request.state
 
     @staticmethod
@@ -200,6 +209,15 @@ class ChessRulesAdapters:
         An unset state is how the schema says the action was not legal.
         """
         return rules_pb2.ApplyActionResponse(state=state)
+
+    @staticmethod
+    def game_state_to_expire_response(
+        state: GameState | None,
+    ) -> rules_pb2.ExpireDeadlineResponse:
+        """
+        An unset state is how the schema says the state carried no deadline.
+        """
+        return rules_pb2.ExpireDeadlineResponse(state=state)
 
     @staticmethod
     def view_to_view_response(view: any_pb2.Any) -> rules_pb2.ReadViewResponse:

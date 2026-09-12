@@ -16,8 +16,11 @@ One method per direction, named for it. A caller reaches for the one it needs an
 sees the types on both sides; nothing here is chosen at run time.
 """
 
+from datetime import datetime
+
 from core.protobuf.message_utils import ProtobufMessageUtils
 from google.protobuf import any_pb2
+from google.protobuf.timestamp_pb2 import Timestamp
 from idl.core.obj.object_metadata_pb2 import ObjectMetadata
 from idl.game.dto import command_pb2, session_pb2
 from idl.game.model.command_result_pb2 import CommandResult
@@ -222,6 +225,7 @@ class SessionAdapters:
             participants=session.participants,
             state=session.state,
             last_command_id=session.last_command_id,
+            acts_by=session.acts_by if session.HasField("acts_by") else None,
         )
 
     @staticmethod
@@ -233,7 +237,28 @@ class SessionAdapters:
             state=stored.state,
             last_command_id=stored.last_command_id,
             version=stored.metadata.version,
+            acts_by=stored.acts_by if stored.HasField("acts_by") else None,
         )
+
+    # --- a state and the time it was written, to when it runs out -----------
+
+    @staticmethod
+    def state_to_acts_by(state: GameState, written_at: datetime) -> Timestamp | None:
+        """
+        The instant the state's `acts_within` runs out, measured from this
+        write, or None when the state carries none.
+        """
+        if not state.HasField("acts_within"):
+            return None
+        acts_by = Timestamp()
+        acts_by.FromDatetime(written_at + state.acts_within.ToTimedelta())
+        return acts_by
+
+    @staticmethod
+    def datetime_to_timestamp(instant: datetime) -> Timestamp:
+        timestamp = Timestamp()
+        timestamp.FromDatetime(instant)
+        return timestamp
 
     # --- a session, to what one participant is answered with ----------------
 
@@ -254,9 +279,13 @@ class SessionAdapters:
             participant=participant,
             state=GameState(
                 payload=projected_payload,
-                participant_to_act=session.state.participant_to_act,
+                participants_to_act=session.state.participants_to_act,
                 result=session.state.result if session.state.HasField("result") else None,
+                acts_within=(
+                    session.state.acts_within if session.state.HasField("acts_within") else None
+                ),
             ),
             last_command_id=session.last_command_id,
             version=session.version,
+            acts_by=session.acts_by if session.HasField("acts_by") else None,
         )

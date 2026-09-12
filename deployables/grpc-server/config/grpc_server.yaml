@@ -49,6 +49,10 @@ game:
       port: 6379
       database: 0
       key_prefix: "board-gamez"
+  # How often games whose state has run out are looked for. A state is handed
+  # to its rules on the first look after its deadline.
+  deadlines:
+    poll_interval_seconds: 1.0
 
 # Where every write that succeeds is published as an event. `queue` selects, and
 # the section it names must be present.

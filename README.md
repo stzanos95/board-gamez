@@ -100,7 +100,7 @@ OpenAPI document because all three are generated from one schema.
 
 ```bash
 ./idl/scripts/generate.sh   # rewrite idl/contracts/gen from idl/contracts/proto
-./idl/scripts/check.sh      # lint, format, regenerate, and refuse any drift
+./idl/scripts/check.sh      # lint, regenerate, and refuse any drift
 ```
 
 `idl/contracts/gen` is committed, so a consumer needs the schema and not the

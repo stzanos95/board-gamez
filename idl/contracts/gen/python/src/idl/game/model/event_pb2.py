@@ -27,7 +27,7 @@ from idl.game.model import game_type_pb2 as idl_dot_game_dot_model_dot_game__typ
 from idl.game.model import participant_pb2 as idl_dot_game_dot_model_dot_participant__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1aidl/game/model/event.proto\x12\x0eidl.game.model\x1a\x19google/protobuf/any.proto\x1a\x1eidl/game/model/game_type.proto\x1a idl/game/model/participant.proto\"\x95\x01\n\x0eSessionStarted\x12\x12\n\nsession_id\x18\x01 \x01(\t\x12+\n\tgame_type\x18\x02 \x01(\x0e\x32\x18.idl.game.model.GameType\x12\x31\n\x0cparticipants\x18\x03 \x03(\x0b\x32\x1b.idl.game.model.Participant\x12\x0f\n\x07version\x18\x04 \x01(\x04\"\x95\x01\n\x0e\x43ommandApplied\x12\x12\n\nsession_id\x18\x01 \x01(\t\x12\x13\n\x0bparticipant\x18\x02 \x01(\r\x12\x12\n\ncommand_id\x18\x03 \x01(\t\x12$\n\x06\x61\x63tion\x18\x04 \x01(\x0b\x32\x14.google.protobuf.Any\x12\x0f\n\x07is_over\x18\x05 \x01(\x08\x12\x0f\n\x07version\x18\x06 \x01(\x04\"a\n\x14ParticipantWithdrawn\x12\x12\n\nsession_id\x18\x01 \x01(\t\x12\x13\n\x0bparticipant\x18\x02 \x01(\r\x12\x0f\n\x07is_over\x18\x03 \x01(\x08\x12\x0f\n\x07version\x18\x04 \x01(\x04\"5\n\x0eSessionChanged\x12\x12\n\nsession_id\x18\x01 \x01(\t\x12\x0f\n\x07version\x18\x02 \x01(\x04\x42\x36Z4boardgamez/contracts/gen/go/idl/game/model;gamemodelb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1aidl/game/model/event.proto\x12\x0eidl.game.model\x1a\x19google/protobuf/any.proto\x1a\x1eidl/game/model/game_type.proto\x1a idl/game/model/participant.proto\"\xa3\x01\n\x0eSessionStarted\x12\x12\n\nsession_id\x18\x01 \x01(\t\x12+\n\tgame_type\x18\x02 \x01(\x0e\x32\x18.idl.game.model.GameType\x12\x31\n\x0cparticipants\x18\x03 \x03(\x0b\x32\x1b.idl.game.model.Participant\x12\x0f\n\x07version\x18\x04 \x01(\x04\x12\x0c\n\x04seed\x18\x05 \x01(\x04\"\x95\x01\n\x0e\x43ommandApplied\x12\x12\n\nsession_id\x18\x01 \x01(\t\x12\x13\n\x0bparticipant\x18\x02 \x01(\r\x12\x12\n\ncommand_id\x18\x03 \x01(\t\x12$\n\x06\x61\x63tion\x18\x04 \x01(\x0b\x32\x14.google.protobuf.Any\x12\x0f\n\x07is_over\x18\x05 \x01(\x08\x12\x0f\n\x07version\x18\x06 \x01(\x04\"a\n\x14ParticipantWithdrawn\x12\x12\n\nsession_id\x18\x01 \x01(\t\x12\x13\n\x0bparticipant\x18\x02 \x01(\r\x12\x0f\n\x07is_over\x18\x03 \x01(\x08\x12\x0f\n\x07version\x18\x04 \x01(\x04\"G\n\x0f\x44\x65\x61\x64lineExpired\x12\x12\n\nsession_id\x18\x01 \x01(\t\x12\x0f\n\x07is_over\x18\x02 \x01(\x08\x12\x0f\n\x07version\x18\x03 \x01(\x04\"5\n\x0eSessionChanged\x12\x12\n\nsession_id\x18\x01 \x01(\t\x12\x0f\n\x07version\x18\x02 \x01(\x04\x42\x36Z4boardgamez/contracts/gen/go/idl/game/model;gamemodelb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -36,11 +36,13 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['DESCRIPTOR']._loaded_options = None
   _globals['DESCRIPTOR']._serialized_options = b'Z4boardgamez/contracts/gen/go/idl/game/model;gamemodel'
   _globals['_SESSIONSTARTED']._serialized_start=140
-  _globals['_SESSIONSTARTED']._serialized_end=289
-  _globals['_COMMANDAPPLIED']._serialized_start=292
-  _globals['_COMMANDAPPLIED']._serialized_end=441
-  _globals['_PARTICIPANTWITHDRAWN']._serialized_start=443
-  _globals['_PARTICIPANTWITHDRAWN']._serialized_end=540
-  _globals['_SESSIONCHANGED']._serialized_start=542
-  _globals['_SESSIONCHANGED']._serialized_end=595
+  _globals['_SESSIONSTARTED']._serialized_end=303
+  _globals['_COMMANDAPPLIED']._serialized_start=306
+  _globals['_COMMANDAPPLIED']._serialized_end=455
+  _globals['_PARTICIPANTWITHDRAWN']._serialized_start=457
+  _globals['_PARTICIPANTWITHDRAWN']._serialized_end=554
+  _globals['_DEADLINEEXPIRED']._serialized_start=556
+  _globals['_DEADLINEEXPIRED']._serialized_end=627
+  _globals['_SESSIONCHANGED']._serialized_start=629
+  _globals['_SESSIONCHANGED']._serialized_end=682
 # @@protoc_insertion_point(module_scope)

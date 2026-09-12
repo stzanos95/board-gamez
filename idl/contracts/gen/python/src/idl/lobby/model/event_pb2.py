@@ -26,7 +26,7 @@ from google.protobuf import any_pb2 as google_dot_protobuf_dot_any__pb2
 from idl.game.model import game_type_pb2 as idl_dot_game_dot_model_dot_game__type__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1bidl/lobby/model/event.proto\x12\x0fidl.lobby.model\x1a\x19google/protobuf/any.proto\x1a\x1eidl/game/model/game_type.proto\"q\n\x0cTableCreated\x12\x10\n\x08table_id\x18\x01 \x01(\t\x12+\n\tgame_type\x18\x02 \x01(\x0e\x32\x18.idl.game.model.GameType\x12\x11\n\tplayer_id\x18\x03 \x01(\t\x12\x0f\n\x07version\x18\x04 \x01(\x04\"D\n\x0cPlayerJoined\x12\x10\n\x08table_id\x18\x01 \x01(\t\x12\x11\n\tplayer_id\x18\x02 \x01(\t\x12\x0f\n\x07version\x18\x03 \x01(\x04\"z\n\tSeatTaken\x12\x10\n\x08table_id\x18\x01 \x01(\t\x12\x11\n\tplayer_id\x18\x02 \x01(\t\x12\x13\n\x0bseat_number\x18\x03 \x01(\r\x12\"\n\x04role\x18\x04 \x01(\x0b\x32\x14.google.protobuf.Any\x12\x0f\n\x07version\x18\x05 \x01(\x04\"X\n\x0bSeatVacated\x12\x10\n\x08table_id\x18\x01 \x01(\t\x12\x11\n\tplayer_id\x18\x02 \x01(\t\x12\x13\n\x0bseat_number\x18\x03 \x01(\r\x12\x0f\n\x07version\x18\x04 \x01(\x04\"W\n\nPlayerLeft\x12\x10\n\x08table_id\x18\x01 \x01(\t\x12\x11\n\tplayer_id\x18\x02 \x01(\t\x12\x13\n\x0bseat_number\x18\x03 \x01(\r\x12\x0f\n\x07version\x18\x04 \x01(\x04\"\x1f\n\x0bTableClosed\x12\x10\n\x08table_id\x18\x01 \x01(\t\"1\n\x0cTableChanged\x12\x10\n\x08table_id\x18\x01 \x01(\t\x12\x0f\n\x07version\x18\x02 \x01(\x04\x42\x38Z6boardgamez/contracts/gen/go/idl/lobby/model;lobbymodelb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1bidl/lobby/model/event.proto\x12\x0fidl.lobby.model\x1a\x19google/protobuf/any.proto\x1a\x1eidl/game/model/game_type.proto\"q\n\x0cTableCreated\x12\x10\n\x08table_id\x18\x01 \x01(\t\x12+\n\tgame_type\x18\x02 \x01(\x0e\x32\x18.idl.game.model.GameType\x12\x11\n\tplayer_id\x18\x03 \x01(\t\x12\x0f\n\x07version\x18\x04 \x01(\x04\"D\n\x0cPlayerJoined\x12\x10\n\x08table_id\x18\x01 \x01(\t\x12\x11\n\tplayer_id\x18\x02 \x01(\t\x12\x0f\n\x07version\x18\x03 \x01(\x04\"z\n\tSeatTaken\x12\x10\n\x08table_id\x18\x01 \x01(\t\x12\x11\n\tplayer_id\x18\x02 \x01(\t\x12\x13\n\x0bseat_number\x18\x03 \x01(\r\x12\"\n\x04role\x18\x04 \x01(\x0b\x32\x14.google.protobuf.Any\x12\x0f\n\x07version\x18\x05 \x01(\x04\"X\n\x0bSeatVacated\x12\x10\n\x08table_id\x18\x01 \x01(\t\x12\x11\n\tplayer_id\x18\x02 \x01(\t\x12\x13\n\x0bseat_number\x18\x03 \x01(\r\x12\x0f\n\x07version\x18\x04 \x01(\x04\"W\n\nPlayerLeft\x12\x10\n\x08table_id\x18\x01 \x01(\t\x12\x11\n\tplayer_id\x18\x02 \x01(\t\x12\x13\n\x0bseat_number\x18\x03 \x01(\r\x12\x0f\n\x07version\x18\x04 \x01(\x04\"1\n\x0cTableStarted\x12\x10\n\x08table_id\x18\x01 \x01(\t\x12\x0f\n\x07version\x18\x02 \x01(\x04\"\x1f\n\x0bTableClosed\x12\x10\n\x08table_id\x18\x01 \x01(\t\"1\n\x0cTableChanged\x12\x10\n\x08table_id\x18\x01 \x01(\t\x12\x0f\n\x07version\x18\x02 \x01(\x04\x42\x38Z6boardgamez/contracts/gen/go/idl/lobby/model;lobbymodelb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -44,8 +44,10 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_SEATVACATED']._serialized_end=504
   _globals['_PLAYERLEFT']._serialized_start=506
   _globals['_PLAYERLEFT']._serialized_end=593
-  _globals['_TABLECLOSED']._serialized_start=595
-  _globals['_TABLECLOSED']._serialized_end=626
-  _globals['_TABLECHANGED']._serialized_start=628
-  _globals['_TABLECHANGED']._serialized_end=677
+  _globals['_TABLESTARTED']._serialized_start=595
+  _globals['_TABLESTARTED']._serialized_end=644
+  _globals['_TABLECLOSED']._serialized_start=646
+  _globals['_TABLECLOSED']._serialized_end=677
+  _globals['_TABLECHANGED']._serialized_start=679
+  _globals['_TABLECHANGED']._serialized_end=728
 # @@protoc_insertion_point(module_scope)

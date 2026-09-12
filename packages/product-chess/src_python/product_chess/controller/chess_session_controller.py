@@ -84,8 +84,8 @@ class ChessSessionController:
 
         The caller must hold one of the table's seats, and every seat must be
         taken. A table already playing a game is answered that game. None comes
-        back when the table is not a chess table, is not full, or the caller is
-        not seated at it.
+        back when the table is not a chess table, is not full, is not waiting
+        for players, or the caller is not seated at it.
         """
         table = await self._tables.read_table(table_id)
         if table is None or table.game_type != GameType.GAME_TYPE_CHESS:
@@ -95,9 +95,7 @@ class ChessSessionController:
             return None
         if not ChessSessionController._is_seated(participants, player_id):
             return None
-        view = await self._sessions.create_session(
-            table_id, GameType.GAME_TYPE_CHESS, participants, player_id
-        )
+        view = await self._seats.start_game(table_id, participants, player_id)
         if view is None:
             return None
         return ChessSessionAdapters.session_view_to_chess_session(view)

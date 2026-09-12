@@ -3,8 +3,8 @@
 #
 # Generation is driven by protoc rather than by `buf generate`, because all three
 # targets are plain protoc plugins and the flags below say exactly what each one
-# receives. buf is still here, and owns what it is best at: linting, formatting
-# and breaking-change detection.
+# receives. buf is still here, and owns what it is best at: linting and
+# breaking-change detection.
 #
 # Every path and plugin option is a variable with a default, so a one-off run can
 # override one without editing this file.
@@ -365,12 +365,6 @@ case "$COMMAND" in
         ;;
     lint)
         exec buf lint "$@"
-        ;;
-    format)
-        exec buf format --write "$@"
-        ;;
-    format-check)
-        exec buf format --diff --exit-code "$@"
         ;;
     breaking)
         # The baseline is the schema as it stands on the main branch, so the

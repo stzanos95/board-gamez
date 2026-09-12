@@ -41,6 +41,8 @@ game:
       port: 6379
       database: 0
       key_prefix: "board-gamez-test"
+  deadlines:
+    poll_interval_seconds: 0.5
 queue:
   queue: redis
   redis_config:

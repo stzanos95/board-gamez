@@ -18,9 +18,13 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file idl/game/model/event.proto.
  */
 export const file_idl_game_model_event: GenFile = /*@__PURE__*/
-  fileDesc("ChppZGwvZ2FtZS9tb2RlbC9ldmVudC5wcm90bxIOaWRsLmdhbWUubW9kZWwilQEKDlNlc3Npb25TdGFydGVkEhIKCnNlc3Npb25faWQYASABKAkSKwoJZ2FtZV90eXBlGAIgASgOMhguaWRsLmdhbWUubW9kZWwuR2FtZVR5cGUSMQoMcGFydGljaXBhbnRzGAMgAygLMhsuaWRsLmdhbWUubW9kZWwuUGFydGljaXBhbnQSDwoHdmVyc2lvbhgEIAEoBCKVAQoOQ29tbWFuZEFwcGxpZWQSEgoKc2Vzc2lvbl9pZBgBIAEoCRITCgtwYXJ0aWNpcGFudBgCIAEoDRISCgpjb21tYW5kX2lkGAMgASgJEiQKBmFjdGlvbhgEIAEoCzIULmdvb2dsZS5wcm90b2J1Zi5BbnkSDwoHaXNfb3ZlchgFIAEoCBIPCgd2ZXJzaW9uGAYgASgEImEKFFBhcnRpY2lwYW50V2l0aGRyYXduEhIKCnNlc3Npb25faWQYASABKAkSEwoLcGFydGljaXBhbnQYAiABKA0SDwoHaXNfb3ZlchgDIAEoCBIPCgd2ZXJzaW9uGAQgASgEIjUKDlNlc3Npb25DaGFuZ2VkEhIKCnNlc3Npb25faWQYASABKAkSDwoHdmVyc2lvbhgCIAEoBEI2WjRib2FyZGdhbWV6L2NvbnRyYWN0cy9nZW4vZ28vaWRsL2dhbWUvbW9kZWw7Z2FtZW1vZGVsYgZwcm90bzM", [file_google_protobuf_any, file_idl_game_model_game_type, file_idl_game_model_participant]);
+  fileDesc("ChppZGwvZ2FtZS9tb2RlbC9ldmVudC5wcm90bxIOaWRsLmdhbWUubW9kZWwiowEKDlNlc3Npb25TdGFydGVkEhIKCnNlc3Npb25faWQYASABKAkSKwoJZ2FtZV90eXBlGAIgASgOMhguaWRsLmdhbWUubW9kZWwuR2FtZVR5cGUSMQoMcGFydGljaXBhbnRzGAMgAygLMhsuaWRsLmdhbWUubW9kZWwuUGFydGljaXBhbnQSDwoHdmVyc2lvbhgEIAEoBBIMCgRzZWVkGAUgASgEIpUBCg5Db21tYW5kQXBwbGllZBISCgpzZXNzaW9uX2lkGAEgASgJEhMKC3BhcnRpY2lwYW50GAIgASgNEhIKCmNvbW1hbmRfaWQYAyABKAkSJAoGYWN0aW9uGAQgASgLMhQuZ29vZ2xlLnByb3RvYnVmLkFueRIPCgdpc19vdmVyGAUgASgIEg8KB3ZlcnNpb24YBiABKAQiYQoUUGFydGljaXBhbnRXaXRoZHJhd24SEgoKc2Vzc2lvbl9pZBgBIAEoCRITCgtwYXJ0aWNpcGFudBgCIAEoDRIPCgdpc19vdmVyGAMgASgIEg8KB3ZlcnNpb24YBCABKAQiRwoPRGVhZGxpbmVFeHBpcmVkEhIKCnNlc3Npb25faWQYASABKAkSDwoHaXNfb3ZlchgCIAEoCBIPCgd2ZXJzaW9uGAMgASgEIjUKDlNlc3Npb25DaGFuZ2VkEhIKCnNlc3Npb25faWQYASABKAkSDwoHdmVyc2lvbhgCIAEoBEI2WjRib2FyZGdhbWV6L2NvbnRyYWN0cy9nZW4vZ28vaWRsL2dhbWUvbW9kZWw7Z2FtZW1vZGVsYgZwcm90bzM", [file_google_protobuf_any, file_idl_game_model_game_type, file_idl_game_model_participant]);
 
 /**
+ * `seed` is what the game's chance was taken from. With the actions that
+ * follow it is the whole game, hidden hands included, so it is answered to no
+ * viewer.
+ *
  * @generated from message idl.game.model.SessionStarted
  */
 export type SessionStarted = Message<"idl.game.model.SessionStarted"> & {
@@ -43,6 +47,11 @@ export type SessionStarted = Message<"idl.game.model.SessionStarted"> & {
    * @generated from field: uint64 version = 4;
    */
   version: bigint;
+
+  /**
+   * @generated from field: uint64 seed = 5;
+   */
+  seed: bigint;
 };
 
 /**
@@ -134,6 +143,37 @@ export const ParticipantWithdrawnSchema: GenMessage<ParticipantWithdrawn> = /*@_
   messageDesc(file_idl_game_model_event, 2);
 
 /**
+ * The state stood until its deadline, and the rules replaced it.
+ *
+ * @generated from message idl.game.model.DeadlineExpired
+ */
+export type DeadlineExpired = Message<"idl.game.model.DeadlineExpired"> & {
+  /**
+   * @generated from field: string session_id = 1;
+   */
+  sessionId: string;
+
+  /**
+   * True when the expiry gave the game its result.
+   *
+   * @generated from field: bool is_over = 2;
+   */
+  isOver: boolean;
+
+  /**
+   * @generated from field: uint64 version = 3;
+   */
+  version: bigint;
+};
+
+/**
+ * Describes the message idl.game.model.DeadlineExpired.
+ * Use `create(DeadlineExpiredSchema)` to create a new message.
+ */
+export const DeadlineExpiredSchema: GenMessage<DeadlineExpired> = /*@__PURE__*/
+  messageDesc(file_idl_game_model_event, 3);
+
+/**
  * The game changed, and this is its version now.
  *
  * Carries no state. A reader holding an earlier version reads the game again
@@ -159,5 +199,5 @@ export type SessionChanged = Message<"idl.game.model.SessionChanged"> & {
  * Use `create(SessionChangedSchema)` to create a new message.
  */
 export const SessionChangedSchema: GenMessage<SessionChanged> = /*@__PURE__*/
-  messageDesc(file_idl_game_model_event, 3);
+  messageDesc(file_idl_game_model_event, 4);
 

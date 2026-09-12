@@ -16,6 +16,8 @@ from idl.game.dto.rules_pb2 import (
     ApplyActionResponse,
     CreateGameRequest,
     CreateGameResponse,
+    ExpireDeadlineRequest,
+    ExpireDeadlineResponse,
     ReadBoundsRequest,
     ReadBoundsResponse,
     ReadViewRequest,
@@ -43,7 +45,8 @@ class GrpcRulesService(RulesServiceServicer):
         context: grpc.aio.ServicerContext[CreateGameRequest, CreateGameResponse],
     ) -> CreateGameResponse:
         state = await self._rules.create_game(
-            ChessRulesAdapters.create_request_to_participant_roles(request)
+            ChessRulesAdapters.create_request_to_participant_roles(request),
+            ChessRulesAdapters.create_request_to_seed(request),
         )
         return ChessRulesAdapters.game_state_to_create_response(state)
 
@@ -68,6 +71,16 @@ class GrpcRulesService(RulesServiceServicer):
             ChessRulesAdapters.withdraw_request_to_participant(request),
         )
         return ChessRulesAdapters.game_state_to_withdraw_response(state)
+
+    async def ExpireDeadline(
+        self,
+        request: ExpireDeadlineRequest,
+        context: grpc.aio.ServicerContext[ExpireDeadlineRequest, ExpireDeadlineResponse],
+    ) -> ExpireDeadlineResponse:
+        state = await self._rules.expire_deadline(
+            ChessRulesAdapters.expire_request_to_state(request)
+        )
+        return ChessRulesAdapters.game_state_to_expire_response(state)
 
     async def ReadView(
         self,

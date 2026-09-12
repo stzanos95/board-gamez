@@ -17,9 +17,15 @@ option go_package = "boardgamez/contracts/gen/go/idl/game/dto;gamedto";
 // One entry per participant, numbered 1 through N with no gap, each carrying
 // the role it was seated with. `participant_count` is not read; the count is
 // the length of `participant_roles`.
+//
+// `seed` is what every draw of chance in the game is taken from: a shuffle, a
+// roll, a deal. Two games created for the same roster with the same seed are
+// the same game, and a state carries whatever the sequence needs to continue.
+// A game with no chance in it does not read it.
 message CreateGameRequest {
   uint32 participant_count = 1;
   repeated idl.game.model.ParticipantRole participant_roles = 2;
+  uint64 seed = 3;
 }
 
 message CreateGameResponse {
@@ -62,6 +68,20 @@ message WithdrawParticipantRequest {
 
 message WithdrawParticipantResponse {
   idl.game.model.GameState state = 1;  // Unset when the participant is not in the game.
+}
+
+// What a state becomes when its deadline passes with nobody acting.
+//
+// Asked when `acts_within` has run out on a state no write has replaced, and
+// never once the game has a result. What passing means is the game's own: a
+// fight resolves, a card is drawn for the player who did not, a side loses on
+// time. The state answered carries the next deadline, if there is one.
+message ExpireDeadlineRequest {
+  idl.game.model.GameState state = 1;
+}
+
+message ExpireDeadlineResponse {
+  idl.game.model.GameState state = 1;  // Unset when the state carries no deadline.
 }
 
 message ReadBoundsRequest {}

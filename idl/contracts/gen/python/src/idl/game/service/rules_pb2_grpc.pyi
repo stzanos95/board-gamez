@@ -49,6 +49,11 @@ class RulesServiceStub:
         idl.game.dto.rules_pb2.WithdrawParticipantResponse,
     ]
 
+    ExpireDeadline: grpc.UnaryUnaryMultiCallable[
+        idl.game.dto.rules_pb2.ExpireDeadlineRequest,
+        idl.game.dto.rules_pb2.ExpireDeadlineResponse,
+    ]
+
     ReadBounds: grpc.UnaryUnaryMultiCallable[
         idl.game.dto.rules_pb2.ReadBoundsRequest,
         idl.game.dto.rules_pb2.ReadBoundsResponse,
@@ -83,6 +88,11 @@ class RulesServiceAsyncStub:
     WithdrawParticipant: grpc.aio.UnaryUnaryMultiCallable[
         idl.game.dto.rules_pb2.WithdrawParticipantRequest,
         idl.game.dto.rules_pb2.WithdrawParticipantResponse,
+    ]
+
+    ExpireDeadline: grpc.aio.UnaryUnaryMultiCallable[
+        idl.game.dto.rules_pb2.ExpireDeadlineRequest,
+        idl.game.dto.rules_pb2.ExpireDeadlineResponse,
     ]
 
     ReadBounds: grpc.aio.UnaryUnaryMultiCallable[
@@ -128,6 +138,13 @@ class RulesServiceServicer(metaclass=abc.ABCMeta):
         request: idl.game.dto.rules_pb2.WithdrawParticipantRequest,
         context: _ServicerContext,
     ) -> typing.Union[idl.game.dto.rules_pb2.WithdrawParticipantResponse, collections.abc.Awaitable[idl.game.dto.rules_pb2.WithdrawParticipantResponse]]: ...
+
+    @abc.abstractmethod
+    def ExpireDeadline(
+        self,
+        request: idl.game.dto.rules_pb2.ExpireDeadlineRequest,
+        context: _ServicerContext,
+    ) -> typing.Union[idl.game.dto.rules_pb2.ExpireDeadlineResponse, collections.abc.Awaitable[idl.game.dto.rules_pb2.ExpireDeadlineResponse]]: ...
 
     @abc.abstractmethod
     def ReadBounds(

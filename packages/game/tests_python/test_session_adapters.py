@@ -35,7 +35,7 @@ def a_session() -> Session:
         id=SESSION_ID,
         game_type=GameType.GAME_TYPE_CHESS,
         participants=[Participant(number=PARTICIPANT, player_id=PLAYER_ID)],
-        state=GameState(payload=packed("whole"), participant_to_act=PARTICIPANT_TO_ACT),
+        state=GameState(payload=packed("whole"), participants_to_act=[PARTICIPANT_TO_ACT]),
         last_command_id=COMMAND_ID,
         version=VERSION,
     )
@@ -59,7 +59,7 @@ class ViewTest(unittest.TestCase):
 
         self.assertEqual(view.participant, PARTICIPANT)
         self.assertEqual(view.state.payload, packed("mine"))
-        self.assertEqual(view.state.participant_to_act, PARTICIPANT_TO_ACT)
+        self.assertEqual(list(view.state.participants_to_act), [PARTICIPANT_TO_ACT])
         self.assertEqual(view.version, VERSION)
         self.assertEqual(view.last_command_id, COMMAND_ID)
 
@@ -177,7 +177,7 @@ class HttpShapeTest(unittest.TestCase):
             SessionView(
                 id=SESSION_ID,
                 participant=PARTICIPANT,
-                state=GameState(payload=packed(WORD), participant_to_act=PARTICIPANT_TO_ACT),
+                state=GameState(payload=packed(WORD), participants_to_act=[PARTICIPANT_TO_ACT]),
                 version=VERSION,
             )
         )
@@ -187,4 +187,4 @@ class HttpShapeTest(unittest.TestCase):
         assert model.session is not None and model.session.state is not None
         self.assertEqual(model.session.id, SESSION_ID)
         self.assertEqual(model.session.version, str(VERSION))
-        self.assertEqual(model.session.state.participant_to_act, PARTICIPANT_TO_ACT)
+        self.assertEqual(model.session.state.participants_to_act, [PARTICIPANT_TO_ACT])
