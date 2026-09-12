@@ -1,0 +1,57 @@
+[project]
+name = "uno-game"
+version = "0.1.0"
+description = "The rules of UNO: the deck, the deal, what a card does, and how a game ends, with no input or output."
+requires-python = ">=3.13"
+dependencies = [
+    # The records the engine holds and answers: a card, a hand, a game, a view.
+    "board-gamez-idl",
+]
+
+# A relative path source rather than a workspace: each project here stands alone.
+[tool.uv.sources]
+board-gamez-idl = { path = "../../idl/contracts/gen/python", editable = true }
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src_python/uno"]
+
+[dependency-groups]
+# The ruff floor matches the rev pinned in .pre-commit-config.yaml, so the
+# hook, this environment and ./infra/scripts/lint.sh format identically.
+# protobuf ships no type information of its own, so the stubs are what keeps
+# every message here from being Any to a type checker.
+dev = ["pytest>=8.0", "mypy>=1.11", "ruff>=0.16.6", "types-protobuf>=5.28"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests_python"]
+pythonpath = ["src_python", "."]
+
+[tool.mypy]
+python_version = "3.13"
+strict = true
+# Rule 3 of the house style: never Any. This is what enforces it.
+disallow_any_explicit = true
+mypy_path = "src_python"
+files = ["src_python", "tests_python"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+src = ["src_python", "tests_python"]
+
+[tool.ruff.lint]
+preview = true
+explicit-preview-rules = true
+select = [
+    "E", "F", "I", "N", "UP", "B", "SIM", "RUF",
+    "TID251",   # banned imports — see below
+    "PLC0415",  # rule 1: no import outside the top level of a module
+    "PLR2004",  # rule 2: no magic value in a comparison
+]
+
+[tool.ruff.lint.flake8-tidy-imports.banned-api]
+"__future__.annotations" = { msg = "Annotations must stay real runtime objects — see the python-style skill, rule 1. Use a string forward ref such as -> \"UnoEngine\" instead." }

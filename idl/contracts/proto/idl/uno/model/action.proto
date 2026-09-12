@@ -1,0 +1,33 @@
+// What a player does on their turn.
+
+syntax = "proto3";
+
+package idl.uno.model;
+
+import "idl/uno/model/card.proto";
+
+option go_package = "boardgamez/contracts/gen/go/idl/uno/model;unomodel";
+
+// Playing one card from the hand onto the discard pile.
+//
+// `chosen_color` is set exactly when the card is a wild, and names the colour
+// the next player must follow.
+message CardPlay {
+  Card card = 1;
+  CardColor chosen_color = 2;
+}
+
+// Taking the top card of the draw pile into the hand.
+message CardDraw {}
+
+// Ending the turn without playing, allowed only after a draw.
+message TurnPass {}
+
+// One thing a player does: play a card, draw a card, or pass.
+message UnoAction {
+  oneof kind {
+    CardPlay play = 1;
+    CardDraw draw = 2;
+    TurnPass pass = 3;
+  }
+}

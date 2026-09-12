@@ -8,9 +8,10 @@ dependencies = [
     # implementation and its registration; the server only registers them.
     "lobby",
     "game",
-    # The one product served: the rules of chess the session layer asks
-    # in-process, and the service a browser plays chess through.
+    # The products served: the rules of each game the session layer asks
+    # in-process, and the service a browser plays that game through.
     "product-chess",
+    "product-uno",
     # The channel arguments both ends of a call are tuned with.
     "core",
     "grpcio>=1.68.1",
@@ -25,6 +26,7 @@ dependencies = [
 lobby = { path = "../../packages/lobby", editable = true }
 game = { path = "../../packages/game", editable = true }
 product-chess = { path = "../../packages/product-chess", editable = true }
+product-uno = { path = "../../packages/product-uno", editable = true }
 core = { path = "../../packages/core", editable = true }
 
 [project.scripts]

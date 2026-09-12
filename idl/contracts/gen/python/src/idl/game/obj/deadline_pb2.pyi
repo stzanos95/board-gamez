@@ -7,11 +7,9 @@ from typing import ClassVar as _ClassVar, Mapping as _Mapping, Optional as _Opti
 DESCRIPTOR: _descriptor.FileDescriptor
 
 class DeadlineObj(_message.Message):
-    __slots__ = ("metadata", "acts_by", "session_version")
+    __slots__ = ("metadata", "acts_by")
     METADATA_FIELD_NUMBER: _ClassVar[int]
     ACTS_BY_FIELD_NUMBER: _ClassVar[int]
-    SESSION_VERSION_FIELD_NUMBER: _ClassVar[int]
     metadata: _object_metadata_pb2.ObjectMetadata
     acts_by: _timestamp_pb2.Timestamp
-    session_version: int
-    def __init__(self, metadata: _Optional[_Union[_object_metadata_pb2.ObjectMetadata, _Mapping]] = ..., acts_by: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., session_version: _Optional[int] = ...) -> None: ...
+    def __init__(self, metadata: _Optional[_Union[_object_metadata_pb2.ObjectMetadata, _Mapping]] = ..., acts_by: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...

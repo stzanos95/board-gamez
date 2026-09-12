@@ -438,6 +438,150 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/google.rpc.Status'
+    /internal/product/uno/list/seat_choice:
+        post:
+            tags:
+                - UnoService
+            operationId: UnoService_ListSeatChoice
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/idl.uno.dto.ListSeatChoiceRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/idl.uno.dto.ListSeatChoiceResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/google.rpc.Status'
+    /internal/product/uno/play/action:
+        post:
+            tags:
+                - UnoService
+            operationId: UnoService_PlayAction
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/idl.uno.dto.PlayActionRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/idl.uno.dto.PlayActionResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/google.rpc.Status'
+    /internal/product/uno/read/game:
+        post:
+            tags:
+                - UnoService
+            operationId: UnoService_ReadGame
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/idl.uno.dto.ReadGameRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/idl.uno.dto.ReadGameResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/google.rpc.Status'
+    /internal/product/uno/read/table:
+        post:
+            tags:
+                - UnoService
+            operationId: UnoService_ReadTable
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/idl.uno.dto.ReadTableRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/idl.uno.dto.ReadTableResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/google.rpc.Status'
+    /internal/product/uno/start/game:
+        post:
+            tags:
+                - UnoService
+            operationId: UnoService_StartGame
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/idl.uno.dto.StartGameRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/idl.uno.dto.StartGameResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/google.rpc.Status'
+    /internal/product/uno/take/seat:
+        post:
+            tags:
+                - UnoService
+            operationId: UnoService_TakeSeat
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/idl.uno.dto.TakeSeatRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/idl.uno.dto.TakeSeatResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/google.rpc.Status'
 components:
     schemas:
         google.protobuf.Any:
@@ -1172,6 +1316,7 @@ components:
                     enum:
                         - GAME_TYPE_UNSPECIFIED
                         - GAME_TYPE_CHESS
+                        - GAME_TYPE_UNO
                     type: string
                     format: enum
                 participants:
@@ -1271,6 +1416,7 @@ components:
                     enum:
                         - GAME_TYPE_UNSPECIFIED
                         - GAME_TYPE_CHESS
+                        - GAME_TYPE_UNO
                     type: string
                     format: enum
                 bounds:
@@ -1378,6 +1524,7 @@ components:
                     enum:
                         - GAME_TYPE_UNSPECIFIED
                         - GAME_TYPE_CHESS
+                        - GAME_TYPE_UNO
                     type: string
                     format: enum
                 participants:
@@ -1437,6 +1584,7 @@ components:
                     enum:
                         - GAME_TYPE_UNSPECIFIED
                         - GAME_TYPE_CHESS
+                        - GAME_TYPE_UNO
                     type: string
                     format: enum
                 seatCount:
@@ -1600,6 +1748,7 @@ components:
                     enum:
                         - GAME_TYPE_UNSPECIFIED
                         - GAME_TYPE_CHESS
+                        - GAME_TYPE_UNO
                     type: string
                     format: enum
                 status:
@@ -1644,6 +1793,407 @@ components:
 
                  What every listing of tables answers with. A count, a cursor or the filter a
                  listing was answered under belongs here.
+        idl.uno.dto.ListSeatChoiceRequest:
+            type: object
+            properties:
+                tableId:
+                    type: string
+                playerId:
+                    type: string
+            description: The seats this player may take at this table now.
+        idl.uno.dto.ListSeatChoiceResponse:
+            type: object
+            properties:
+                collection:
+                    $ref: '#/components/schemas/idl.uno.model.UnoSeatChoiceCollection'
+        idl.uno.dto.PlayActionRequest:
+            type: object
+            properties:
+                tableId:
+                    type: string
+                commandId:
+                    type: string
+                playerId:
+                    type: string
+                action:
+                    $ref: '#/components/schemas/idl.uno.model.UnoAction'
+                expectedVersion:
+                    type: string
+            description: |-
+                One thing a player does in a game.
+
+                 `command_id` is minted by the caller. Sending an action a second time applies
+                 nothing and answers the game the first one produced.
+
+                 `expected_version` is the version of the session the action was built against.
+                 An action carrying an earlier one is refused, so an action never reaches the
+                 game in a position the player who chose it had not seen.
+
+                 The acting participant is not carried. It is found from `player_id`, so a
+                 request cannot act for a hand its sender does not hold.
+        idl.uno.dto.PlayActionResponse:
+            type: object
+            properties:
+                result:
+                    $ref: '#/components/schemas/idl.uno.model.ActionResult'
+        idl.uno.dto.ReadGameRequest:
+            type: object
+            properties:
+                tableId:
+                    type: string
+                playerId:
+                    type: string
+        idl.uno.dto.ReadGameResponse:
+            type: object
+            properties:
+                session:
+                    $ref: '#/components/schemas/idl.uno.model.UnoSession'
+        idl.uno.dto.ReadTableRequest:
+            type: object
+            properties:
+                tableId:
+                    type: string
+        idl.uno.dto.ReadTableResponse:
+            type: object
+            properties:
+                table:
+                    $ref: '#/components/schemas/idl.uno.model.UnoTable'
+        idl.uno.dto.StartGameRequest:
+            type: object
+            properties:
+                tableId:
+                    type: string
+                playerId:
+                    type: string
+            description: |-
+                Start a game at a table.
+
+                 Each seat's number is its player's place in the turn order. A table already
+                 playing a game starts nothing and answers the game already there.
+        idl.uno.dto.StartGameResponse:
+            type: object
+            properties:
+                session:
+                    $ref: '#/components/schemas/idl.uno.model.UnoSession'
+        idl.uno.dto.TakeSeatRequest:
+            type: object
+            properties:
+                tableId:
+                    type: string
+                playerId:
+                    type: string
+                choice:
+                    $ref: '#/components/schemas/idl.uno.model.UnoSeatChoice'
+                expectedVersion:
+                    type: string
+            description: |-
+                Take one seat, as one of the choices the player was offered.
+
+                 `expected_version` is the version of the table the choice was picked from. A
+                 choice carrying an earlier one is refused, so a seat is never taken at a table
+                 the player had not seen.
+        idl.uno.dto.TakeSeatResponse:
+            type: object
+            properties:
+                result:
+                    $ref: '#/components/schemas/idl.uno.model.UnoSeatResult'
+        idl.uno.model.ActionResult:
+            type: object
+            properties:
+                outcome:
+                    enum:
+                        - COMMAND_OUTCOME_UNSPECIFIED
+                        - COMMAND_OUTCOME_APPLIED
+                        - COMMAND_OUTCOME_ALREADY_APPLIED
+                        - COMMAND_OUTCOME_SESSION_NOT_FOUND
+                        - COMMAND_OUTCOME_NOT_A_PARTICIPANT
+                        - COMMAND_OUTCOME_GAME_OVER
+                        - COMMAND_OUTCOME_VERSION_MOVED
+                        - COMMAND_OUTCOME_OUT_OF_TURN
+                        - COMMAND_OUTCOME_ILLEGAL_ACTION
+                    type: string
+                    format: enum
+                session:
+                    $ref: '#/components/schemas/idl.uno.model.UnoSession'
+            description: |-
+                What happened to an action, and the game as its sender may now see it.
+
+                 The session is carried whatever the outcome, and is unset only when no game is
+                 being played at the table the action named.
+        idl.uno.model.Card:
+            type: object
+            properties:
+                kind:
+                    enum:
+                        - CARD_KIND_UNSPECIFIED
+                        - CARD_KIND_NUMBER
+                        - CARD_KIND_SKIP
+                        - CARD_KIND_REVERSE
+                        - CARD_KIND_DRAW_TWO
+                        - CARD_KIND_WILD
+                        - CARD_KIND_WILD_DRAW_FOUR
+                    type: string
+                    format: enum
+                color:
+                    enum:
+                        - CARD_COLOR_UNSPECIFIED
+                        - CARD_COLOR_RED
+                        - CARD_COLOR_YELLOW
+                        - CARD_COLOR_GREEN
+                        - CARD_COLOR_BLUE
+                    type: string
+                    format: enum
+                number:
+                    type: integer
+                    format: uint32
+            description: |-
+                One card.
+
+                 Carries no identity. Two cards with the same kind, colour and number are
+                 interchangeable. `number` is read only when the kind is NUMBER, so a zero
+                 there is the 0 card and nowhere else means anything.
+        idl.uno.model.CardDraw:
+            type: object
+            properties: {}
+            description: Taking the top card of the draw pile into the hand.
+        idl.uno.model.CardPlay:
+            type: object
+            properties:
+                card:
+                    $ref: '#/components/schemas/idl.uno.model.Card'
+                chosenColor:
+                    enum:
+                        - CARD_COLOR_UNSPECIFIED
+                        - CARD_COLOR_RED
+                        - CARD_COLOR_YELLOW
+                        - CARD_COLOR_GREEN
+                        - CARD_COLOR_BLUE
+                    type: string
+                    format: enum
+            description: |-
+                Playing one card from the hand onto the discard pile.
+
+                 `chosen_color` is set exactly when the card is a wild, and names the colour
+                 the next player must follow.
+        idl.uno.model.HandCard:
+            type: object
+            properties:
+                card:
+                    $ref: '#/components/schemas/idl.uno.model.Card'
+                isPlayable:
+                    type: boolean
+            description: One card in the viewer's hand, and whether it may be played now.
+        idl.uno.model.TurnPass:
+            type: object
+            properties: {}
+            description: Ending the turn without playing, allowed only after a draw.
+        idl.uno.model.UnoAction:
+            type: object
+            properties:
+                play:
+                    $ref: '#/components/schemas/idl.uno.model.CardPlay'
+                draw:
+                    $ref: '#/components/schemas/idl.uno.model.CardDraw'
+                pass:
+                    $ref: '#/components/schemas/idl.uno.model.TurnPass'
+            description: 'One thing a player does: play a card, draw a card, or pass.'
+        idl.uno.model.UnoPlayerSummary:
+            type: object
+            properties:
+                participant:
+                    type: integer
+                    format: uint32
+                cardCount:
+                    type: integer
+                    format: uint32
+                hasWithdrawn:
+                    type: boolean
+            description: What everyone may know about one participant.
+        idl.uno.model.UnoResult:
+            type: object
+            properties:
+                winner:
+                    type: integer
+                    format: uint32
+                reason:
+                    enum:
+                        - UNO_RESULT_REASON_UNSPECIFIED
+                        - UNO_RESULT_REASON_HAND_EMPTIED
+                        - UNO_RESULT_REASON_OTHERS_WITHDREW
+                    type: string
+                    format: enum
+            description: How a finished game came out.
+        idl.uno.model.UnoSeat:
+            type: object
+            properties:
+                number:
+                    type: integer
+                    format: uint32
+                status:
+                    enum:
+                        - SEAT_STATUS_UNSPECIFIED
+                        - SEAT_STATUS_OPEN
+                        - SEAT_STATUS_OCCUPIED
+                    type: string
+                    format: enum
+                playerId:
+                    type: string
+            description: |-
+                One seat at a UNO table.
+
+                 A seat's number is its place in the turn order, and a seat carries nothing
+                 else.
+        idl.uno.model.UnoSeatChoice:
+            type: object
+            properties:
+                number:
+                    type: integer
+                    format: uint32
+            description: |-
+                One seat a player may take right now.
+
+                 Taken unchanged.
+        idl.uno.model.UnoSeatChoiceCollection:
+            type: object
+            properties:
+                unoSeatChoiceItems:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/idl.uno.model.UnoSeatChoice'
+            description: Every seat one player may take.
+        idl.uno.model.UnoSeatResult:
+            type: object
+            properties:
+                outcome:
+                    enum:
+                        - SEAT_OUTCOME_UNSPECIFIED
+                        - SEAT_OUTCOME_TAKEN
+                        - SEAT_OUTCOME_TABLE_NOT_FOUND
+                        - SEAT_OUTCOME_NOT_OFFERED
+                        - SEAT_OUTCOME_VERSION_MOVED
+                        - SEAT_OUTCOME_VACATED
+                        - SEAT_OUTCOME_LEFT
+                        - SEAT_OUTCOME_NOT_SEATED
+                        - SEAT_OUTCOME_NOT_AT_TABLE
+                        - SEAT_OUTCOME_CREATED
+                        - SEAT_OUTCOME_JOINED
+                        - SEAT_OUTCOME_ALREADY_AT_TABLE
+                        - SEAT_OUTCOME_NOT_ACCEPTING_PLAYERS
+                        - SEAT_OUTCOME_GAME_NOT_HOSTED
+                        - SEAT_OUTCOME_SEAT_COUNT_NOT_ALLOWED
+                    type: string
+                    format: enum
+                table:
+                    $ref: '#/components/schemas/idl.uno.model.UnoTable'
+            description: |-
+                What happened to a seat being taken, and the table as its taker may now see it.
+
+                 The table is carried whatever the outcome, and is unset only when no table
+                 has the id the choice named.
+        idl.uno.model.UnoSession:
+            type: object
+            properties:
+                id:
+                    type: string
+                view:
+                    $ref: '#/components/schemas/idl.uno.model.UnoView'
+                participant:
+                    type: integer
+                    format: uint32
+                lastCommandId:
+                    type: string
+                version:
+                    type: string
+            description: |-
+                One game of UNO being played, projected for one viewer.
+
+                 The id is the id of the table the game is played at, so a table holds one
+                 game at a time.
+
+                 `participant` is the viewer's number in the game, and 0 for someone who is
+                 not playing.
+
+                 `version` counts writes to the game. An action is built against the version
+                 it was read at, and a session is rendered only when its version is above the
+                 version showing.
+        idl.uno.model.UnoTable:
+            type: object
+            properties:
+                id:
+                    type: string
+                status:
+                    enum:
+                        - TABLE_STATUS_UNSPECIFIED
+                        - TABLE_STATUS_WAITING
+                        - TABLE_STATUS_IN_PROGRESS
+                        - TABLE_STATUS_FINISHED
+                        - TABLE_STATUS_ABANDONED
+                    type: string
+                    format: enum
+                seats:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/idl.uno.model.UnoSeat'
+                playerIds:
+                    type: array
+                    items:
+                        type: string
+                version:
+                    type: string
+            description: |-
+                A table UNO is played at.
+
+                 `version` is the table's, and a choice is taken against it.
+        idl.uno.model.UnoView:
+            type: object
+            properties:
+                players:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/idl.uno.model.UnoPlayerSummary'
+                hand:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/idl.uno.model.HandCard'
+                topCard:
+                    $ref: '#/components/schemas/idl.uno.model.Card'
+                activeColor:
+                    enum:
+                        - CARD_COLOR_UNSPECIFIED
+                        - CARD_COLOR_RED
+                        - CARD_COLOR_YELLOW
+                        - CARD_COLOR_GREEN
+                        - CARD_COLOR_BLUE
+                    type: string
+                    format: enum
+                direction:
+                    enum:
+                        - PLAY_DIRECTION_UNSPECIFIED
+                        - PLAY_DIRECTION_CLOCKWISE
+                        - PLAY_DIRECTION_COUNTERCLOCKWISE
+                    type: string
+                    format: enum
+                participantToAct:
+                    type: integer
+                    format: uint32
+                drawPileCount:
+                    type: integer
+                    format: uint32
+                mayDraw:
+                    type: boolean
+                mayPass:
+                    type: boolean
+                drawnCard:
+                    $ref: '#/components/schemas/idl.uno.model.Card'
+                result:
+                    $ref: '#/components/schemas/idl.uno.model.UnoResult'
+            description: |-
+                The game projected for one viewer.
+
+                 `hand` is the viewer's own cards and is empty for someone who is not
+                 playing. `may_draw` and `may_pass` are true only for the viewer whose turn
+                 it is; every card's `is_playable` is false for anyone else. Nothing here
+                 decides an action; the rules do, and this says what they would accept.
 tags:
     - name: ChessService
       description: |-
@@ -1675,3 +2225,11 @@ tags:
          No method here writes a table. Every write is a SeatService verb, which the
          lobby decides and records as an event; a table read here is the result of
          those.
+    - name: UnoService
+      description: |-
+        UNO as it is played at a table.
+
+         Every request and answer is UNO's own type, so a caller never packs or opens
+         a payload. A seat changes hands by taking a choice and in no other way, and a
+         game changes by playing an action and in no other way. A game is answered as
+         the caller may see it: their own hand, and a count of everyone else's.

@@ -1,0 +1,67 @@
+// A game: every hand, both piles, and whose turn it is.
+
+syntax = "proto3";
+
+package idl.uno.model;
+
+import "idl/uno/model/card.proto";
+
+option go_package = "boardgamez/contracts/gen/go/idl/uno/model;unomodel";
+
+// The order play passes around the table.
+//
+// CLOCKWISE passes to the next higher participant number, and wraps.
+enum PlayDirection {
+  PLAY_DIRECTION_UNSPECIFIED = 0;
+  PLAY_DIRECTION_CLOCKWISE = 1;
+  PLAY_DIRECTION_COUNTERCLOCKWISE = 2;
+}
+
+// Why a game ended.
+enum UnoResultReason {
+  UNO_RESULT_REASON_UNSPECIFIED = 0;
+  UNO_RESULT_REASON_HAND_EMPTIED = 1;
+  UNO_RESULT_REASON_OTHERS_WITHDREW = 2;
+}
+
+// The cards one participant holds.
+//
+// A participant who has withdrawn keeps an entry with no cards, so the turn
+// order still knows their number.
+message UnoHand {
+  uint32 participant = 1;
+  repeated Card cards = 2;
+  bool has_withdrawn = 3;
+}
+
+// How a finished game came out.
+message UnoResult {
+  uint32 winner = 1;
+  UnoResultReason reason = 2;
+}
+
+// A game in progress, in full.
+//
+// `draw_pile` is drawn from its first element. `discard_pile` is played onto
+// its last element, which is the card everyone follows.
+//
+// `active_color` is the colour the next card must match. It equals the top
+// card's colour unless the top card is a wild, when it is the colour chosen.
+//
+// `drawn_card` is set while the participant to act has drawn this turn and
+// must now play that card or pass.
+//
+// `shuffle_count` counts the shuffles taken from `seed`, the deal included, so
+// the next reshuffle of the discard pile is a different order.
+message UnoGame {
+  repeated UnoHand hands = 1;  // One per participant, in participant order.
+  repeated Card draw_pile = 2;
+  repeated Card discard_pile = 3;
+  CardColor active_color = 4;
+  PlayDirection direction = 5;
+  uint32 participant_to_act = 6;  // 0 once the game has a result.
+  Card drawn_card = 7;
+  uint64 seed = 8;
+  uint32 shuffle_count = 9;
+  UnoResult result = 10;  // Unset while the game is still being played.
+}

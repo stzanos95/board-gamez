@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1eidl/game/model/game_type.proto\x12\x0eidl.game.model*:\n\x08GameType\x12\x19\n\x15GAME_TYPE_UNSPECIFIED\x10\x00\x12\x13\n\x0fGAME_TYPE_CHESS\x10\x01\x42\x36Z4boardgamez/contracts/gen/go/idl/game/model;gamemodelb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1eidl/game/model/game_type.proto\x12\x0eidl.game.model*M\n\x08GameType\x12\x19\n\x15GAME_TYPE_UNSPECIFIED\x10\x00\x12\x13\n\x0fGAME_TYPE_CHESS\x10\x01\x12\x11\n\rGAME_TYPE_UNO\x10\x02\x42\x36Z4boardgamez/contracts/gen/go/idl/game/model;gamemodelb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -33,5 +33,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['DESCRIPTOR']._loaded_options = None
   _globals['DESCRIPTOR']._serialized_options = b'Z4boardgamez/contracts/gen/go/idl/game/model;gamemodel'
   _globals['_GAMETYPE']._serialized_start=50
-  _globals['_GAMETYPE']._serialized_end=108
+  _globals['_GAMETYPE']._serialized_end=127
 # @@protoc_insertion_point(module_scope)

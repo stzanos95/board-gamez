@@ -8,5 +8,7 @@ class GameType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     __slots__ = ()
     GAME_TYPE_UNSPECIFIED: _ClassVar[GameType]
     GAME_TYPE_CHESS: _ClassVar[GameType]
+    GAME_TYPE_UNO: _ClassVar[GameType]
 GAME_TYPE_UNSPECIFIED: GameType
 GAME_TYPE_CHESS: GameType
+GAME_TYPE_UNO: GameType

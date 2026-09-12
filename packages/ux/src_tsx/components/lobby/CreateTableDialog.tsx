@@ -26,7 +26,7 @@ import type { NewTableInput } from "../../lobby/use_create_table";
  * lobby's to enforce, and the platform does not read a game's rules.
  */
 const MINIMUM_SEATS = 2;
-const MAXIMUM_SEATS = 8;
+const MAXIMUM_SEATS = 10;
 const DEFAULT_SEATS = 2;
 const DEFAULT_GAME_TYPE = GameType.CHESS;
 

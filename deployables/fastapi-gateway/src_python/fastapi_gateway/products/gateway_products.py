@@ -4,6 +4,7 @@ Every game this gateway serves.
 
 from fastapi_gateway.products.base_gateway_product import BaseGatewayProduct
 from fastapi_gateway.products.chess_gateway_product import ChessGatewayProduct
+from fastapi_gateway.products.uno_gateway_product import UnoGatewayProduct
 
 
 class GatewayProducts:
@@ -14,4 +15,4 @@ class GatewayProducts:
 
     @staticmethod
     def build() -> tuple[BaseGatewayProduct, ...]:
-        return (ChessGatewayProduct(),)
+        return (ChessGatewayProduct(), UnoGatewayProduct())

@@ -1,0 +1,43 @@
+// Reading a UNO table, and taking a seat at it.
+
+syntax = "proto3";
+
+package idl.uno.dto;
+
+import "idl/uno/model/table.proto";
+
+option go_package = "boardgamez/contracts/gen/go/idl/uno/dto;unodto";
+
+message ReadTableRequest {
+  string table_id = 1;
+}
+
+message ReadTableResponse {
+  idl.uno.model.UnoTable table = 1;  // Unset when no UNO table has that id.
+}
+
+// The seats this player may take at this table now.
+message ListSeatChoiceRequest {
+  string table_id = 1;
+  string player_id = 2;
+}
+
+message ListSeatChoiceResponse {
+  idl.uno.model.UnoSeatChoiceCollection collection = 1;  // Empty when the player may take no seat.
+}
+
+// Take one seat, as one of the choices the player was offered.
+//
+// `expected_version` is the version of the table the choice was picked from. A
+// choice carrying an earlier one is refused, so a seat is never taken at a table
+// the player had not seen.
+message TakeSeatRequest {
+  string table_id = 1;
+  string player_id = 2;
+  idl.uno.model.UnoSeatChoice choice = 3;
+  uint64 expected_version = 4;
+}
+
+message TakeSeatResponse {
+  idl.uno.model.UnoSeatResult result = 1;
+}

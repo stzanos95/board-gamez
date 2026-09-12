@@ -8,8 +8,9 @@ dependencies = [
     # paths, its adapter and its binding; the gateway only includes them.
     "lobby",
     "game",
-    # The one product served: the paths a browser plays chess through.
+    # The products served: the paths a browser plays each game through.
     "product-chess",
+    "product-uno",
     # The channel arguments an upstream call is tuned with, and who is calling.
     "core",
     "fastapi>=0.141.1",
@@ -25,6 +26,7 @@ dependencies = [
 lobby = { path = "../../packages/lobby", editable = true }
 game = { path = "../../packages/game", editable = true }
 product-chess = { path = "../../packages/product-chess", editable = true }
+product-uno = { path = "../../packages/product-uno", editable = true }
 core = { path = "../../packages/core", editable = true }
 
 [project.scripts]

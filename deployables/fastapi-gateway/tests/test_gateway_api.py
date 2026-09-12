@@ -24,6 +24,7 @@ A_LOBBY_PATH = "/internal/platform/lobby/read/table"
 A_GAME_PATH = "/internal/platform/game/apply/command"
 A_CATALOGUE_PATH = "/internal/platform/game/list/game_spec"
 A_CHESS_PATH = "/internal/product/chess/play/action"
+A_UNO_PATH = "/internal/product/uno/play/action"
 
 
 def application_config(root_path: str = "/api") -> ApplicationConfig:
@@ -80,6 +81,7 @@ class BringupTest(unittest.TestCase):
         self.assertIn(A_GAME_PATH, paths)
         self.assertIn(A_CATALOGUE_PATH, paths)
         self.assertIn(A_CHESS_PATH, paths)
+        self.assertIn(A_UNO_PATH, paths)
 
 
 class GrpcAddressTest(unittest.TestCase):
@@ -113,3 +115,25 @@ class PayloadTypeTest(unittest.TestCase):
             command_pb2.ApplyCommandRequest,
         )
         self.assertEqual(request.action.type_url, "type.googleapis.com/idl.chess.model.ChessAction")
+
+    def test_a_uno_action_can_be_read_from_json(self) -> None:
+        self.assertIn(
+            "idl.uno.model.UnoAction",
+            PayloadTypeRegistry.get_type_names(GatewayProducts.build()),
+        )
+        request = ProtobufMessageUtils.message_from_pydantic_model(
+            ApplyCommandRequest(
+                sessionId="t-1",
+                commandId="c-1",
+                playerId="p-1",
+                action=Any.model_validate(
+                    {
+                        "@type": "type.googleapis.com/idl.uno.model.UnoAction",
+                        "draw": {},
+                    }
+                ),
+                expectedVersion="1",
+            ),
+            command_pb2.ApplyCommandRequest,
+        )
+        self.assertEqual(request.action.type_url, "type.googleapis.com/idl.uno.model.UnoAction")

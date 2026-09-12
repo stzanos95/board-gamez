@@ -1,0 +1,61 @@
+// Sitting down to a game of UNO, starting it, reading it, and playing it.
+
+syntax = "proto3";
+
+package idl.uno.service;
+
+import "google/api/annotations.proto";
+import "idl/uno/dto/game.proto";
+import "idl/uno/dto/table.proto";
+
+option go_package = "boardgamez/contracts/gen/go/idl/uno/service;unoservice";
+
+// UNO as it is played at a table.
+//
+// Every request and answer is UNO's own type, so a caller never packs or opens
+// a payload. A seat changes hands by taking a choice and in no other way, and a
+// game changes by playing an action and in no other way. A game is answered as
+// the caller may see it: their own hand, and a count of everyone else's.
+service UnoService {
+  rpc ReadTable(idl.uno.dto.ReadTableRequest) returns (idl.uno.dto.ReadTableResponse) {
+    option (google.api.http) = {
+      post: "/internal/product/uno/read/table"
+      body: "*"
+    };
+  }
+
+  rpc ListSeatChoice(idl.uno.dto.ListSeatChoiceRequest) returns (idl.uno.dto.ListSeatChoiceResponse) {
+    option (google.api.http) = {
+      post: "/internal/product/uno/list/seat_choice"
+      body: "*"
+    };
+  }
+
+  rpc TakeSeat(idl.uno.dto.TakeSeatRequest) returns (idl.uno.dto.TakeSeatResponse) {
+    option (google.api.http) = {
+      post: "/internal/product/uno/take/seat"
+      body: "*"
+    };
+  }
+
+  rpc StartGame(idl.uno.dto.StartGameRequest) returns (idl.uno.dto.StartGameResponse) {
+    option (google.api.http) = {
+      post: "/internal/product/uno/start/game"
+      body: "*"
+    };
+  }
+
+  rpc ReadGame(idl.uno.dto.ReadGameRequest) returns (idl.uno.dto.ReadGameResponse) {
+    option (google.api.http) = {
+      post: "/internal/product/uno/read/game"
+      body: "*"
+    };
+  }
+
+  rpc PlayAction(idl.uno.dto.PlayActionRequest) returns (idl.uno.dto.PlayActionResponse) {
+    option (google.api.http) = {
+      post: "/internal/product/uno/play/action"
+      body: "*"
+    };
+  }
+}

@@ -3,6 +3,7 @@ import { createRegistry } from "@bufbuild/protobuf";
 import { GameType } from "@board-gamez/idl/game/model/game_type_pb";
 
 import { CHESS_PACKED_FILES } from "../chess/chess_packed_types";
+import { UNO_PACKED_FILES } from "../uno/uno_packed_types";
 
 const NO_PACKED_FILES: readonly DescFile[] = [];
 
@@ -15,6 +16,7 @@ const NO_PACKED_FILES: readonly DescFile[] = [];
 const PACKED_FILES_BY_GAME_TYPE: Record<GameType, readonly DescFile[]> = {
   [GameType.UNSPECIFIED]: NO_PACKED_FILES,
   [GameType.CHESS]: CHESS_PACKED_FILES,
+  [GameType.UNO]: UNO_PACKED_FILES,
 };
 
 /**

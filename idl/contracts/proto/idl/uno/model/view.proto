@@ -1,0 +1,43 @@
+// A game as one viewer may see it.
+
+syntax = "proto3";
+
+package idl.uno.model;
+
+import "idl/uno/model/card.proto";
+import "idl/uno/model/game.proto";
+
+option go_package = "boardgamez/contracts/gen/go/idl/uno/model;unomodel";
+
+// One card in the viewer's hand, and whether it may be played now.
+message HandCard {
+  Card card = 1;
+  bool is_playable = 2;
+}
+
+// What everyone may know about one participant.
+message UnoPlayerSummary {
+  uint32 participant = 1;
+  uint32 card_count = 2;
+  bool has_withdrawn = 3;
+}
+
+// The game projected for one viewer.
+//
+// `hand` is the viewer's own cards and is empty for someone who is not
+// playing. `may_draw` and `may_pass` are true only for the viewer whose turn
+// it is; every card's `is_playable` is false for anyone else. Nothing here
+// decides an action; the rules do, and this says what they would accept.
+message UnoView {
+  repeated UnoPlayerSummary players = 1;  // Every participant, in participant order.
+  repeated HandCard hand = 2;
+  Card top_card = 3;
+  CardColor active_color = 4;
+  PlayDirection direction = 5;
+  uint32 participant_to_act = 6;  // 0 once the game has a result.
+  uint32 draw_pile_count = 7;
+  bool may_draw = 8;
+  bool may_pass = 9;
+  Card drawn_card = 10;  // Set while the participant to act must play this card or pass.
+  UnoResult result = 11;  // Unset while the game is still being played.
+}

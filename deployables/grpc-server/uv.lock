@@ -247,6 +247,7 @@ dependencies = [
     { name = "lobby" },
     { name = "mashumaro", extra = ["yaml"] },
     { name = "product-chess" },
+    { name = "product-uno" },
 ]
 
 [package.dev-dependencies]
@@ -268,6 +269,7 @@ requires-dist = [
     { name = "lobby", editable = "../../packages/lobby" },
     { name = "mashumaro", extras = ["yaml"], specifier = ">=3.22" },
     { name = "product-chess", editable = "../../packages/product-chess" },
+    { name = "product-uno", editable = "../../packages/product-uno" },
 ]
 
 [package.metadata.requires-dev]
@@ -613,6 +615,40 @@ dev = [
 ]
 
 [[package]]
+name = "product-uno"
+version = "0.1.0"
+source = { editable = "../../packages/product-uno" }
+dependencies = [
+    { name = "board-gamez-idl" },
+    { name = "core" },
+    { name = "game" },
+    { name = "grpcio" },
+    { name = "idl-fastapi" },
+    { name = "lobby" },
+    { name = "uno-game" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "board-gamez-idl", editable = "../../idl/contracts/gen/python" },
+    { name = "core", editable = "../../packages/core" },
+    { name = "game", editable = "../../packages/game" },
+    { name = "grpcio", specifier = ">=1.68.1" },
+    { name = "idl-fastapi", editable = "../../idl/contracts/gen/fastapi" },
+    { name = "lobby", editable = "../../packages/lobby" },
+    { name = "uno-game", editable = "../../packages/uno" },
+]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "mypy", specifier = ">=2.3.1" },
+    { name = "pytest", specifier = ">=9.1.1" },
+    { name = "ruff", specifier = ">=0.16.6" },
+    { name = "types-grpcio", specifier = ">=1.83" },
+    { name = "types-protobuf", specifier = ">=5.28" },
+]
+
+[[package]]
 name = "protobuf"
 version = "5.29.6"
 source = { registry = "https://pypi.org/simple" }
@@ -854,4 +890,23 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/a3/26/b09b8010994eccc3c09092e6b34058f36a460eea2d4c3e8b910c695975a0/typing_inspection-0.4.4.tar.gz", hash = "sha256:547274fa6b0a561ccf549cc9524b999a578e737d015d8709d021f9d0d13bea47", size = 76928, upload-time = "2026-08-12T12:37:25.997Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/67/81/4add07e5172b7ac40d8ed5ff580409a7801a4fe26d529bdd915401dabfbe/typing_inspection-0.4.4-py3-none-any.whl", hash = "sha256:65b8397ba37ccbce054456aaccddfc91e6e3083c92824df348d96ca832f3f147", size = 14750, upload-time = "2026-08-12T12:37:24.648Z" },
+]
+
+[[package]]
+name = "uno-game"
+version = "0.1.0"
+source = { editable = "../../packages/uno" }
+dependencies = [
+    { name = "board-gamez-idl" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "board-gamez-idl", editable = "../../idl/contracts/gen/python" }]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "mypy", specifier = ">=1.11" },
+    { name = "pytest", specifier = ">=8.0" },
+    { name = "ruff", specifier = ">=0.16.6" },
+    { name = "types-protobuf", specifier = ">=5.28" },
 ]

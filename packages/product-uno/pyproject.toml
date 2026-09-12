@@ -1,0 +1,86 @@
+[project]
+name = "product-uno"
+version = "0.1.0"
+description = "UNO as the platform hosts it: the rules the session layer asks, and the service a browser plays through."
+requires-python = ">=3.13"
+dependencies = [
+    # The router each service declares, and the models a request arrives as.
+    "idl-fastapi",
+    # The servicer each service declares, and the messages a call arrives as.
+    "board-gamez-idl",
+    "grpcio>=1.68.1",
+    # Every reach for the protobuf runtime, and the channel arguments a call is
+    # tuned with.
+    "core",
+    # The rules of UNO: the deck, what a card does, and how a game ends.
+    "uno-game",
+    # The contract a game's rules implement, and the session a game is played in.
+    "game",
+    # The table a game is started at, and the seats that become its players.
+    "lobby",
+]
+
+# Relative path sources rather than a workspace: each project here stands alone.
+[tool.uv.sources]
+idl-fastapi = { path = "../../idl/contracts/gen/fastapi", editable = true }
+board-gamez-idl = { path = "../../idl/contracts/gen/python", editable = true }
+core = { path = "../core", editable = true }
+uno-game = { path = "../uno", editable = true }
+game = { path = "../game", editable = true }
+lobby = { path = "../lobby", editable = true }
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src_python/product_uno"]
+
+[dependency-groups]
+# The ruff floor matches the rev pinned in .pre-commit-config.yaml, so the
+# hook, this environment and ./infra/scripts/lint.sh format identically.
+# Neither protobuf nor grpcio ships type information of its own, so the stubs are
+# what keeps every message and every call here from being Any to a type checker.
+dev = [
+    "pytest>=9.1.1",
+    "mypy>=2.3.1",
+    "ruff>=0.16.6",
+    "types-protobuf>=5.28",
+    "types-grpcio>=1.83",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests_python"]
+pythonpath = ["src_python", "."]
+
+[tool.mypy]
+python_version = "3.13"
+strict = true
+# Rule 3 of the house style: never Any. This is what enforces it.
+disallow_any_explicit = true
+mypy_path = "src_python"
+files = ["src_python", "tests_python"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+src = ["src_python", "tests_python"]
+
+[tool.ruff.lint]
+preview = true
+explicit-preview-rules = true
+select = [
+    "E", "F", "I", "N", "UP", "B", "SIM", "RUF",
+    "TID251",
+    "PLC0415",
+    "PLR2004",
+]
+
+[tool.ruff.lint.per-file-ignores]
+# gRPC dispatches on the method names the schema declares, so a servicer keeps
+# protobuf's casing. These are the only files where that is true.
+"src_python/product_uno/service/grpc_rules_service.py" = ["N802"]
+"src_python/product_uno/service/grpc_uno_service.py" = ["N802"]
+
+[tool.ruff.lint.flake8-tidy-imports.banned-api]
+"__future__.annotations" = { msg = "Annotations must stay real runtime objects — see the python-style skill, rule 1. Use a string forward ref such as -> \"UnoRules\" instead." }

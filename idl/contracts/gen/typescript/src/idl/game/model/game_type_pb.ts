@@ -11,7 +11,7 @@ import { enumDesc, fileDesc } from "@bufbuild/protobuf/codegenv1";
  * Describes the file idl/game/model/game_type.proto.
  */
 export const file_idl_game_model_game_type: GenFile = /*@__PURE__*/
-  fileDesc("Ch5pZGwvZ2FtZS9tb2RlbC9nYW1lX3R5cGUucHJvdG8SDmlkbC5nYW1lLm1vZGVsKjoKCEdhbWVUeXBlEhkKFUdBTUVfVFlQRV9VTlNQRUNJRklFRBAAEhMKD0dBTUVfVFlQRV9DSEVTUxABQjZaNGJvYXJkZ2FtZXovY29udHJhY3RzL2dlbi9nby9pZGwvZ2FtZS9tb2RlbDtnYW1lbW9kZWxiBnByb3RvMw");
+  fileDesc("Ch5pZGwvZ2FtZS9tb2RlbC9nYW1lX3R5cGUucHJvdG8SDmlkbC5nYW1lLm1vZGVsKk0KCEdhbWVUeXBlEhkKFUdBTUVfVFlQRV9VTlNQRUNJRklFRBAAEhMKD0dBTUVfVFlQRV9DSEVTUxABEhEKDUdBTUVfVFlQRV9VTk8QAkI2WjRib2FyZGdhbWV6L2NvbnRyYWN0cy9nZW4vZ28vaWRsL2dhbWUvbW9kZWw7Z2FtZW1vZGVsYgZwcm90bzM");
 
 /**
  * The games this system knows how to host.
@@ -30,6 +30,11 @@ export enum GameType {
    * @generated from enum value: GAME_TYPE_CHESS = 1;
    */
   CHESS = 1,
+
+  /**
+   * @generated from enum value: GAME_TYPE_UNO = 2;
+   */
+  UNO = 2,
 }
 
 /**

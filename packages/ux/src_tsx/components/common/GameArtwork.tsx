@@ -5,6 +5,7 @@ import { memo, type ComponentType, type ReactElement } from "react";
 
 import { GAME_TYPE_LABELS } from "../../lobby/table_labels";
 import { ChessArtwork } from "./ChessArtwork";
+import { UnoArtwork } from "./UnoArtwork";
 
 const FRAME_SX = {
   p: 2,
@@ -34,6 +35,7 @@ const UnknownGameArtwork = memo(function UnknownGameArtwork(): ReactElement {
 const ARTWORK_BY_GAME_TYPE: Record<GameType, ComponentType> = {
   [GameType.UNSPECIFIED]: UnknownGameArtwork,
   [GameType.CHESS]: ChessArtwork,
+  [GameType.UNO]: UnoArtwork,
 };
 
 export type GameArtworkProps = {

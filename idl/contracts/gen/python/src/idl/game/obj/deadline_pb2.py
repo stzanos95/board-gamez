@@ -26,7 +26,7 @@ from google.protobuf import timestamp_pb2 as google_dot_protobuf_dot_timestamp__
 from idl.core.obj import object_metadata_pb2 as idl_dot_core_dot_obj_dot_object__metadata__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1bidl/game/obj/deadline.proto\x12\x0cidl.game.obj\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\"idl/core/obj/object_metadata.proto\"\x83\x01\n\x0b\x44\x65\x61\x64lineObj\x12.\n\x08metadata\x18\x01 \x01(\x0b\x32\x1c.idl.core.obj.ObjectMetadata\x12+\n\x07\x61\x63ts_by\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x17\n\x0fsession_version\x18\x03 \x01(\x04\x42\x32Z0boardgamez/contracts/gen/go/idl/game/obj;gameobjb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1bidl/game/obj/deadline.proto\x12\x0cidl.game.obj\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\"idl/core/obj/object_metadata.proto\"j\n\x0b\x44\x65\x61\x64lineObj\x12.\n\x08metadata\x18\x01 \x01(\x0b\x32\x1c.idl.core.obj.ObjectMetadata\x12+\n\x07\x61\x63ts_by\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.TimestampB2Z0boardgamez/contracts/gen/go/idl/game/obj;gameobjb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -34,6 +34,6 @@ _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'idl.game.obj.deadline_pb2',
 if not _descriptor._USE_C_DESCRIPTORS:
   _globals['DESCRIPTOR']._loaded_options = None
   _globals['DESCRIPTOR']._serialized_options = b'Z0boardgamez/contracts/gen/go/idl/game/obj;gameobj'
-  _globals['_DEADLINEOBJ']._serialized_start=115
-  _globals['_DEADLINEOBJ']._serialized_end=246
+  _globals['_DEADLINEOBJ']._serialized_start=114
+  _globals['_DEADLINEOBJ']._serialized_end=220
 # @@protoc_insertion_point(module_scope)

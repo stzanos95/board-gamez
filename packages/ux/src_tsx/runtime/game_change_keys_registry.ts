@@ -2,6 +2,7 @@ import { GameType } from "@board-gamez/idl/game/model/game_type_pb";
 
 import { CHESS_CHANGE_KEYS } from "../chess/chess_change_keys";
 import type { GameChangeKeys } from "../lobby/game_change_keys";
+import { UNO_CHANGE_KEYS } from "../uno/uno_change_keys";
 
 const NO_GAME_CHANGE_KEYS: GameChangeKeys = {
   sessionKey: () => null,
@@ -17,6 +18,7 @@ const NO_GAME_CHANGE_KEYS: GameChangeKeys = {
 export const CHANGE_KEYS_BY_GAME_TYPE: Record<GameType, GameChangeKeys> = {
   [GameType.UNSPECIFIED]: NO_GAME_CHANGE_KEYS,
   [GameType.CHESS]: CHESS_CHANGE_KEYS,
+  [GameType.UNO]: UNO_CHANGE_KEYS,
 };
 
 /**

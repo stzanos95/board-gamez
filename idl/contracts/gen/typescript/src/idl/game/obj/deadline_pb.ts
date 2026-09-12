@@ -16,20 +16,19 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file idl/game/obj/deadline.proto.
  */
 export const file_idl_game_obj_deadline: GenFile = /*@__PURE__*/
-  fileDesc("ChtpZGwvZ2FtZS9vYmovZGVhZGxpbmUucHJvdG8SDGlkbC5nYW1lLm9iaiKDAQoLRGVhZGxpbmVPYmoSLgoIbWV0YWRhdGEYASABKAsyHC5pZGwuY29yZS5vYmouT2JqZWN0TWV0YWRhdGESKwoHYWN0c19ieRgCIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASFwoPc2Vzc2lvbl92ZXJzaW9uGAMgASgEQjJaMGJvYXJkZ2FtZXovY29udHJhY3RzL2dlbi9nby9pZGwvZ2FtZS9vYmo7Z2FtZW9iamIGcHJvdG8z", [file_google_protobuf_timestamp, file_idl_core_obj_object_metadata]);
+  fileDesc("ChtpZGwvZ2FtZS9vYmovZGVhZGxpbmUucHJvdG8SDGlkbC5nYW1lLm9iaiJqCgtEZWFkbGluZU9iahIuCghtZXRhZGF0YRgBIAEoCzIcLmlkbC5jb3JlLm9iai5PYmplY3RNZXRhZGF0YRIrCgdhY3RzX2J5GAIgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcEIyWjBib2FyZGdhbWV6L2NvbnRyYWN0cy9nZW4vZ28vaWRsL2dhbWUvb2JqO2dhbWVvYmpiBnByb3RvMw", [file_google_protobuf_timestamp, file_idl_core_obj_object_metadata]);
 
 /**
  * One game's deadline, stored apart from the game so that every deadline that
  * has passed can be found without reading every game.
  *
- * The identity of the row is the game's id, so a game has at most one. It is
- * written with the game whenever the stored state carries `acts_within`, and
- * removed by the write that stores a state without one.
+ * The identity and the version are the game's: the row is the stored game
+ * reduced to when it runs out, so a game has at most one. It is written with
+ * the game whenever the stored state carries `acts_by`, and removed by the
+ * write that stores a state without one.
  *
- * `session_version` is the game's version when the deadline was set. The
- * deadline is acted on only while the game is still at that version. One found
- * against a later version belongs to a state that no longer stands, and is
- * removed without the rules being asked.
+ * A deadline is acted on only while the game is still at `metadata.version`.
+ * One found against a later version belongs to a state that no longer stands.
  *
  * @generated from message idl.game.obj.DeadlineObj
  */
@@ -43,11 +42,6 @@ export type DeadlineObj = Message<"idl.game.obj.DeadlineObj"> & {
    * @generated from field: google.protobuf.Timestamp acts_by = 2;
    */
   actsBy?: Timestamp;
-
-  /**
-   * @generated from field: uint64 session_version = 3;
-   */
-  sessionVersion: bigint;
 };
 
 /**

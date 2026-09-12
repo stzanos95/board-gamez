@@ -35,6 +35,7 @@ export const SEAT_STATUS_LABELS: Record<SeatStatus, string> = {
 export const GAME_TYPE_LABELS: Record<GameType, string> = {
   [GameType.UNSPECIFIED]: "Unknown game",
   [GameType.CHESS]: "Chess",
+  [GameType.UNO]: "UNO",
 };
 
 /**
@@ -43,4 +44,4 @@ export const GAME_TYPE_LABELS: Record<GameType, string> = {
  * UNSPECIFIED is what a reader sees when a newer schema has set a value this
  * build does not know. No table is ever created with it.
  */
-export const CREATABLE_GAME_TYPES: readonly GameType[] = [GameType.CHESS];
+export const CREATABLE_GAME_TYPES: readonly GameType[] = [GameType.CHESS, GameType.UNO];

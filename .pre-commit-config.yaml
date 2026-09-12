@@ -115,6 +115,22 @@ repos:
         files: ^packages/product-chess/
         pass_filenames: false
 
+      - id: mypy-uno
+        name: mypy (packages/uno)
+        entry: uv run --directory packages/uno --quiet python -m mypy
+        language: system
+        types: [python]
+        files: ^packages/uno/
+        pass_filenames: false
+
+      - id: mypy-product-uno
+        name: mypy (packages/product-uno)
+        entry: uv run --directory packages/product-uno --quiet python -m mypy
+        language: system
+        types: [python]
+        files: ^packages/product-uno/
+        pass_filenames: false
+
       - id: mypy-fastapi-gateway
         name: mypy (deployables/fastapi-gateway)
         entry: uv run --directory deployables/fastapi-gateway --quiet python -m mypy
@@ -187,6 +203,24 @@ repos:
         language: system
         types: [python]
         files: ^packages/product-chess/
+        pass_filenames: false
+        stages: [pre-push]
+
+      - id: pytest-uno
+        name: pytest (packages/uno)
+        entry: uv run --directory packages/uno --quiet python -m pytest --quiet
+        language: system
+        types: [python]
+        files: ^packages/uno/
+        pass_filenames: false
+        stages: [pre-push]
+
+      - id: pytest-product-uno
+        name: pytest (packages/product-uno)
+        entry: uv run --directory packages/product-uno --quiet python -m pytest --quiet
+        language: system
+        types: [python]
+        files: ^packages/product-uno/
         pass_filenames: false
         stages: [pre-push]
 

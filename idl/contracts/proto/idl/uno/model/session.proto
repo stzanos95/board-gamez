@@ -1,0 +1,38 @@
+// A game of UNO being played, as one viewer sees it.
+
+syntax = "proto3";
+
+package idl.uno.model;
+
+import "idl/game/model/command_result.proto";
+import "idl/uno/model/view.proto";
+
+option go_package = "boardgamez/contracts/gen/go/idl/uno/model;unomodel";
+
+// One game of UNO being played, projected for one viewer.
+//
+// The id is the id of the table the game is played at, so a table holds one
+// game at a time.
+//
+// `participant` is the viewer's number in the game, and 0 for someone who is
+// not playing.
+//
+// `version` counts writes to the game. An action is built against the version
+// it was read at, and a session is rendered only when its version is above the
+// version showing.
+message UnoSession {
+  string id = 1;
+  UnoView view = 2;
+  uint32 participant = 3;
+  string last_command_id = 4;  // The command that produced this game.
+  uint64 version = 5;
+}
+
+// What happened to an action, and the game as its sender may now see it.
+//
+// The session is carried whatever the outcome, and is unset only when no game is
+// being played at the table the action named.
+message ActionResult {
+  idl.game.model.CommandOutcome outcome = 1;
+  UnoSession session = 2;
+}

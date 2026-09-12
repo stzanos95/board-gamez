@@ -4,6 +4,7 @@ import type { ChessGateway } from "../chess/chess_gateway";
 import type { FreshnessSettings } from "../config/ux_config";
 import type { TableGateway } from "../lobby/table_gateway";
 import type { SocketClient } from "../transport/socket_client";
+import type { UnoGateway } from "../uno/uno_gateway";
 
 /**
  * The collaborators every screen reaches for, built once at bringup.
@@ -14,6 +15,7 @@ import type { SocketClient } from "../transport/socket_client";
 export type AppServices = {
   readonly tableGateway: TableGateway;
   readonly chessGateway: ChessGateway;
+  readonly unoGateway: UnoGateway;
   readonly socketClient: SocketClient;
   readonly freshness: FreshnessSettings;
 };
@@ -44,6 +46,10 @@ export function useTableGateway(): TableGateway {
 
 export function useChessGateway(): ChessGateway {
   return useAppServices().chessGateway;
+}
+
+export function useUnoGateway(): UnoGateway {
+  return useAppServices().unoGateway;
 }
 
 export function useSocketClient(): SocketClient {

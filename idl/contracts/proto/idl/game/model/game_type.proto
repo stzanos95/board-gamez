@@ -12,4 +12,5 @@ option go_package = "boardgamez/contracts/gen/go/idl/game/model;gamemodel";
 enum GameType {
   GAME_TYPE_UNSPECIFIED = 0;
   GAME_TYPE_CHESS = 1;
+  GAME_TYPE_UNO = 2;
 }

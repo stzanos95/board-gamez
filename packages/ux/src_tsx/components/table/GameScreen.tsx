@@ -3,6 +3,7 @@ import { memo, type ComponentType, type ReactElement } from "react";
 
 import { ChessScreen } from "../chess/ChessScreen";
 import { PanelMessage } from "../common/PanelMessage";
+import { UnoScreen } from "../uno/UnoScreen";
 import type { GameScreenProps } from "./game_screen_props";
 
 const UnknownGameScreen = memo(function UnknownGameScreen(): ReactElement {
@@ -24,6 +25,7 @@ const UnknownGameScreen = memo(function UnknownGameScreen(): ReactElement {
 const SCREEN_BY_GAME_TYPE: Record<GameType, ComponentType<GameScreenProps>> = {
   [GameType.UNSPECIFIED]: UnknownGameScreen,
   [GameType.CHESS]: ChessScreen,
+  [GameType.UNO]: UnoScreen,
 };
 
 export type GameScreenSelectorProps = GameScreenProps & {

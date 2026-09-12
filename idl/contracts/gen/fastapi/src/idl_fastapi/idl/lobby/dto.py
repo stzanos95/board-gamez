@@ -21,9 +21,9 @@ class CreateTableRequest(BaseModel):
     model_config = ConfigDict(
         populate_by_name=True,
     )
-    game_type: Literal['GAME_TYPE_UNSPECIFIED', 'GAME_TYPE_CHESS'] | None = Field(
-        default=None, alias='gameType'
-    )
+    game_type: (
+        Literal['GAME_TYPE_UNSPECIFIED', 'GAME_TYPE_CHESS', 'GAME_TYPE_UNO'] | None
+    ) = Field(default=None, alias='gameType')
     seat_count: int | None = Field(default=None, alias='seatCount')
     player_id: str | None = Field(default=None, alias='playerId')
 

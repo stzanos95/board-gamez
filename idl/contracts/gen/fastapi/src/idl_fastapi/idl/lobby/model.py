@@ -59,9 +59,9 @@ class Table(BaseModel):
         populate_by_name=True,
     )
     id: str | None = None
-    game_type: Literal['GAME_TYPE_UNSPECIFIED', 'GAME_TYPE_CHESS'] | None = Field(
-        default=None, alias='gameType'
-    )
+    game_type: (
+        Literal['GAME_TYPE_UNSPECIFIED', 'GAME_TYPE_CHESS', 'GAME_TYPE_UNO'] | None
+    ) = Field(default=None, alias='gameType')
     status: Literal['TABLE_STATUS_UNSPECIFIED', 'TABLE_STATUS_WAITING', 'TABLE_STATUS_IN_PROGRESS', 'TABLE_STATUS_FINISHED', 'TABLE_STATUS_ABANDONED'] | None = (
         None
     )

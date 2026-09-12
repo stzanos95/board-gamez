@@ -133,5 +133,7 @@ class RegistrationTest(unittest.IsolatedAsyncioTestCase):
                 "idl.game.service.GameSpecService",
                 "idl.game.service.RulesService",
                 "idl.chess.service.ChessService",
+                "idl.game.service.RulesService",
+                "idl.uno.service.UnoService",
             ),
         )

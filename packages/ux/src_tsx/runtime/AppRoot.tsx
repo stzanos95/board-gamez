@@ -11,6 +11,7 @@ import { AppThemeProvider } from "../theme/AppThemeProvider";
 import { GatewayClient } from "../transport/gateway_client";
 import { buildQueryClient } from "../transport/query_client";
 import { SocketClient } from "../transport/socket_client";
+import { UnoGateway } from "../uno/uno_gateway";
 import { AppServicesProvider, type AppServices } from "./app_services";
 import { buildPackedTypeRegistry } from "./packed_types";
 
@@ -32,6 +33,7 @@ export function AppRoot(props: AppRootProps): ReactElement {
     return {
       tableGateway: new TableGateway(client),
       chessGateway: new ChessGateway(client),
+      unoGateway: new UnoGateway(client),
       socketClient: new SocketClient(config.socket),
       freshness: config.freshness,
     };

@@ -1,0 +1,38 @@
+// One card of the deck.
+
+syntax = "proto3";
+
+package idl.uno.model;
+
+option go_package = "boardgamez/contracts/gen/go/idl/uno/model;unomodel";
+
+// The four colours a card can be, and the colour a wild names.
+enum CardColor {
+  CARD_COLOR_UNSPECIFIED = 0;
+  CARD_COLOR_RED = 1;
+  CARD_COLOR_YELLOW = 2;
+  CARD_COLOR_GREEN = 3;
+  CARD_COLOR_BLUE = 4;
+}
+
+// What a card does when played.
+enum CardKind {
+  CARD_KIND_UNSPECIFIED = 0;
+  CARD_KIND_NUMBER = 1;
+  CARD_KIND_SKIP = 2;
+  CARD_KIND_REVERSE = 3;
+  CARD_KIND_DRAW_TWO = 4;
+  CARD_KIND_WILD = 5;
+  CARD_KIND_WILD_DRAW_FOUR = 6;
+}
+
+// One card.
+//
+// Carries no identity. Two cards with the same kind, colour and number are
+// interchangeable. `number` is read only when the kind is NUMBER, so a zero
+// there is the 0 card and nowhere else means anything.
+message Card {
+  CardKind kind = 1;
+  CardColor color = 2;  // Unset exactly when the kind is WILD or WILD_DRAW_FOUR.
+  uint32 number = 3;    // 0 through 9 when the kind is NUMBER.
+}

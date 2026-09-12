@@ -1,0 +1,53 @@
+// A UNO table, its seats, and the seats a player may take.
+
+syntax = "proto3";
+
+package idl.uno.model;
+
+import "idl/lobby/model/seat.proto";
+import "idl/lobby/model/seat_result.proto";
+import "idl/lobby/model/table.proto";
+
+option go_package = "boardgamez/contracts/gen/go/idl/uno/model;unomodel";
+
+// One seat at a UNO table.
+//
+// A seat's number is its place in the turn order, and a seat carries nothing
+// else.
+message UnoSeat {
+  uint32 number = 1;
+  idl.lobby.model.SeatStatus status = 2;
+  string player_id = 3;  // Empty exactly when the seat is OPEN.
+}
+
+// A table UNO is played at.
+//
+// `version` is the table's, and a choice is taken against it.
+message UnoTable {
+  string id = 1;
+  idl.lobby.model.TableStatus status = 2;
+  repeated UnoSeat seats = 3;
+  repeated string player_ids = 4;  // Everyone at the table, seated or not.
+  uint64 version = 5;
+}
+
+// One seat a player may take right now.
+//
+// Taken unchanged.
+message UnoSeatChoice {
+  uint32 number = 1;
+}
+
+// Every seat one player may take.
+message UnoSeatChoiceCollection {
+  repeated UnoSeatChoice uno_seat_choice_items = 1;
+}
+
+// What happened to a seat being taken, and the table as its taker may now see it.
+//
+// The table is carried whatever the outcome, and is unset only when no table
+// has the id the choice named.
+message UnoSeatResult {
+  idl.lobby.model.SeatOutcome outcome = 1;
+  UnoTable table = 2;
+}
