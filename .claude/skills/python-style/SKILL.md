@@ -359,19 +359,36 @@ class TableRepositoryConfig(DataClassYAMLMixin):
     redis_config: RedisTableRepositoryConfig | None = None
 ```
 
-`provider.py` is a registry and a static factory, never a chain of `if`s:
+`provider.py` is a registry and a static factory, never a chain of `if`s. The
+registry is a `ClassVar` on the provider, declared after the builders it
+names, so the class is the whole contract and nothing about it sits at module
+level:
 
 ```python
 class TableRepositoryProvider:
     @staticmethod
-    def get_table_repository(config: TableRepositoryConfig) -> BaseTableRepository: ...
+    def get_table_repository(config: TableRepositoryConfig) -> BaseTableRepository:
+        builder = TableRepositoryProvider.BUILDERS_BY_TYPE.get(config.repository)
+        ...
 
-TABLE_REPOSITORY_BUILDERS_BY_TYPE: dict[
-    TableRepositoryType, Callable[[TableRepositoryConfig], BaseTableRepository]
-] = {
-    TableRepositoryType.REDIS: TableRepositoryProvider._build_redis_table_repository,
-}
+    @staticmethod
+    def _build_redis_table_repository(config: TableRepositoryConfig) -> BaseTableRepository: ...
+
+    BUILDERS_BY_TYPE: ClassVar[
+        dict[TableRepositoryType, Callable[[TableRepositoryConfig], BaseTableRepository]]
+    ] = {
+        TableRepositoryType.REDIS: _build_redis_table_repository,
+    }
 ```
+
+A staticmethod object is callable in the class body, so the registry names the
+builder directly. When one selection builds more than one thing — a queue's
+publisher and consumer — it is one registry per thing, each on the class.
+
+When an option has a directory of its own, the directory is named for the
+option and holds only its implementations: `queue/redis/publisher.py`,
+`queue/redis/consumer.py`. `config.py`, the base classes and `provider.py`
+stay at the top, beside it.
 
 What makes this pay:
 

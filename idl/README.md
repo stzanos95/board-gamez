@@ -34,25 +34,32 @@ contracts/proto/idl/
 ├── identity/  who someone is
 │   └── model/
 ├── lobby/     where people gather to play
-│   ├── model/     tables and seats
-│   ├── dto/       what TableService takes and hands out
+│   ├── model/     tables, seats, the choices a game offers, and what happened at a table
+│   ├── dto/       what TableService, SeatService and SeatingService carry
 │   ├── obj/       a stored table
-│   └── service/   TableService
+│   └── service/   TableService (the store), SeatService (the verbs), and SeatingService — implemented once per game
 ├── game/      a game being played, whatever game it is
-│   ├── model/     a session, a state, an action, a result
+│   ├── model/     a session, a state, an action, a result, and what happened in a game
 │   ├── dto/       what SessionService, GameSpecService and RulesService carry
 │   ├── obj/       a stored session
 │   └── service/   SessionService, GameSpecService, and RulesService — implemented once per game
 └── chess/     one game
-    ├── model/     the rules' vocabulary, and a game as one viewer sees it
+    ├── model/     the rules' vocabulary, a seat's side, and a game or a table as one viewer sees it
     ├── dto/       what ChessService takes and hands out
-    └── service/   ChessService — chess as a browser plays it
+    └── service/   ChessService — chess as a browser sits down to it and plays it
 ```
 
 `game` never imports `chess`. A game's state and actions reach the session layer
 packed into `google.protobuf.Any`, stored and relayed without being opened, which
-is what lets one server host every game. Adding a game is a `GameType` member and
-another implementation of `RulesService`.
+is what lets one server host every game. A seat's role — the side it plays, the
+token it moves — reaches the lobby the same way. Adding a game is a `GameType`
+member and one implementation each of `RulesService` and `SeatingService`.
+
+Every write that succeeds is one event in `<domain>/model/event.proto`, in that
+domain's vocabulary and with the version after the write. Events are published
+inside `core.dto.QueueMessageEnvelope` under the event's full type name, and are
+the backend's own: a browser is sent only the `*Changed` message at the end of
+each file, which carries an id and a version and nothing else.
 
 `chess` imports `game`: its service answers the platform's outcomes, and its
 session is the platform's session with the game opened. The dependency runs from

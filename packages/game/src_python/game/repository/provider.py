@@ -6,14 +6,11 @@ its own module.
 """
 
 from collections.abc import Callable
+from typing import ClassVar
 
 from game.repository.base_session_repository import BaseSessionRepository
 from game.repository.config import SessionRepositoryConfig, SessionRepositoryType
 from game.repository.redis_session_repository import RedisSessionRepository
-
-SessionRepositoryBuildersByType = dict[
-    SessionRepositoryType, Callable[[SessionRepositoryConfig], BaseSessionRepository]
-]
 
 
 class SessionRepositoryProvider:
@@ -29,12 +26,12 @@ class SessionRepositoryProvider:
         Raises ValueError when the selected store has no builder, or when its
         settings section is missing.
         """
-        builder = SESSION_REPOSITORY_BUILDERS_BY_TYPE.get(config.repository)
+        builder = SessionRepositoryProvider.BUILDERS_BY_TYPE.get(config.repository)
         if builder is None:
             raise ValueError(
                 f"no session repository is registered for {config.repository.value!r}; "
                 f"known repositories are "
-                f"{', '.join(sorted(SESSION_REPOSITORY_BUILDERS_BY_TYPE))}"
+                f"{', '.join(sorted(SessionRepositoryProvider.BUILDERS_BY_TYPE))}"
             )
         return builder(config)
 
@@ -47,8 +44,10 @@ class SessionRepositoryProvider:
             )
         return RedisSessionRepository(config=config.redis_config)
 
-
-# Defined after the class so it can name the static methods above.
-SESSION_REPOSITORY_BUILDERS_BY_TYPE: SessionRepositoryBuildersByType = {
-    SessionRepositoryType.REDIS: SessionRepositoryProvider._build_redis_session_repository,
-}
+    # Keys are data — a repository type names its builder. This is a lookup, not
+    # a record, and it follows the builders it names.
+    BUILDERS_BY_TYPE: ClassVar[
+        dict[SessionRepositoryType, Callable[[SessionRepositoryConfig], BaseSessionRepository]]
+    ] = {
+        SessionRepositoryType.REDIS: _build_redis_session_repository,
+    }

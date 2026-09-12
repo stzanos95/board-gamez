@@ -103,6 +103,7 @@ class RegistrationTest(unittest.IsolatedAsyncioTestCase):
             names,
             (
                 "idl.lobby.service.TableService",
+                "idl.lobby.service.SeatService",
                 "idl.game.service.SessionService",
                 "idl.game.service.GameSpecService",
                 "idl.game.service.RulesService",

@@ -6,6 +6,7 @@ its own module.
 """
 
 from collections.abc import Callable
+from typing import ClassVar
 
 from lobby.repository.base_table_repository import BaseTableRepository
 from lobby.repository.config import TableRepositoryConfig, TableRepositoryType
@@ -25,12 +26,12 @@ class TableRepositoryProvider:
         Raises ValueError when the selected store has no builder, or when its
         settings section is missing.
         """
-        builder = TABLE_REPOSITORY_BUILDERS_BY_TYPE.get(config.repository)
+        builder = TableRepositoryProvider.BUILDERS_BY_TYPE.get(config.repository)
         if builder is None:
             raise ValueError(
                 f"no table repository is registered for {config.repository.value!r}; "
                 f"known repositories are "
-                f"{', '.join(sorted(TABLE_REPOSITORY_BUILDERS_BY_TYPE))}"
+                f"{', '.join(sorted(TableRepositoryProvider.BUILDERS_BY_TYPE))}"
             )
         return builder(config)
 
@@ -43,11 +44,10 @@ class TableRepositoryProvider:
             )
         return RedisTableRepository(config=config.redis_config)
 
-
-# Keys are data — a repository type names its builder. This is a lookup, not a
-# record. Defined after the class so it can name the static methods above.
-TABLE_REPOSITORY_BUILDERS_BY_TYPE: dict[
-    TableRepositoryType, Callable[[TableRepositoryConfig], BaseTableRepository]
-] = {
-    TableRepositoryType.REDIS: TableRepositoryProvider._build_redis_table_repository,
-}
+    # Keys are data — a repository type names its builder. This is a lookup, not
+    # a record, and it follows the builders it names.
+    BUILDERS_BY_TYPE: ClassVar[
+        dict[TableRepositoryType, Callable[[TableRepositoryConfig], BaseTableRepository]]
+    ] = {
+        TableRepositoryType.REDIS: _build_redis_table_repository,
+    }

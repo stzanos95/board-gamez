@@ -151,14 +151,20 @@ name = "core"
 version = "0.1.0"
 source = { editable = "../../packages/core" }
 dependencies = [
+    { name = "board-gamez-idl" },
+    { name = "mashumaro", extra = ["yaml"] },
     { name = "protobuf" },
     { name = "pydantic" },
+    { name = "redis" },
 ]
 
 [package.metadata]
 requires-dist = [
+    { name = "board-gamez-idl", editable = "../../idl/contracts/gen/python" },
+    { name = "mashumaro", extras = ["yaml"], specifier = ">=3.22" },
     { name = "protobuf", specifier = ">=5.28.3,<6" },
     { name = "pydantic", specifier = ">=2.13" },
+    { name = "redis", specifier = ">=5.2" },
 ]
 
 [package.metadata.requires-dev]

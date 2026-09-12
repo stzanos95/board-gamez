@@ -32,7 +32,7 @@ convert values so that neither adjacent layer needs to know the other's types.
 | `packages/<domain>/…/adapters/` | Between layers | No. One named method per conversion |
 | `packages/<domain>/…/controller/` | Business | Yes. This is the only layer that decides |
 | `packages/<domain>/…/repository/` | Persistence | Only about storage, never about meaning |
-| `packages/core/` | Shared utilities | No domain-specific code |
+| `packages/core/` | Shared utilities | No domain-specific code. `core/queue` is the broker every domain publishes to and consumes from, behind a provider |
 | `packages/game/` | Application, Business, Persistence | A game being played, whatever game it is. Imported by every domain package; imports none of them, and never a product |
 | `packages/chess/` | Business (one game's rules) | Chess rules only. Every chess type is `idl.chess.model`'s; the package adds behaviour. Knows nothing about tables or participants |
 | `packages/product-chess/` | Application and Business (one product) | Chess as the platform hosts it. The only package importing both `game` and `chess` |
@@ -169,6 +169,21 @@ dependency part-way through a call.
 ### One writer per invariant
 
 A table is written in one place, guarded by the version it was read at.
+
+### Every write is an event, and a browser is told only that something changed
+
+Each controller write that succeeds publishes one event — `SeatTaken`,
+`CommandApplied`, `ParticipantWithdrawn` — declared in the domain's
+`model/event.proto`, carrying the version after the write. Events travel in
+`QueueMessageEnvelope` through `core.queue`, whose publisher and consumer are
+selected by configuration; the controller holds a `BaseQueuePublisher` and
+names no broker.
+
+An event is the backend's record and holds full information, including an
+action only its sender may see. A browser is never sent one. It is sent
+`TableChanged` or `SessionChanged` — an id and a version — and reads the view
+it renders through the typed service it already uses, which projects it for
+that viewer. Projection therefore happens in one place, on the read path.
 
 ## SOLID applied to system design
 

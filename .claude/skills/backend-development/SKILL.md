@@ -123,7 +123,10 @@ deployable  →  package  →  contracts
 One direction, with no exceptions.
 
 - A package never imports a deployable.
-- `packages/core` is imported by anything and imports no domain.
+- `packages/core` is imported by anything and imports no domain. `core.queue`
+  is how a component publishes or consumes: it takes a `BaseQueuePublisher` or
+  `BaseQueueConsumer` in `__init__`, and the deployable builds it once from a
+  `QueueConfig` section through `QueueProvider`. No component names a broker.
 - `packages/game` is the platform: a game being played, whatever game it is.
   Every domain package may import it and hold its controllers as
   collaborators. It imports `core` and nothing else under `packages/`.
