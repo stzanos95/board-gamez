@@ -12,13 +12,15 @@ import type { Color } from "./piece_pb";
 import { file_idl_chess_model_piece } from "./piece_pb";
 import type { CommandOutcome } from "../../game/model/command_result_pb";
 import { file_idl_game_model_command_result } from "../../game/model/command_result_pb";
+import type { ParticipantStatus } from "../../game/model/participant_state_pb";
+import { file_idl_game_model_participant_state } from "../../game/model/participant_state_pb";
 import type { Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file idl/chess/model/session.proto.
  */
 export const file_idl_chess_model_session: GenFile = /*@__PURE__*/
-  fileDesc("Ch1pZGwvY2hlc3MvbW9kZWwvc2Vzc2lvbi5wcm90bxIPaWRsLmNoZXNzLm1vZGVsIpUBCgxDaGVzc1Nlc3Npb24SCgoCaWQYASABKAkSKAoEZ2FtZRgCIAEoCzIaLmlkbC5jaGVzcy5tb2RlbC5DaGVzc0dhbWUSJQoFY29sb3IYAyABKA4yFi5pZGwuY2hlc3MubW9kZWwuQ29sb3ISFwoPbGFzdF9jb21tYW5kX2lkGAQgASgJEg8KB3ZlcnNpb24YBSABKAQibwoMQWN0aW9uUmVzdWx0Ei8KB291dGNvbWUYASABKA4yHi5pZGwuZ2FtZS5tb2RlbC5Db21tYW5kT3V0Y29tZRIuCgdzZXNzaW9uGAIgASgLMh0uaWRsLmNoZXNzLm1vZGVsLkNoZXNzU2Vzc2lvbkI4WjZib2FyZGdhbWV6L2NvbnRyYWN0cy9nZW4vZ28vaWRsL2NoZXNzL21vZGVsO2NoZXNzbW9kZWxiBnByb3RvMw", [file_idl_chess_model_game, file_idl_chess_model_piece, file_idl_game_model_command_result]);
+  fileDesc("Ch1pZGwvY2hlc3MvbW9kZWwvc2Vzc2lvbi5wcm90bxIPaWRsLmNoZXNzLm1vZGVsItYBCgxDaGVzc1Nlc3Npb24SCgoCaWQYASABKAkSKAoEZ2FtZRgCIAEoCzIaLmlkbC5jaGVzcy5tb2RlbC5DaGVzc0dhbWUSJQoFY29sb3IYAyABKA4yFi5pZGwuY2hlc3MubW9kZWwuQ29sb3ISFwoPbGFzdF9jb21tYW5kX2lkGAQgASgJEg8KB3ZlcnNpb24YBSABKAQSPwoUcGFydGljaXBhbnRfc3RhdHVzZXMYBiADKAsyIS5pZGwuZ2FtZS5tb2RlbC5QYXJ0aWNpcGFudFN0YXR1cyJvCgxBY3Rpb25SZXN1bHQSLwoHb3V0Y29tZRgBIAEoDjIeLmlkbC5nYW1lLm1vZGVsLkNvbW1hbmRPdXRjb21lEi4KB3Nlc3Npb24YAiABKAsyHS5pZGwuY2hlc3MubW9kZWwuQ2hlc3NTZXNzaW9uQjhaNmJvYXJkZ2FtZXovY29udHJhY3RzL2dlbi9nby9pZGwvY2hlc3MvbW9kZWw7Y2hlc3Ntb2RlbGIGcHJvdG8z", [file_idl_chess_model_game, file_idl_chess_model_piece, file_idl_game_model_command_result, file_idl_game_model_participant_state]);
 
 /**
  * One game of chess being played, projected for one viewer.
@@ -62,6 +64,13 @@ export type ChessSession = Message<"idl.chess.model.ChessSession"> & {
    * @generated from field: uint64 version = 5;
    */
   version: bigint;
+
+  /**
+   * What everyone may see of each participant.
+   *
+   * @generated from field: repeated idl.game.model.ParticipantStatus participant_statuses = 6;
+   */
+  participantStatuses: ParticipantStatus[];
 };
 
 /**

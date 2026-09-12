@@ -22,10 +22,9 @@ export const UnoPlayerList = memo(function UnoPlayerList(props: UnoPlayerListPro
     <UnoPlayerRow
       key={player.participant}
       label={player.label}
-      cardCount={player.cardCount}
       isYou={player.isYou}
       isToAct={player.isToAct}
-      hasWithdrawn={player.hasWithdrawn}
+      states={player.states}
     />
   ));
 

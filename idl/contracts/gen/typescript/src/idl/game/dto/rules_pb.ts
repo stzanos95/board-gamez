@@ -14,6 +14,8 @@ import type { ParticipantBounds } from "../model/game_spec_pb";
 import { file_idl_game_model_game_spec } from "../model/game_spec_pb";
 import type { GameState } from "../model/game_state_pb";
 import { file_idl_game_model_game_state } from "../model/game_state_pb";
+import type { GameType } from "../model/game_type_pb";
+import { file_idl_game_model_game_type } from "../model/game_type_pb";
 import type { ParticipantRole } from "../model/participant_pb";
 import { file_idl_game_model_participant } from "../model/participant_pb";
 import type { Message } from "@bufbuild/protobuf";
@@ -22,10 +24,12 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file idl/game/dto/rules.proto.
  */
 export const file_idl_game_dto_rules: GenFile = /*@__PURE__*/
-  fileDesc("ChhpZGwvZ2FtZS9kdG8vcnVsZXMucHJvdG8SDGlkbC5nYW1lLmR0byJ4ChFDcmVhdGVHYW1lUmVxdWVzdBIZChFwYXJ0aWNpcGFudF9jb3VudBgBIAEoDRI6ChFwYXJ0aWNpcGFudF9yb2xlcxgCIAMoCzIfLmlkbC5nYW1lLm1vZGVsLlBhcnRpY2lwYW50Um9sZRIMCgRzZWVkGAMgASgEIj4KEkNyZWF0ZUdhbWVSZXNwb25zZRIoCgVzdGF0ZRgBIAEoCzIZLmlkbC5nYW1lLm1vZGVsLkdhbWVTdGF0ZSJmChJBcHBseUFjdGlvblJlcXVlc3QSKAoFc3RhdGUYASABKAsyGS5pZGwuZ2FtZS5tb2RlbC5HYW1lU3RhdGUSJgoGYWN0aW9uGAIgASgLMhYuaWRsLmdhbWUubW9kZWwuQWN0aW9uIj8KE0FwcGx5QWN0aW9uUmVzcG9uc2USKAoFc3RhdGUYASABKAsyGS5pZGwuZ2FtZS5tb2RlbC5HYW1lU3RhdGUiUAoPUmVhZFZpZXdSZXF1ZXN0EigKBXN0YXRlGAEgASgLMhkuaWRsLmdhbWUubW9kZWwuR2FtZVN0YXRlEhMKC3BhcnRpY2lwYW50GAIgASgNIjYKEFJlYWRWaWV3UmVzcG9uc2USIgoEdmlldxgBIAEoCzIULmdvb2dsZS5wcm90b2J1Zi5BbnkiWwoaV2l0aGRyYXdQYXJ0aWNpcGFudFJlcXVlc3QSKAoFc3RhdGUYASABKAsyGS5pZGwuZ2FtZS5tb2RlbC5HYW1lU3RhdGUSEwoLcGFydGljaXBhbnQYAiABKA0iRwobV2l0aGRyYXdQYXJ0aWNpcGFudFJlc3BvbnNlEigKBXN0YXRlGAEgASgLMhkuaWRsLmdhbWUubW9kZWwuR2FtZVN0YXRlIkEKFUV4cGlyZURlYWRsaW5lUmVxdWVzdBIoCgVzdGF0ZRgBIAEoCzIZLmlkbC5nYW1lLm1vZGVsLkdhbWVTdGF0ZSJCChZFeHBpcmVEZWFkbGluZVJlc3BvbnNlEigKBXN0YXRlGAEgASgLMhkuaWRsLmdhbWUubW9kZWwuR2FtZVN0YXRlIhMKEVJlYWRCb3VuZHNSZXF1ZXN0IkcKElJlYWRCb3VuZHNSZXNwb25zZRIxCgZib3VuZHMYASABKAsyIS5pZGwuZ2FtZS5tb2RlbC5QYXJ0aWNpcGFudEJvdW5kc0IyWjBib2FyZGdhbWV6L2NvbnRyYWN0cy9nZW4vZ28vaWRsL2dhbWUvZHRvO2dhbWVkdG9iBnByb3RvMw", [file_google_protobuf_any, file_idl_game_model_action, file_idl_game_model_game_spec, file_idl_game_model_game_state, file_idl_game_model_participant]);
+  fileDesc("ChhpZGwvZ2FtZS9kdG8vcnVsZXMucHJvdG8SDGlkbC5nYW1lLmR0byKlAQoRQ3JlYXRlR2FtZVJlcXVlc3QSGQoRcGFydGljaXBhbnRfY291bnQYASABKA0SOgoRcGFydGljaXBhbnRfcm9sZXMYAiADKAsyHy5pZGwuZ2FtZS5tb2RlbC5QYXJ0aWNpcGFudFJvbGUSDAoEc2VlZBgDIAEoBBIrCglnYW1lX3R5cGUYBCABKA4yGC5pZGwuZ2FtZS5tb2RlbC5HYW1lVHlwZSI+ChJDcmVhdGVHYW1lUmVzcG9uc2USKAoFc3RhdGUYASABKAsyGS5pZGwuZ2FtZS5tb2RlbC5HYW1lU3RhdGUikwEKEkFwcGx5QWN0aW9uUmVxdWVzdBIoCgVzdGF0ZRgBIAEoCzIZLmlkbC5nYW1lLm1vZGVsLkdhbWVTdGF0ZRImCgZhY3Rpb24YAiABKAsyFi5pZGwuZ2FtZS5tb2RlbC5BY3Rpb24SKwoJZ2FtZV90eXBlGAMgASgOMhguaWRsLmdhbWUubW9kZWwuR2FtZVR5cGUiPwoTQXBwbHlBY3Rpb25SZXNwb25zZRIoCgVzdGF0ZRgBIAEoCzIZLmlkbC5nYW1lLm1vZGVsLkdhbWVTdGF0ZSJ9Cg9SZWFkVmlld1JlcXVlc3QSKAoFc3RhdGUYASABKAsyGS5pZGwuZ2FtZS5tb2RlbC5HYW1lU3RhdGUSEwoLcGFydGljaXBhbnQYAiABKA0SKwoJZ2FtZV90eXBlGAMgASgOMhguaWRsLmdhbWUubW9kZWwuR2FtZVR5cGUiNgoQUmVhZFZpZXdSZXNwb25zZRIiCgR2aWV3GAEgASgLMhQuZ29vZ2xlLnByb3RvYnVmLkFueSKIAQoaV2l0aGRyYXdQYXJ0aWNpcGFudFJlcXVlc3QSKAoFc3RhdGUYASABKAsyGS5pZGwuZ2FtZS5tb2RlbC5HYW1lU3RhdGUSEwoLcGFydGljaXBhbnQYAiABKA0SKwoJZ2FtZV90eXBlGAMgASgOMhguaWRsLmdhbWUubW9kZWwuR2FtZVR5cGUiRwobV2l0aGRyYXdQYXJ0aWNpcGFudFJlc3BvbnNlEigKBXN0YXRlGAEgASgLMhkuaWRsLmdhbWUubW9kZWwuR2FtZVN0YXRlIm4KFUV4cGlyZURlYWRsaW5lUmVxdWVzdBIoCgVzdGF0ZRgBIAEoCzIZLmlkbC5nYW1lLm1vZGVsLkdhbWVTdGF0ZRIrCglnYW1lX3R5cGUYAiABKA4yGC5pZGwuZ2FtZS5tb2RlbC5HYW1lVHlwZSJCChZFeHBpcmVEZWFkbGluZVJlc3BvbnNlEigKBXN0YXRlGAEgASgLMhkuaWRsLmdhbWUubW9kZWwuR2FtZVN0YXRlIkAKEVJlYWRCb3VuZHNSZXF1ZXN0EisKCWdhbWVfdHlwZRgBIAEoDjIYLmlkbC5nYW1lLm1vZGVsLkdhbWVUeXBlIkcKElJlYWRCb3VuZHNSZXNwb25zZRIxCgZib3VuZHMYASABKAsyIS5pZGwuZ2FtZS5tb2RlbC5QYXJ0aWNpcGFudEJvdW5kc0IyWjBib2FyZGdhbWV6L2NvbnRyYWN0cy9nZW4vZ28vaWRsL2dhbWUvZHRvO2dhbWVkdG9iBnByb3RvMw", [file_google_protobuf_any, file_idl_game_model_action, file_idl_game_model_game_spec, file_idl_game_model_game_state, file_idl_game_model_game_type, file_idl_game_model_participant]);
 
 /**
  * Begin a game for these participants.
+ *
+ * `game_type` names the game whose rules are asked, as on every request here.
  *
  * One entry per participant, numbered 1 through N with no gap, each carrying
  * the role it was seated with. `participant_count` is not read; the count is
@@ -53,6 +57,11 @@ export type CreateGameRequest = Message<"idl.game.dto.CreateGameRequest"> & {
    * @generated from field: uint64 seed = 3;
    */
   seed: bigint;
+
+  /**
+   * @generated from field: idl.game.model.GameType game_type = 4;
+   */
+  gameType: GameType;
 };
 
 /**
@@ -67,7 +76,7 @@ export const CreateGameRequestSchema: GenMessage<CreateGameRequest> = /*@__PURE_
  */
 export type CreateGameResponse = Message<"idl.game.dto.CreateGameResponse"> & {
   /**
-   * Unset when the game does not take these participants.
+   * Unset when the game is not hosted or does not take these participants.
    *
    * @generated from field: idl.game.model.GameState state = 1;
    */
@@ -99,6 +108,11 @@ export type ApplyActionRequest = Message<"idl.game.dto.ApplyActionRequest"> & {
    * @generated from field: idl.game.model.Action action = 2;
    */
   action?: Action;
+
+  /**
+   * @generated from field: idl.game.model.GameType game_type = 3;
+   */
+  gameType: GameType;
 };
 
 /**
@@ -113,7 +127,7 @@ export const ApplyActionRequestSchema: GenMessage<ApplyActionRequest> = /*@__PUR
  */
 export type ApplyActionResponse = Message<"idl.game.dto.ApplyActionResponse"> & {
   /**
-   * Unset when the action is not legal in that state.
+   * Unset when the game is not hosted or the action is not legal in that state.
    *
    * @generated from field: idl.game.model.GameState state = 1;
    */
@@ -144,6 +158,11 @@ export type ReadViewRequest = Message<"idl.game.dto.ReadViewRequest"> & {
    * @generated from field: uint32 participant = 2;
    */
   participant: number;
+
+  /**
+   * @generated from field: idl.game.model.GameType game_type = 3;
+   */
+  gameType: GameType;
 };
 
 /**
@@ -158,7 +177,7 @@ export const ReadViewRequestSchema: GenMessage<ReadViewRequest> = /*@__PURE__*/
  */
 export type ReadViewResponse = Message<"idl.game.dto.ReadViewResponse"> & {
   /**
-   * The game's own view type.
+   * The game's own view type; unset when the game is not hosted.
    *
    * @generated from field: google.protobuf.Any view = 1;
    */
@@ -192,6 +211,11 @@ export type WithdrawParticipantRequest = Message<"idl.game.dto.WithdrawParticipa
    * @generated from field: uint32 participant = 2;
    */
   participant: number;
+
+  /**
+   * @generated from field: idl.game.model.GameType game_type = 3;
+   */
+  gameType: GameType;
 };
 
 /**
@@ -206,7 +230,7 @@ export const WithdrawParticipantRequestSchema: GenMessage<WithdrawParticipantReq
  */
 export type WithdrawParticipantResponse = Message<"idl.game.dto.WithdrawParticipantResponse"> & {
   /**
-   * Unset when the participant is not in the game.
+   * Unset when the game is not hosted or the participant is not in it.
    *
    * @generated from field: idl.game.model.GameState state = 1;
    */
@@ -235,6 +259,11 @@ export type ExpireDeadlineRequest = Message<"idl.game.dto.ExpireDeadlineRequest"
    * @generated from field: idl.game.model.GameState state = 1;
    */
   state?: GameState;
+
+  /**
+   * @generated from field: idl.game.model.GameType game_type = 2;
+   */
+  gameType: GameType;
 };
 
 /**
@@ -249,7 +278,7 @@ export const ExpireDeadlineRequestSchema: GenMessage<ExpireDeadlineRequest> = /*
  */
 export type ExpireDeadlineResponse = Message<"idl.game.dto.ExpireDeadlineResponse"> & {
   /**
-   * Unset when the state carries no deadline.
+   * Unset when the game is not hosted or the state carries no deadline.
    *
    * @generated from field: idl.game.model.GameState state = 1;
    */
@@ -267,6 +296,10 @@ export const ExpireDeadlineResponseSchema: GenMessage<ExpireDeadlineResponse> = 
  * @generated from message idl.game.dto.ReadBoundsRequest
  */
 export type ReadBoundsRequest = Message<"idl.game.dto.ReadBoundsRequest"> & {
+  /**
+   * @generated from field: idl.game.model.GameType game_type = 1;
+   */
+  gameType: GameType;
 };
 
 /**
@@ -281,6 +314,8 @@ export const ReadBoundsRequestSchema: GenMessage<ReadBoundsRequest> = /*@__PURE_
  */
 export type ReadBoundsResponse = Message<"idl.game.dto.ReadBoundsResponse"> & {
   /**
+   * Unset when the game is not hosted.
+   *
    * @generated from field: idl.game.model.ParticipantBounds bounds = 1;
    */
   bounds?: ParticipantBounds;

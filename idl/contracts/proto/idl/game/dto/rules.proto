@@ -8,11 +8,14 @@ import "google/protobuf/any.proto";
 import "idl/game/model/action.proto";
 import "idl/game/model/game_spec.proto";
 import "idl/game/model/game_state.proto";
+import "idl/game/model/game_type.proto";
 import "idl/game/model/participant.proto";
 
 option go_package = "boardgamez/contracts/gen/go/idl/game/dto;gamedto";
 
 // Begin a game for these participants.
+//
+// `game_type` names the game whose rules are asked, as on every request here.
 //
 // One entry per participant, numbered 1 through N with no gap, each carrying
 // the role it was seated with. `participant_count` is not read; the count is
@@ -26,10 +29,11 @@ message CreateGameRequest {
   uint32 participant_count = 1;
   repeated idl.game.model.ParticipantRole participant_roles = 2;
   uint64 seed = 3;
+  idl.game.model.GameType game_type = 4;
 }
 
 message CreateGameResponse {
-  idl.game.model.GameState state = 1;  // Unset when the game does not take these participants.
+  idl.game.model.GameState state = 1;  // Unset when the game is not hosted or does not take these participants.
 }
 
 // Play one action against one state.
@@ -39,20 +43,22 @@ message CreateGameResponse {
 message ApplyActionRequest {
   idl.game.model.GameState state = 1;
   idl.game.model.Action action = 2;
+  idl.game.model.GameType game_type = 3;
 }
 
 message ApplyActionResponse {
-  idl.game.model.GameState state = 1;  // Unset when the action is not legal in that state.
+  idl.game.model.GameState state = 1;  // Unset when the game is not hosted or the action is not legal in that state.
 }
 
 // The game as one participant may see it, and what they may do next.
 message ReadViewRequest {
   idl.game.model.GameState state = 1;
   uint32 participant = 2;  // 0 for someone who is not playing.
+  idl.game.model.GameType game_type = 3;
 }
 
 message ReadViewResponse {
-  google.protobuf.Any view = 1;  // The game's own view type.
+  google.protobuf.Any view = 1;  // The game's own view type; unset when the game is not hosted.
 }
 
 // Take one participant out of a game being played.
@@ -64,10 +70,11 @@ message ReadViewResponse {
 message WithdrawParticipantRequest {
   idl.game.model.GameState state = 1;
   uint32 participant = 2;
+  idl.game.model.GameType game_type = 3;
 }
 
 message WithdrawParticipantResponse {
-  idl.game.model.GameState state = 1;  // Unset when the participant is not in the game.
+  idl.game.model.GameState state = 1;  // Unset when the game is not hosted or the participant is not in it.
 }
 
 // What a state becomes when its deadline passes with nobody acting.
@@ -78,14 +85,17 @@ message WithdrawParticipantResponse {
 // time. The state answered carries the next deadline, if there is one.
 message ExpireDeadlineRequest {
   idl.game.model.GameState state = 1;
+  idl.game.model.GameType game_type = 2;
 }
 
 message ExpireDeadlineResponse {
-  idl.game.model.GameState state = 1;  // Unset when the state carries no deadline.
+  idl.game.model.GameState state = 1;  // Unset when the game is not hosted or the state carries no deadline.
 }
 
-message ReadBoundsRequest {}
+message ReadBoundsRequest {
+  idl.game.model.GameType game_type = 1;
+}
 
 message ReadBoundsResponse {
-  idl.game.model.ParticipantBounds bounds = 1;
+  idl.game.model.ParticipantBounds bounds = 1;  // Unset when the game is not hosted.
 }

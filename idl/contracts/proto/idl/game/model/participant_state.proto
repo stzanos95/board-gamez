@@ -1,0 +1,37 @@
+// What everyone may know about where each participant stands in a game.
+
+syntax = "proto3";
+
+package idl.game.model;
+
+option go_package = "boardgamez/contracts/gen/go/idl/game/model;gamemodel";
+
+// A condition a participant can be in that the platform names and a game
+// decides.
+//
+// HOLDING carries a count of what the game deals out: cards, tiles, tokens.
+// LAST_ONE is a participant down to the last of them. WITHDRAWN is a
+// participant who left the game and is out of its turn order. A kind is added
+// here when a game has a reason to answer it.
+enum ParticipantStateKind {
+  PARTICIPANT_STATE_KIND_UNSPECIFIED = 0;
+  PARTICIPANT_STATE_KIND_HOLDING = 1;
+  PARTICIPANT_STATE_KIND_LAST_ONE = 2;
+  PARTICIPANT_STATE_KIND_WITHDRAWN = 3;
+}
+
+// One condition a participant is in.
+message ParticipantState {
+  ParticipantStateKind kind = 1;
+  uint32 count = 2;  // Read only for a kind that counts something.
+}
+
+// Every condition one participant is in, as everyone at the table may see it.
+//
+// Answered by the game's rules with each state, and never projected: what is
+// said here is public. Whose turn it is and how the game ended are carried
+// elsewhere on the state, so no kind repeats them.
+message ParticipantStatus {
+  uint32 participant = 1;
+  repeated ParticipantState states = 2;
+}

@@ -17,8 +17,8 @@ from grpc_server.products.base_hosted_product import BaseHostedProduct
 
 class ChessHostedProduct(BaseHostedProduct):
     """
-    The rules of chess, how chess seats its players, and the two services chess
-    answers: RulesService and ChessService.
+    The rules of chess, how chess seats its players, and the service chess
+    answers: ChessService.
     """
 
     def __init__(self) -> None:
@@ -40,7 +40,4 @@ class ChessHostedProduct(BaseHostedProduct):
         controller = ChessSessionController(
             tables=platform.tables, seats=platform.seats, sessions=platform.sessions
         )
-        return (
-            ProductChessServicers.add_rules_service(server, self._rules),
-            ProductChessServicers.add_chess_service(server, controller),
-        )
+        return (ProductChessServicers.add_chess_service(server, controller),)

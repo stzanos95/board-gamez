@@ -76,6 +76,7 @@ select = [
 # protobuf's casing. These are the only files where that is true.
 "src_python/game/service/grpc_session_service.py" = ["N802"]
 "src_python/game/service/grpc_game_spec_service.py" = ["N802"]
+"src_python/game/service/grpc_rules_service.py" = ["N802"]
 
 [tool.ruff.lint.flake8-tidy-imports.banned-api]
 "__future__.annotations" = { msg = "Annotations must stay real runtime objects — see the python-style skill, rule 1. Use a string forward ref such as -> \"SessionController\" instead." }

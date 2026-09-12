@@ -36,6 +36,12 @@ class RulesRegistry:
             )
         return rules
 
+    def has_rules(self, game_type: GameType) -> bool:
+        """
+        Whether this process hosts the game.
+        """
+        return game_type in self._rules
+
     def get_game_types(self) -> tuple[GameType, ...]:
         """
         Every game this process has rules for.

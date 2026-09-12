@@ -25,9 +25,10 @@ _sym_db = _symbol_database.Default()
 from idl.chess.model import game_pb2 as idl_dot_chess_dot_model_dot_game__pb2
 from idl.chess.model import piece_pb2 as idl_dot_chess_dot_model_dot_piece__pb2
 from idl.game.model import command_result_pb2 as idl_dot_game_dot_model_dot_command__result__pb2
+from idl.game.model import participant_state_pb2 as idl_dot_game_dot_model_dot_participant__state__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1didl/chess/model/session.proto\x12\x0fidl.chess.model\x1a\x1aidl/chess/model/game.proto\x1a\x1bidl/chess/model/piece.proto\x1a#idl/game/model/command_result.proto\"\x95\x01\n\x0c\x43hessSession\x12\n\n\x02id\x18\x01 \x01(\t\x12(\n\x04game\x18\x02 \x01(\x0b\x32\x1a.idl.chess.model.ChessGame\x12%\n\x05\x63olor\x18\x03 \x01(\x0e\x32\x16.idl.chess.model.Color\x12\x17\n\x0flast_command_id\x18\x04 \x01(\t\x12\x0f\n\x07version\x18\x05 \x01(\x04\"o\n\x0c\x41\x63tionResult\x12/\n\x07outcome\x18\x01 \x01(\x0e\x32\x1e.idl.game.model.CommandOutcome\x12.\n\x07session\x18\x02 \x01(\x0b\x32\x1d.idl.chess.model.ChessSessionB8Z6boardgamez/contracts/gen/go/idl/chess/model;chessmodelb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1didl/chess/model/session.proto\x12\x0fidl.chess.model\x1a\x1aidl/chess/model/game.proto\x1a\x1bidl/chess/model/piece.proto\x1a#idl/game/model/command_result.proto\x1a&idl/game/model/participant_state.proto\"\xd6\x01\n\x0c\x43hessSession\x12\n\n\x02id\x18\x01 \x01(\t\x12(\n\x04game\x18\x02 \x01(\x0b\x32\x1a.idl.chess.model.ChessGame\x12%\n\x05\x63olor\x18\x03 \x01(\x0e\x32\x16.idl.chess.model.Color\x12\x17\n\x0flast_command_id\x18\x04 \x01(\t\x12\x0f\n\x07version\x18\x05 \x01(\x04\x12?\n\x14participant_statuses\x18\x06 \x03(\x0b\x32!.idl.game.model.ParticipantStatus\"o\n\x0c\x41\x63tionResult\x12/\n\x07outcome\x18\x01 \x01(\x0e\x32\x1e.idl.game.model.CommandOutcome\x12.\n\x07session\x18\x02 \x01(\x0b\x32\x1d.idl.chess.model.ChessSessionB8Z6boardgamez/contracts/gen/go/idl/chess/model;chessmodelb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -35,8 +36,8 @@ _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'idl.chess.model.session_pb2
 if not _descriptor._USE_C_DESCRIPTORS:
   _globals['DESCRIPTOR']._loaded_options = None
   _globals['DESCRIPTOR']._serialized_options = b'Z6boardgamez/contracts/gen/go/idl/chess/model;chessmodel'
-  _globals['_CHESSSESSION']._serialized_start=145
-  _globals['_CHESSSESSION']._serialized_end=294
-  _globals['_ACTIONRESULT']._serialized_start=296
-  _globals['_ACTIONRESULT']._serialized_end=407
+  _globals['_CHESSSESSION']._serialized_start=185
+  _globals['_CHESSSESSION']._serialized_end=399
+  _globals['_ACTIONRESULT']._serialized_start=401
+  _globals['_ACTIONRESULT']._serialized_end=512
 # @@protoc_insertion_point(module_scope)

@@ -151,16 +151,18 @@ packages/<game>            the rules. Imports idl.<game>.model and nothing else
                            from the schema. Knows nothing about participants,
                            sessions or the platform.
 packages/product-<game>    the product. The only package that imports both
-                           `game` and `<game>`. Implements BaseRules and
-                           RulesService, converts between the platform's types
-                           and the game's, decides what a participant number
-                           means in the game, and serves the game's own
-                           service over the platform's session.
+                           `game` and `<game>`. Implements BaseRules, converts
+                           between the platform's types and the game's,
+                           decides what a participant number means in the
+                           game, and serves the game's own service over the
+                           platform's session.
 ```
 
 There is no product process. `grpc-server` depends on the product, builds its
 rules at bringup, registers its servicers beside the platform's, and hands the
-session controller the rules in-process through `RulesRegistry`. What a
+session controller the rules in-process through `RulesRegistry`. The platform
+serves `RulesService` once over that registry, routed by the game type each
+request names; no product serves it. What a
 product supplies to be hosted is one `BaseHostedProduct` in the server's
 `products/` and one `BaseGatewayProduct` in the gateway's; `HostedProducts`
 and `GatewayProducts` list them, and bringup reads nothing else. A product
@@ -177,6 +179,13 @@ What goes where, by the question it answers:
   payload unpacked" — `packages/product-<game>`. Anything that names a
   participant, a session, a `GameState` or an `Action` is the product's, never
   the rules'.
+- "What everyone at the table may see of each participant" —
+  `packages/product-<game>`, as `GameState.participant_statuses`: one
+  `ParticipantStatus` per participant, each a list of `ParticipantState`s of
+  a kind `idl.game.model.ParticipantStateKind` names. The rules package
+  answers the game's own facts; the product's rules adapter turns them into
+  kinds. A kind is added to the schema when a game has a reason to answer it,
+  never ahead of one.
 - "What a state becomes when it stands too long with nobody acting" —
   `packages/product-<game>`, as `BaseRules.expire_deadline`. A state that
   carries `acts_within` is handed here once that has run out and no write has

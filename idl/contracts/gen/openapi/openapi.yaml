@@ -953,6 +953,10 @@ components:
                     type: string
                 version:
                     type: string
+                participantStatuses:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/idl.game.model.ParticipantStatus'
             description: |-
                 One game of chess being played, projected for one viewer.
 
@@ -1449,6 +1453,10 @@ components:
                 actsWithin:
                     pattern: ^-?(?:0|[1-9][0-9]{0,11})(?:\.[0-9]{1,9})?s$
                     type: string
+                participantStatuses:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/idl.game.model.ParticipantStatus'
             description: |-
                 One game, and the things about it that are true whatever game it is.
 
@@ -1460,6 +1468,10 @@ components:
                  names one; a game where others may react to what was just done names each of
                  them. Whichever of them acts first produces the next state, and the rest act
                  on that one. Empty once the game has a result.
+
+                 `participant_statuses` is what everyone may see of each participant: one
+                 entry per participant, in participant order, each carrying the conditions
+                 the game says they are in. A game with nothing to say leaves it empty.
 
                  `acts_within` is how long this state stands with nobody acting before the
                  rules are asked what it becomes. It is measured from the write that stores
@@ -1515,6 +1527,37 @@ components:
                     type: string
                     format: enum
             description: What one participant got out of a finished game.
+        idl.game.model.ParticipantState:
+            type: object
+            properties:
+                kind:
+                    enum:
+                        - PARTICIPANT_STATE_KIND_UNSPECIFIED
+                        - PARTICIPANT_STATE_KIND_HOLDING
+                        - PARTICIPANT_STATE_KIND_LAST_ONE
+                        - PARTICIPANT_STATE_KIND_WITHDRAWN
+                    type: string
+                    format: enum
+                count:
+                    type: integer
+                    format: uint32
+            description: One condition a participant is in.
+        idl.game.model.ParticipantStatus:
+            type: object
+            properties:
+                participant:
+                    type: integer
+                    format: uint32
+                states:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/idl.game.model.ParticipantState'
+            description: |-
+                Every condition one participant is in, as everyone at the table may see it.
+
+                 Answered by the game's rules with each state, and never projected: what is
+                 said here is public. Whose turn it is and how the game ended are carried
+                 elsewhere on the state, so no kind repeats them.
         idl.game.model.SessionView:
             type: object
             properties:
@@ -2104,6 +2147,10 @@ components:
                     type: string
                 version:
                     type: string
+                participantStatuses:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/idl.game.model.ParticipantStatus'
             description: |-
                 One game of UNO being played, projected for one viewer.
 

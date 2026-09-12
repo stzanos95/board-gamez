@@ -7,6 +7,8 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from ..game import model
+
 
 class Card(BaseModel):
     """
@@ -265,6 +267,9 @@ class UnoSession(BaseModel):
     participant: int | None = None
     last_command_id: str | None = Field(default=None, alias='lastCommandId')
     version: str | None = None
+    participant_statuses: list[model.ParticipantStatus] | None = Field(
+        default=None, alias='participantStatuses'
+    )
 
 
 class ActionResult(BaseModel):

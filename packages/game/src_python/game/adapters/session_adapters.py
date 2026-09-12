@@ -284,6 +284,7 @@ class SessionAdapters:
                 acts_within=(
                     session.state.acts_within if session.state.HasField("acts_within") else None
                 ),
+                participant_statuses=session.state.participant_statuses,
             ),
             last_command_id=session.last_command_id,
             version=session.version,

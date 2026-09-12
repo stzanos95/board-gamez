@@ -61,6 +61,36 @@ class ParticipantResult(BaseModel):
     )
 
 
+class ParticipantState(BaseModel):
+    """
+    One condition a participant is in.
+    """
+
+    model_config = ConfigDict(
+        populate_by_name=True,
+    )
+    kind: Literal['PARTICIPANT_STATE_KIND_UNSPECIFIED', 'PARTICIPANT_STATE_KIND_HOLDING', 'PARTICIPANT_STATE_KIND_LAST_ONE', 'PARTICIPANT_STATE_KIND_WITHDRAWN'] | None = (
+        None
+    )
+    count: int | None = None
+
+
+class ParticipantStatus(BaseModel):
+    """
+    Every condition one participant is in, as everyone at the table may see it.
+
+     Answered by the game's rules with each state, and never projected: what is
+     said here is public. Whose turn it is and how the game ended are carried
+     elsewhere on the state, so no kind repeats them.
+    """
+
+    model_config = ConfigDict(
+        populate_by_name=True,
+    )
+    participant: int | None = None
+    states: list[ParticipantState] | None = None
+
+
 class GameResult(BaseModel):
     """
     How a finished game came out, one entry per participant.
@@ -118,6 +148,10 @@ class GameState(BaseModel):
      them. Whichever of them acts first produces the next state, and the rest act
      on that one. Empty once the game has a result.
 
+     `participant_statuses` is what everyone may see of each participant: one
+     entry per participant, in participant order, each carrying the conditions
+     the game says they are in. A game with nothing to say leaves it empty.
+
      `acts_within` is how long this state stands with nobody acting before the
      rules are asked what it becomes. It is measured from the write that stores
      the state, and each state the rules answer carries its own. Unset when the
@@ -135,6 +169,9 @@ class GameState(BaseModel):
     acts_within: (
         constr(pattern=r'^-?(?:0|[1-9][0-9]{0,11})(?:\.[0-9]{1,9})?s$') | None
     ) = Field(default=None, alias='actsWithin')
+    participant_statuses: list[ParticipantStatus] | None = Field(
+        default=None, alias='participantStatuses'
+    )
 
 
 class SessionView(BaseModel):

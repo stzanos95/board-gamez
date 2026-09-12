@@ -4,6 +4,7 @@ from game.controller.rules_registry import RulesRegistry
 from game.controller.session_controller import SessionController
 from idl.game.model.command_result_pb2 import CommandOutcome
 from idl.game.model.game_type_pb2 import GameType
+from idl.game.model.participant_state_pb2 import ParticipantStateKind
 from idl.lobby.model.event_pb2 import SeatTaken, TableStarted
 from idl.lobby.model.seat_pb2 import Seat, SeatStatus
 from idl.lobby.model.seat_result_pb2 import SeatOutcome
@@ -151,6 +152,16 @@ class UnoSessionControllerTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual([player.participant for player in session.view.players], [1, 2, 3])
         self.assertEqual(session.view.participant_to_act, FIRST_SEAT)
         self.assertTrue(session.view.may_draw)
+
+    async def test_the_session_says_what_everyone_holds(self) -> None:
+        session = await self.start()
+        self.assertEqual([status.participant for status in session.participant_statuses], [1, 2, 3])
+        self.assertEqual(
+            [item.count for status in session.participant_statuses for item in status.states],
+            [HAND_SIZE, HAND_SIZE, HAND_SIZE],
+        )
+        onlooker = require_session(await self.controller.read_game(TABLE_ID, ONLOOKER))
+        self.assertEqual(len(onlooker.participant_statuses), UNO_SEAT_COUNT)
 
     async def test_the_third_seat_is_the_third_participant(self) -> None:
         session = await self.start(THIRD_PLAYER)
@@ -344,6 +355,10 @@ class UnoSessionControllerTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(result.outcome, SeatOutcome.SEAT_OUTCOME_VACATED)
         after = require_session(await self.controller.read_game(TABLE_ID, SECOND_PLAYER))
         self.assertTrue(after.view.players[FIRST_SEAT - 1].has_withdrawn)
+        self.assertEqual(
+            [item.kind for item in after.participant_statuses[FIRST_SEAT - 1].states],
+            [ParticipantStateKind.PARTICIPANT_STATE_KIND_WITHDRAWN],
+        )
         self.assertEqual(after.view.participant_to_act, SECOND_SEAT)
         self.assertFalse(after.view.HasField("result"))
         self.assertEqual(after.version, started.version + 1)

@@ -3,6 +3,12 @@ import { CardColor, CardKind, CardSchema, type Card } from "@board-gamez/idl/uno
 import { PlayDirection, type UnoResult } from "@board-gamez/idl/uno/model/game_pb";
 import type { UnoSession } from "@board-gamez/idl/uno/model/session_pb";
 import type { HandCard, UnoPlayerSummary, UnoView } from "@board-gamez/idl/uno/model/view_pb";
+import type { ParticipantStatus } from "@board-gamez/idl/game/model/participant_state_pb";
+
+import {
+  toParticipantStateViews,
+  type ParticipantStateView,
+} from "../game/participant_state_views";
 
 import {
   CARD_COLOR_LABELS,
@@ -12,6 +18,7 @@ import {
   PLAY_DIRECTION_GLYPHS,
   RESULT_REASON_LABELS,
 } from "./uno_labels";
+import { UNO_PARTICIPANT_STATE_LABELS } from "./uno_participant_state_labels";
 
 /**
  * A UNO game, in the shape a screen draws it.
@@ -49,13 +56,16 @@ export type HandCardView = {
   readonly isPlayable: boolean;
 };
 
+/**
+ * One participant as the player list draws them. `states` is what the game
+ * says everyone may see of them, worded for UNO, in the order it listed them.
+ */
 export type PlayerView = {
   readonly participant: number;
   readonly label: string;
-  readonly cardCount: number;
   readonly isYou: boolean;
   readonly isToAct: boolean;
-  readonly hasWithdrawn: boolean;
+  readonly states: readonly ParticipantStateView[];
 };
 
 /**
@@ -105,7 +115,7 @@ export function toUnoGameView(session: UnoSession): UnoGameView {
   const participant = session.participant;
   const participantToAct = view?.participantToAct ?? NOT_PLAYING;
   const players = (view?.players ?? []).map((player: UnoPlayerSummary) =>
-    toPlayerView(player, participant, participantToAct),
+    toPlayerView(player, participant, participantToAct, session.participantStatuses),
   );
   const hand = (view?.hand ?? []).map((shown: HandCard, index: number) => toHandCardView(shown, index));
   const topCard = view?.topCard === undefined ? null : toCardView(view.topCard);
@@ -129,15 +139,15 @@ function toPlayerView(
   player: UnoPlayerSummary,
   viewer: number,
   participantToAct: number,
+  statuses: readonly ParticipantStatus[],
 ): PlayerView {
   const isYou = player.participant === viewer;
   return {
     participant: player.participant,
     label: isYou ? `Seat ${player.participant} (you)` : `Seat ${player.participant}`,
-    cardCount: player.cardCount,
     isYou,
     isToAct: player.participant === participantToAct,
-    hasWithdrawn: player.hasWithdrawn,
+    states: toParticipantStateViews(statuses, player.participant, UNO_PARTICIPANT_STATE_LABELS),
   };
 }
 

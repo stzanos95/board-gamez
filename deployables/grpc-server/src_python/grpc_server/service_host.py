@@ -14,6 +14,7 @@ from core.grpc.channel_options import ChannelOptions
 from core.queue.base_queue_publisher import BaseQueuePublisher
 from core.queue.provider import QueueProvider
 from game.controller.game_spec_controller import GameSpecController
+from game.controller.rules_controller import RulesController
 from game.controller.rules_registry import RulesRegistry
 from game.controller.session_controller import SessionController
 from game.repository.provider import SessionRepositoryProvider
@@ -125,8 +126,9 @@ class ServiceHost:
         configuration. Adding a domain is a dependency and one more field.
 
         Every product's rules are held in-process: the session controller
-        calls them directly, and the same object answers RulesService for a
-        tool that reaches it through this server.
+        calls them directly, and the same objects answer RulesService, routed
+        by the game type a request names, for a tool that reaches them
+        through this server.
         """
         table_repository = TableRepositoryProvider.get_table_repository(lobby.table_repository)
         session_repository = SessionRepositoryProvider.get_session_repository(
@@ -157,6 +159,7 @@ class ServiceHost:
             seats=seats,
             sessions=sessions,
             game_specs=GameSpecController(rules=rules),
+            rules=RulesController(rules=rules),
         )
 
     @staticmethod
@@ -174,6 +177,7 @@ class ServiceHost:
             LobbyServicers.add_seat_service(server, controllers.seats),
             GameServicers.add_session_service(server, controllers.sessions),
             GameServicers.add_game_spec_service(server, controllers.game_specs),
+            GameServicers.add_rules_service(server, controllers.rules),
         )
         product_names = tuple(
             name for product in products for name in product.add_servicers(server, controllers)

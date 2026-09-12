@@ -6,19 +6,24 @@ needs arrives as an argument, so nothing here reads configuration.
 """
 
 import grpc
-from idl.game.service import game_spec_pb2, session_pb2
+from idl.game.service import game_spec_pb2, rules_pb2, session_pb2
 from idl.game.service.game_spec_pb2_grpc import add_GameSpecServiceServicer_to_server
+from idl.game.service.rules_pb2_grpc import add_RulesServiceServicer_to_server
 from idl.game.service.session_pb2_grpc import add_SessionServiceServicer_to_server
 
 from game.controller.game_spec_controller import GameSpecController
+from game.controller.rules_controller import RulesController
 from game.controller.session_controller import SessionController
 from game.service.grpc_game_spec_service import GrpcGameSpecService
+from game.service.grpc_rules_service import GrpcRulesService
 from game.service.grpc_session_service import GrpcSessionService
 
 SESSION_SERVICE_NAME = "SessionService"
 SESSION_SERVICE_DESCRIPTOR = session_pb2.DESCRIPTOR.services_by_name[SESSION_SERVICE_NAME]
 GAME_SPEC_SERVICE_NAME = "GameSpecService"
 GAME_SPEC_SERVICE_DESCRIPTOR = game_spec_pb2.DESCRIPTOR.services_by_name[GAME_SPEC_SERVICE_NAME]
+RULES_SERVICE_NAME = "RulesService"
+RULES_SERVICE_DESCRIPTOR = rules_pb2.DESCRIPTOR.services_by_name[RULES_SERVICE_NAME]
 
 
 class GameServicers:
@@ -41,3 +46,11 @@ class GameServicers:
         """
         add_GameSpecServiceServicer_to_server(GrpcGameSpecService(controller=controller), server)
         return GAME_SPEC_SERVICE_DESCRIPTOR.full_name
+
+    @staticmethod
+    def add_rules_service(server: grpc.aio.Server, controller: RulesController) -> str:
+        """
+        Register the RulesService implementation, and answer its full name.
+        """
+        add_RulesServiceServicer_to_server(GrpcRulesService(controller=controller), server)
+        return RULES_SERVICE_DESCRIPTOR.full_name

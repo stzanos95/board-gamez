@@ -42,7 +42,7 @@ contracts/proto/idl/
 │   ├── model/     a session, a state, an action, a result, and what happened in a game
 │   ├── dto/       what SessionService, GameSpecService and RulesService carry
 │   ├── obj/       a stored session
-│   └── service/   SessionService, GameSpecService, and RulesService — implemented once per game
+│   └── service/   SessionService, GameSpecService, and RulesService — served once, routed by game type
 └── chess/     one game
     ├── model/     the rules' vocabulary, a seat's side, and a game or a table as one viewer sees it
     ├── dto/       what ChessService takes and hands out

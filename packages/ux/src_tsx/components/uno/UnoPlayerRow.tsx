@@ -1,45 +1,34 @@
-import Chip from "@mui/material/Chip";
 import Stack from "@mui/material/Stack";
-import Typography from "@mui/material/Typography";
 import { memo, type ReactElement } from "react";
 
+import type { ParticipantStateView } from "../../game/participant_state_views";
+import { ParticipantNameBubble } from "../game/ParticipantNameBubble";
+import { ParticipantStateChips } from "../game/ParticipantStateChips";
+
 const ROW_SX = { minHeight: 36 } as const;
-const WITHDRAWN_SX = { color: "text.secondary", textDecoration: "line-through" } as const;
 
 export type UnoPlayerRowProps = {
   readonly label: string;
-  readonly cardCount: number;
   readonly isYou: boolean;
   readonly isToAct: boolean;
-  readonly hasWithdrawn: boolean;
+  readonly states: readonly ParticipantStateView[];
 };
 
 /**
- * One participant: their seat, how many cards they hold, and whether it is
- * their turn.
+ * One participant: their name, in a bubble while it is their turn, and every
+ * state the game says they are in, to the right of it.
  */
 export const UnoPlayerRow = memo(function UnoPlayerRow(props: UnoPlayerRowProps): ReactElement {
-  const { label, cardCount, isYou, isToAct, hasWithdrawn } = props;
+  const { label, isYou, isToAct, states } = props;
 
-  const name = (
-    <Typography variant="body2" fontWeight={isYou ? 700 : 400} sx={hasWithdrawn ? WITHDRAWN_SX : undefined}>
-      {label}
-    </Typography>
-  );
+  const name = <ParticipantNameBubble label={label} isYou={isYou} isToAct={isToAct} />;
 
-  const count = hasWithdrawn ? (
-    <Chip size="small" label="Left" variant="outlined" />
-  ) : (
-    <Chip size="small" label={`${cardCount} cards`} variant="outlined" />
-  );
-
-  const turnChip = isToAct ? <Chip size="small" label="To act" color="primary" /> : null;
+  const stateChips = <ParticipantStateChips states={states} />;
 
   return (
     <Stack direction="row" spacing={1.5} alignItems="center" sx={ROW_SX}>
       {name}
-      {count}
-      {turnChip}
+      {stateChips}
     </Stack>
   );
 });

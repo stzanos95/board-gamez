@@ -10,13 +10,15 @@ import type { Any, Duration } from "@bufbuild/protobuf/wkt";
 import { file_google_protobuf_any, file_google_protobuf_duration } from "@bufbuild/protobuf/wkt";
 import type { GameResult } from "./game_result_pb";
 import { file_idl_game_model_game_result } from "./game_result_pb";
+import type { ParticipantStatus } from "./participant_state_pb";
+import { file_idl_game_model_participant_state } from "./participant_state_pb";
 import type { Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file idl/game/model/game_state.proto.
  */
 export const file_idl_game_model_game_state: GenFile = /*@__PURE__*/
-  fileDesc("Ch9pZGwvZ2FtZS9tb2RlbC9nYW1lX3N0YXRlLnByb3RvEg5pZGwuZ2FtZS5tb2RlbCKrAQoJR2FtZVN0YXRlEiUKB3BheWxvYWQYASABKAsyFC5nb29nbGUucHJvdG9idWYuQW55EhsKE3BhcnRpY2lwYW50c190b19hY3QYAiADKA0SKgoGcmVzdWx0GAMgASgLMhouaWRsLmdhbWUubW9kZWwuR2FtZVJlc3VsdBIuCgthY3RzX3dpdGhpbhgEIAEoCzIZLmdvb2dsZS5wcm90b2J1Zi5EdXJhdGlvbkI2WjRib2FyZGdhbWV6L2NvbnRyYWN0cy9nZW4vZ28vaWRsL2dhbWUvbW9kZWw7Z2FtZW1vZGVsYgZwcm90bzM", [file_google_protobuf_any, file_google_protobuf_duration, file_idl_game_model_game_result]);
+  fileDesc("Ch9pZGwvZ2FtZS9tb2RlbC9nYW1lX3N0YXRlLnByb3RvEg5pZGwuZ2FtZS5tb2RlbCLsAQoJR2FtZVN0YXRlEiUKB3BheWxvYWQYASABKAsyFC5nb29nbGUucHJvdG9idWYuQW55EhsKE3BhcnRpY2lwYW50c190b19hY3QYAiADKA0SKgoGcmVzdWx0GAMgASgLMhouaWRsLmdhbWUubW9kZWwuR2FtZVJlc3VsdBIuCgthY3RzX3dpdGhpbhgEIAEoCzIZLmdvb2dsZS5wcm90b2J1Zi5EdXJhdGlvbhI/ChRwYXJ0aWNpcGFudF9zdGF0dXNlcxgFIAMoCzIhLmlkbC5nYW1lLm1vZGVsLlBhcnRpY2lwYW50U3RhdHVzQjZaNGJvYXJkZ2FtZXovY29udHJhY3RzL2dlbi9nby9pZGwvZ2FtZS9tb2RlbDtnYW1lbW9kZWxiBnByb3RvMw", [file_google_protobuf_any, file_google_protobuf_duration, file_idl_game_model_game_result, file_idl_game_model_participant_state]);
 
 /**
  * One game, and the things about it that are true whatever game it is.
@@ -29,6 +31,10 @@ export const file_idl_game_model_game_state: GenFile = /*@__PURE__*/
  * names one; a game where others may react to what was just done names each of
  * them. Whichever of them acts first produces the next state, and the rest act
  * on that one. Empty once the game has a result.
+ *
+ * `participant_statuses` is what everyone may see of each participant: one
+ * entry per participant, in participant order, each carrying the conditions
+ * the game says they are in. A game with nothing to say leaves it empty.
  *
  * `acts_within` is how long this state stands with nobody acting before the
  * rules are asked what it becomes. It is measured from the write that stores
@@ -59,6 +65,11 @@ export type GameState = Message<"idl.game.model.GameState"> & {
    * @generated from field: google.protobuf.Duration acts_within = 4;
    */
   actsWithin?: Duration;
+
+  /**
+   * @generated from field: repeated idl.game.model.ParticipantStatus participant_statuses = 5;
+   */
+  participantStatuses: ParticipantStatus[];
 };
 
 /**

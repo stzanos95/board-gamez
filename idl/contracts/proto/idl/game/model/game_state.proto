@@ -7,6 +7,7 @@ package idl.game.model;
 import "google/protobuf/any.proto";
 import "google/protobuf/duration.proto";
 import "idl/game/model/game_result.proto";
+import "idl/game/model/participant_state.proto";
 
 option go_package = "boardgamez/contracts/gen/go/idl/game/model;gamemodel";
 
@@ -21,6 +22,10 @@ option go_package = "boardgamez/contracts/gen/go/idl/game/model;gamemodel";
 // them. Whichever of them acts first produces the next state, and the rest act
 // on that one. Empty once the game has a result.
 //
+// `participant_statuses` is what everyone may see of each participant: one
+// entry per participant, in participant order, each carrying the conditions
+// the game says they are in. A game with nothing to say leaves it empty.
+//
 // `acts_within` is how long this state stands with nobody acting before the
 // rules are asked what it becomes. It is measured from the write that stores
 // the state, and each state the rules answer carries its own. Unset when the
@@ -30,4 +35,5 @@ message GameState {
   repeated uint32 participants_to_act = 2;
   GameResult result = 3;  // Unset while the game is still being played.
   google.protobuf.Duration acts_within = 4;
+  repeated ParticipantStatus participant_statuses = 5;
 }

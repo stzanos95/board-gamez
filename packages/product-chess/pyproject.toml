@@ -79,7 +79,6 @@ select = [
 [tool.ruff.lint.per-file-ignores]
 # gRPC dispatches on the method names the schema declares, so a servicer keeps
 # protobuf's casing. These are the only files where that is true.
-"src_python/product_chess/service/grpc_rules_service.py" = ["N802"]
 "src_python/product_chess/service/grpc_chess_service.py" = ["N802"]
 
 [tool.ruff.lint.flake8-tidy-imports.banned-api]

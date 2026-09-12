@@ -1,30 +1,33 @@
 """
 UNO, between the platform's types and the game's own.
 
-The platform carries a game's state and a participant's action opaquely, and
-asks the rules through RulesService. Every conversion between what the platform
-holds and what the engine takes runs here, one named method per direction.
+The platform carries a game's state and a participant's action opaquely. Every
+conversion between what the platform holds and what the engine takes runs
+here, one named method per direction.
 """
 
 from google.protobuf import any_pb2
-from idl.game.dto import rules_pb2
 from idl.game.model.action_pb2 import Action
 from idl.game.model.game_result_pb2 import GameResult, ParticipantOutcome, ParticipantResult
-from idl.game.model.game_spec_pb2 import ParticipantBounds
 from idl.game.model.game_state_pb2 import GameState
 from idl.game.model.participant_pb2 import ParticipantRole
+from idl.game.model.participant_state_pb2 import (
+    ParticipantState,
+    ParticipantStateKind,
+    ParticipantStatus,
+)
 from idl.uno.model.action_pb2 import UnoAction
-from idl.uno.model.game_pb2 import UnoGame, UnoResult
+from idl.uno.model.game_pb2 import UnoGame, UnoHand, UnoResult
 from idl.uno.model.view_pb2 import UnoView
 
 NOBODY_TO_ACT: tuple[int, ...] = ()
 NO_WINNER = 0
+LAST_CARD = 1
 
 
 class UnoRulesAdapters:
     """
-    Every RulesService message and every platform type, converted to what UNO
-    takes and back.
+    Every platform type, converted to what UNO takes and back.
     """
 
     # --- the platform's state and action, to UNO's ---------------------------
@@ -49,24 +52,6 @@ class UnoRulesAdapters:
             return None
         return uno_action
 
-    @staticmethod
-    def withdraw_request_to_state(request: rules_pb2.WithdrawParticipantRequest) -> GameState:
-        return request.state
-
-    @staticmethod
-    def withdraw_request_to_participant(request: rules_pb2.WithdrawParticipantRequest) -> int:
-        return request.participant
-
-    @staticmethod
-    def game_state_to_withdraw_response(
-        state: GameState | None,
-    ) -> rules_pb2.WithdrawParticipantResponse:
-        """
-        An unset state is how the schema says the participant is not in the
-        game.
-        """
-        return rules_pb2.WithdrawParticipantResponse(state=state)
-
     # --- the platform's roles, to UNO's turn order ---------------------------
 
     @staticmethod
@@ -85,15 +70,42 @@ class UnoRulesAdapters:
     def uno_game_to_game_state(game: UnoGame) -> GameState:
         """
         The game as the platform holds it: the whole game packed, who acts
-        next, and the result once there is one. UNO has no clock here, so no
-        state runs out.
+        next, what everyone may see of each participant, and the result once
+        there is one. UNO has no clock here, so no state runs out.
         """
         is_over = game.HasField("result")
         return GameState(
             payload=UnoRulesAdapters.uno_game_to_payload(game),
             participants_to_act=NOBODY_TO_ACT if is_over else (game.participant_to_act,),
             result=UnoRulesAdapters.uno_result_to_game_result(game) if is_over else None,
+            participant_statuses=[
+                UnoRulesAdapters.uno_hand_to_participant_status(hand) for hand in game.hands
+            ],
         )
+
+    @staticmethod
+    def uno_hand_to_participant_status(hand: UnoHand) -> ParticipantStatus:
+        """
+        What everyone may see of one hand: how many cards it holds, that it is
+        down to its last card, or that its player has left.
+        """
+        if hand.has_withdrawn:
+            return ParticipantStatus(
+                participant=hand.participant,
+                states=[
+                    ParticipantState(kind=ParticipantStateKind.PARTICIPANT_STATE_KIND_WITHDRAWN)
+                ],
+            )
+        states = [
+            ParticipantState(
+                kind=ParticipantStateKind.PARTICIPANT_STATE_KIND_HOLDING, count=len(hand.cards)
+            )
+        ]
+        if len(hand.cards) == LAST_CARD:
+            states.append(
+                ParticipantState(kind=ParticipantStateKind.PARTICIPANT_STATE_KIND_LAST_ONE)
+            )
+        return ParticipantStatus(participant=hand.participant, states=states)
 
     @staticmethod
     def uno_game_to_payload(game: UnoGame) -> any_pb2.Any:
@@ -132,68 +144,3 @@ class UnoRulesAdapters:
         if participant == winner:
             return ParticipantOutcome.PARTICIPANT_OUTCOME_WON
         return ParticipantOutcome.PARTICIPANT_OUTCOME_LOST
-
-    # --- a request, to the arguments an operation takes ----------------------
-
-    @staticmethod
-    def create_request_to_participant_roles(
-        request: rules_pb2.CreateGameRequest,
-    ) -> tuple[ParticipantRole, ...]:
-        return tuple(request.participant_roles)
-
-    @staticmethod
-    def create_request_to_seed(request: rules_pb2.CreateGameRequest) -> int:
-        return request.seed
-
-    @staticmethod
-    def apply_request_to_state(request: rules_pb2.ApplyActionRequest) -> GameState:
-        return request.state
-
-    @staticmethod
-    def expire_request_to_state(request: rules_pb2.ExpireDeadlineRequest) -> GameState:
-        return request.state
-
-    @staticmethod
-    def apply_request_to_action(request: rules_pb2.ApplyActionRequest) -> Action:
-        return request.action
-
-    @staticmethod
-    def view_request_to_state(request: rules_pb2.ReadViewRequest) -> GameState:
-        return request.state
-
-    @staticmethod
-    def view_request_to_participant(request: rules_pb2.ReadViewRequest) -> int:
-        return request.participant
-
-    # --- what an operation answers, to a response ----------------------------
-
-    @staticmethod
-    def game_state_to_create_response(state: GameState | None) -> rules_pb2.CreateGameResponse:
-        """
-        An unset state is how the schema says the game does not take that many.
-        """
-        return rules_pb2.CreateGameResponse(state=state)
-
-    @staticmethod
-    def game_state_to_apply_response(state: GameState | None) -> rules_pb2.ApplyActionResponse:
-        """
-        An unset state is how the schema says the action was not legal.
-        """
-        return rules_pb2.ApplyActionResponse(state=state)
-
-    @staticmethod
-    def game_state_to_expire_response(
-        state: GameState | None,
-    ) -> rules_pb2.ExpireDeadlineResponse:
-        """
-        An unset state is how the schema says the state carried no deadline.
-        """
-        return rules_pb2.ExpireDeadlineResponse(state=state)
-
-    @staticmethod
-    def view_to_view_response(view: any_pb2.Any) -> rules_pb2.ReadViewResponse:
-        return rules_pb2.ReadViewResponse(view=view)
-
-    @staticmethod
-    def bounds_to_bounds_response(bounds: ParticipantBounds) -> rules_pb2.ReadBoundsResponse:
-        return rules_pb2.ReadBoundsResponse(bounds=bounds)

@@ -36,6 +36,7 @@ no clock and one actor at a time, so copying chess answers none of those four.
 | Does the game draw on chance? | `create_game` receives a `seed`; the state carries what the sequence needs to continue. The rules call no random source of their own | No |
 | Does a state expire — a clock, a turn timer? | The state sets `acts_within`; `expire_deadline` answers what the state becomes. A game with no clock sets nothing and answers `None` | No |
 | What does leaving do to the game? | `withdraw_participant` answers the state after the participant is gone. It is asked in or out of turn and never once there is a result | The leaver resigns |
+| What may everyone see of each participant? | Every `GameState` carries `participant_statuses`, one per participant, each a list of `ParticipantState`s of a kind the platform names in `game/model/participant_state.proto`. A kind the game needs and the platform lacks is one new member there, one default wording and one tone in the browser | Nothing. UNO: holding N cards, down to the last one, withdrawn |
 | How does the game end, and how does each participant come out? | The state carries a `GameResult` once it is over, one `ParticipantResult` per participant. A scored game says its score in its own state | Win, loss, draw |
 
 Write the answers down in the reply or the pull request, one line each. An
@@ -125,20 +126,20 @@ names. `pyproject.toml` is chess's with the names changed: it depends on
 | `controller/<game>_rules.py` | Business | `BaseRules` for this game. Decides what a participant number means, refuses a wrong count, refuses an action out of turn or not legal, answers `read_view`, `withdraw_participant`, `expire_deadline`, `read_bounds` | `chess_rules.py` |
 | `controller/<game>_seating.py` | Business | `BaseSeating`. Which open seats a player may take and with which role. Writes nothing | `chess_seating.py` |
 | `controller/<game>_session_controller.py` | Business | Composes `TableController`, `SeatController` and `SessionController`. Answers every `<Game>Service` operation in the game's own types: reads the table with roles opened, lists and takes seat choices, decides who may start, plays an action | `chess_session_controller.py` |
-| `adapters/<game>_rules_adapters.py` | Adapter | `GameState` ↔ the game's state message, `Action` → the game's action, `ParticipantRole`s → whatever the engine is built from, and every `RulesService` request and response | `chess_rules_adapters.py` |
+| `adapters/<game>_rules_adapters.py` | Adapter | `GameState` ↔ the game's state message, `Action` → the game's action, `ParticipantRole`s → whatever the engine is built from, and the game's own facts → each participant's `ParticipantStatus` | `chess_rules_adapters.py` |
 | `adapters/<game>_seat_adapters.py` | Adapter | The one place a role is packed and opened. `Table` → `<Game>Table`, `SeatChoice` ↔ `<Game>SeatChoice`, `SeatResult` → `<Game>SeatResult`, and every seat request and response in both protobuf and pydantic | `chess_seat_adapters.py` |
 | `adapters/<game>_session_adapters.py` | Adapter | `SessionView` → `<Game>Session`, `CommandResult` → `ActionResult`, the action into a payload, and every game request and response in both protobuf and pydantic | `chess_session_adapters.py` |
-| `service/grpc_rules_service.py` | Service | `RulesServiceServicer` over `<Game>Rules`: adapt, call, adapt | as named |
 | `service/grpc_<game>_service.py` | Service | `<Game>ServiceServicer` over `<Game>SessionController`: adapt, call, adapt | `grpc_chess_service.py` |
 | `service/grpc_<game>_client.py` | Service | The stub the gateway calls the server through. Built unconnected, dialled by `connect` | `grpc_chess_client.py` |
 | `service/http_<game>_service.py` | Service | The generated router's base over the client: call, hand back | `http_chess_service.py` |
-| `service/product_<game>_servicers.py` | Service | `add_rules_service` and `add_<game>_service`: register on a server and answer the full name | `product_chess_servicers.py` |
+| `service/product_<game>_servicers.py` | Service | `add_<game>_service`: register on a server and answer the full name | `product_chess_servicers.py` |
 | `service/product_<game>_routers.py` | Service | `<game>_service(client)`: the router the gateway includes | `product_chess_routers.py` |
 
-Every `__init__.py` is empty. `RulesService` is served so a tool can reach
-the rules through the server; the session controller calls the same object
-in-process. `SeatingService` is declared in the schema and served by no
-product; the lobby asks `BaseSeating` in-process.
+Every `__init__.py` is empty. `RulesService` is served once by the platform
+over every hosted game's `BaseRules`, routed by the game type a request
+names, so a product serves no `RulesService` of its own. `SeatingService` is
+declared in the schema and served by no product; the lobby asks `BaseSeating`
+in-process.
 
 Tests: `tests_python/test_<game>_rules.py` drives `BaseRules` with packed
 actions and asserts on the state and the result;
@@ -153,7 +154,7 @@ package, never imported across packages — see chess's `in_memory_repositories.
 | Edit | What | Chess |
 | ---- | ---- | ----- |
 | `pyproject.toml` | Add `product-<game>` to `dependencies` and to `[tool.uv.sources]` by relative path, then `scripts/lock.sh` | `product-chess` |
-| `src_python/grpc_server/products/<game>_hosted_product.py` | `BaseHostedProduct`: builds the rules and the seating in `__init__`, answers the game type, and registers the product's servicers over the platform's controllers | `chess_hosted_product.py` |
+| `src_python/grpc_server/products/<game>_hosted_product.py` | `BaseHostedProduct`: builds the rules and the seating in `__init__`, answers the game type, and registers the product's own service over the platform's controllers | `chess_hosted_product.py` |
 | `src_python/grpc_server/products/hosted_products.py` | One entry in `HostedProducts.build` | |
 | `tests/test_service_host.py` | The registered names now include the product's | |
 
@@ -207,8 +208,9 @@ Then the game's own directory, in the same shape as `src_tsx/chess/`:
 | `<game>/<game>_packed_types.ts` | The `DescFile`s the registry entry names | `chess_packed_types.ts` |
 | `<game>/<game>_views.ts`, `seat_views.ts` | Pure functions from the generated messages to what a component draws | `chess_views.ts` |
 | `<game>/<game>_labels.ts` | Records from the game's enums to text | `chess_labels.ts` |
+| `<game>/<game>_participant_state_labels.ts` | The game's wording for each `ParticipantStateKind`, spread over `DEFAULT_PARTICIPANT_STATE_LABELS` from `src_tsx/game/`. A game that answers no statuses, or is content with the default wording, writes none | UNO: `uno_participant_state_labels.ts` |
 | `<game>/use_*.ts` | One hook per query or mutation: the table, the seat choices, the session, taking a seat, starting, playing | `use_chess_session.ts`, `use_play_action.ts` |
-| `components/<game>/` | Rendering only: values and callbacks in, elements out | `ChessScreen.tsx` |
+| `components/<game>/` | Rendering only: values and callbacks in, elements out. A player list draws each name through `components/game/ParticipantNameBubble` and each participant's statuses through `components/game/ParticipantStateChips`, so every game shows a turn and a state the same way | `ChessScreen.tsx`; UNO: `UnoPlayerRow.tsx` |
 
 A setting the game needs at bringup — a default skin — is a section in
 `deployables/gamez-ux/config/gamez_ux.json` read by `src_tsx/config/ux_config.ts`.

@@ -150,11 +150,20 @@ file in `lobby` or `game` changes.
 
 A game is two packages. `packages/chess` is the rules and performs no I/O: no
 printing, no reading, no storage, so it is callable from a CLI, a server, or a
-test. `packages/product-chess` implements the platform's `RulesService` over
+test. `packages/product-chess` implements the platform's `BaseRules` over
 those rules, decides what a participant number means in chess, and serves
 `ChessService`: the same game with its state opened, so a browser plays chess
-through chess's own types. `grpc-server` holds the product's rules in-process
-and hands them to the session controller; there is no product process.
+through chess's own types. `grpc-server` holds every product's rules
+in-process in a `RulesRegistry` and hands them to the session controller;
+there is no product process. `RulesService` is served once, by the platform,
+and every request names the game whose rules it asks.
+
+Beside who may act, every state carries `participant_statuses`: what everyone
+at the table may see of each participant, as `ParticipantState`s of a kind the
+platform names — holding a count of cards, down to the last one, withdrawn.
+A game's rules answer them with each state; the platform stores and relays
+them unprojected, and a game's session carries them to the browser, which
+words each kind in the game's own terms.
 
 ### Domains reference each other by identifier
 

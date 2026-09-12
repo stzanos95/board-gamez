@@ -187,6 +187,7 @@ class UnoSessionAdapters:
             participant=view.participant,
             last_command_id=view.last_command_id,
             version=view.version,
+            participant_statuses=view.state.participant_statuses,
         )
 
     @staticmethod

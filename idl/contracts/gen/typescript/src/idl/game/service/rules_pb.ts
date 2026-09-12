@@ -18,9 +18,10 @@ export const file_idl_game_service_rules: GenFile = /*@__PURE__*/
 /**
  * What a game answers, whatever game it is.
  *
- * Implemented once per game and reached under the game type it was configured
- * for. Every call carries the state it acts on, so an implementation keeps
- * nothing between calls and holds no game of its own.
+ * Served once, by the platform. Every request names the game whose rules it
+ * asks, and a game this process does not host answers an unset response.
+ * Every call carries the state it acts on, so an implementation keeps nothing
+ * between calls and holds no game of its own.
  *
  * Nothing outside the platform asks a game for its rules, so no HTTP path is
  * declared here.

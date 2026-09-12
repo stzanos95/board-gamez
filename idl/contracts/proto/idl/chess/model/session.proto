@@ -7,6 +7,7 @@ package idl.chess.model;
 import "idl/chess/model/game.proto";
 import "idl/chess/model/piece.proto";
 import "idl/game/model/command_result.proto";
+import "idl/game/model/participant_state.proto";
 
 option go_package = "boardgamez/contracts/gen/go/idl/chess/model;chessmodel";
 
@@ -27,6 +28,7 @@ message ChessSession {
   Color color = 3;
   string last_command_id = 4;  // The command that produced this game.
   uint64 version = 5;
+  repeated idl.game.model.ParticipantStatus participant_statuses = 6;  // What everyone may see of each participant.
 }
 
 // What happened to an action, and the game as its sender may now see it.

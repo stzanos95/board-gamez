@@ -5,6 +5,7 @@ syntax = "proto3";
 package idl.uno.model;
 
 import "idl/game/model/command_result.proto";
+import "idl/game/model/participant_state.proto";
 import "idl/uno/model/view.proto";
 
 option go_package = "boardgamez/contracts/gen/go/idl/uno/model;unomodel";
@@ -26,6 +27,7 @@ message UnoSession {
   uint32 participant = 3;
   string last_command_id = 4;  // The command that produced this game.
   uint64 version = 5;
+  repeated idl.game.model.ParticipantStatus participant_statuses = 6;  // What everyone may see of each participant.
 }
 
 // What happened to an action, and the game as its sender may now see it.

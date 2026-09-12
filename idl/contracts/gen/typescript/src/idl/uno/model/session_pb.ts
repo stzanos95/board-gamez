@@ -8,6 +8,8 @@ import type { GenFile, GenMessage } from "@bufbuild/protobuf/codegenv1";
 import { fileDesc, messageDesc } from "@bufbuild/protobuf/codegenv1";
 import type { CommandOutcome } from "../../game/model/command_result_pb";
 import { file_idl_game_model_command_result } from "../../game/model/command_result_pb";
+import type { ParticipantStatus } from "../../game/model/participant_state_pb";
+import { file_idl_game_model_participant_state } from "../../game/model/participant_state_pb";
 import type { UnoView } from "./view_pb";
 import { file_idl_uno_model_view } from "./view_pb";
 import type { Message } from "@bufbuild/protobuf";
@@ -16,7 +18,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file idl/uno/model/session.proto.
  */
 export const file_idl_uno_model_session: GenFile = /*@__PURE__*/
-  fileDesc("ChtpZGwvdW5vL21vZGVsL3Nlc3Npb24ucHJvdG8SDWlkbC51bm8ubW9kZWwifQoKVW5vU2Vzc2lvbhIKCgJpZBgBIAEoCRIkCgR2aWV3GAIgASgLMhYuaWRsLnVuby5tb2RlbC5Vbm9WaWV3EhMKC3BhcnRpY2lwYW50GAMgASgNEhcKD2xhc3RfY29tbWFuZF9pZBgEIAEoCRIPCgd2ZXJzaW9uGAUgASgEImsKDEFjdGlvblJlc3VsdBIvCgdvdXRjb21lGAEgASgOMh4uaWRsLmdhbWUubW9kZWwuQ29tbWFuZE91dGNvbWUSKgoHc2Vzc2lvbhgCIAEoCzIZLmlkbC51bm8ubW9kZWwuVW5vU2Vzc2lvbkI0WjJib2FyZGdhbWV6L2NvbnRyYWN0cy9nZW4vZ28vaWRsL3Vuby9tb2RlbDt1bm9tb2RlbGIGcHJvdG8z", [file_idl_game_model_command_result, file_idl_uno_model_view]);
+  fileDesc("ChtpZGwvdW5vL21vZGVsL3Nlc3Npb24ucHJvdG8SDWlkbC51bm8ubW9kZWwivgEKClVub1Nlc3Npb24SCgoCaWQYASABKAkSJAoEdmlldxgCIAEoCzIWLmlkbC51bm8ubW9kZWwuVW5vVmlldxITCgtwYXJ0aWNpcGFudBgDIAEoDRIXCg9sYXN0X2NvbW1hbmRfaWQYBCABKAkSDwoHdmVyc2lvbhgFIAEoBBI/ChRwYXJ0aWNpcGFudF9zdGF0dXNlcxgGIAMoCzIhLmlkbC5nYW1lLm1vZGVsLlBhcnRpY2lwYW50U3RhdHVzImsKDEFjdGlvblJlc3VsdBIvCgdvdXRjb21lGAEgASgOMh4uaWRsLmdhbWUubW9kZWwuQ29tbWFuZE91dGNvbWUSKgoHc2Vzc2lvbhgCIAEoCzIZLmlkbC51bm8ubW9kZWwuVW5vU2Vzc2lvbkI0WjJib2FyZGdhbWV6L2NvbnRyYWN0cy9nZW4vZ28vaWRsL3Vuby9tb2RlbDt1bm9tb2RlbGIGcHJvdG8z", [file_idl_game_model_command_result, file_idl_game_model_participant_state, file_idl_uno_model_view]);
 
 /**
  * One game of UNO being played, projected for one viewer.
@@ -60,6 +62,13 @@ export type UnoSession = Message<"idl.uno.model.UnoSession"> & {
    * @generated from field: uint64 version = 5;
    */
   version: bigint;
+
+  /**
+   * What everyone may see of each participant.
+   *
+   * @generated from field: repeated idl.game.model.ParticipantStatus participant_statuses = 6;
+   */
+  participantStatuses: ParticipantStatus[];
 };
 
 /**

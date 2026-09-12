@@ -5,8 +5,9 @@ from idl.game.model.action_pb2 import Action
 from idl.game.model.game_result_pb2 import ParticipantOutcome
 from idl.game.model.game_state_pb2 import GameState
 from idl.game.model.participant_pb2 import ParticipantRole
+from idl.game.model.participant_state_pb2 import ParticipantStateKind
 from idl.uno.model.card_pb2 import CARD_KIND_WILD, Card
-from idl.uno.model.game_pb2 import UnoGame
+from idl.uno.model.game_pb2 import UnoGame, UnoHand
 from idl.uno.model.view_pb2 import UnoView
 from uno.deck.deck_builder import DeckBuilder
 from uno.engine.uno_engine import HAND_SIZE
@@ -165,6 +166,37 @@ class UnoRulesTest(unittest.IsolatedAsyncioTestCase):
         self.assertTrue((await self.rules.read_view(state, SPECTATOR)).Unpack(view))
         self.assertEqual(len(view.hand), 0)
         self.assertTrue(view.HasField("top_card"))
+
+    async def test_every_participant_is_shown_holding_their_cards(self) -> None:
+        state = await self.new_game()
+        self.assertEqual(
+            [status.participant for status in state.participant_statuses], [ONE, TWO, THREE]
+        )
+        for status in state.participant_statuses:
+            self.assertEqual(
+                [(item.kind, item.count) for item in status.states],
+                [(ParticipantStateKind.PARTICIPANT_STATE_KIND_HOLDING, HAND_SIZE)],
+            )
+
+    async def test_a_hand_down_to_one_card_is_shown_as_the_last_one(self) -> None:
+        status = UnoRulesAdapters.uno_hand_to_participant_status(
+            UnoHand(participant=ONE, cards=[Card(kind=CARD_KIND_WILD)])
+        )
+        self.assertEqual(
+            [item.kind for item in status.states],
+            [
+                ParticipantStateKind.PARTICIPANT_STATE_KIND_HOLDING,
+                ParticipantStateKind.PARTICIPANT_STATE_KIND_LAST_ONE,
+            ],
+        )
+
+    async def test_a_player_who_left_is_shown_withdrawn(self) -> None:
+        state = await self.new_game()
+        after = require_state(await self.rules.withdraw_participant(state, ONE))
+        self.assertEqual(
+            [item.kind for item in after.participant_statuses[0].states],
+            [ParticipantStateKind.PARTICIPANT_STATE_KIND_WITHDRAWN],
+        )
 
     async def test_no_state_carries_a_deadline(self) -> None:
         state = await self.new_game()

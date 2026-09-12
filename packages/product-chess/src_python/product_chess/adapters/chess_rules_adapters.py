@@ -1,9 +1,9 @@
 """
 Chess, between the platform's types and the game's own.
 
-The platform carries a game's state and a participant's action opaquely, and
-asks the rules through RulesService. Every conversion between what the platform
-holds and what the engine takes runs here, one named method per direction.
+The platform carries a game's state and a participant's action opaquely. Every
+conversion between what the platform holds and what the engine takes runs
+here, one named method per direction.
 """
 
 from chess.adapters.game_adapters import GameAdapters
@@ -12,10 +12,8 @@ from google.protobuf import any_pb2
 from idl.chess.model import game_pb2
 from idl.chess.model.action_pb2 import ChessAction
 from idl.chess.model.piece_pb2 import COLOR_BLACK, COLOR_WHITE, Color
-from idl.game.dto import rules_pb2
 from idl.game.model.action_pb2 import Action
 from idl.game.model.game_result_pb2 import GameResult, ParticipantOutcome, ParticipantResult
-from idl.game.model.game_spec_pb2 import ParticipantBounds
 from idl.game.model.game_state_pb2 import GameState
 from idl.game.model.participant_pb2 import ParticipantRole
 
@@ -51,24 +49,6 @@ class ChessRulesAdapters:
         if not action.payload.Unpack(chess_action):
             return None
         return chess_action
-
-    @staticmethod
-    def withdraw_request_to_state(request: rules_pb2.WithdrawParticipantRequest) -> GameState:
-        return request.state
-
-    @staticmethod
-    def withdraw_request_to_participant(request: rules_pb2.WithdrawParticipantRequest) -> int:
-        return request.participant
-
-    @staticmethod
-    def game_state_to_withdraw_response(
-        state: GameState | None,
-    ) -> rules_pb2.WithdrawParticipantResponse:
-        """
-        An unset state is how the schema says the participant is not in the
-        game.
-        """
-        return rules_pb2.WithdrawParticipantResponse(state=state)
 
     # --- the platform's roles, to chess's roster ----------------------------
 
@@ -161,68 +141,3 @@ class ChessRulesAdapters:
                 for player in players
             ]
         )
-
-    # --- a request, to the arguments an operation takes ----------------------
-
-    @staticmethod
-    def create_request_to_participant_roles(
-        request: rules_pb2.CreateGameRequest,
-    ) -> tuple[ParticipantRole, ...]:
-        return tuple(request.participant_roles)
-
-    @staticmethod
-    def create_request_to_seed(request: rules_pb2.CreateGameRequest) -> int:
-        return request.seed
-
-    @staticmethod
-    def apply_request_to_state(request: rules_pb2.ApplyActionRequest) -> GameState:
-        return request.state
-
-    @staticmethod
-    def expire_request_to_state(request: rules_pb2.ExpireDeadlineRequest) -> GameState:
-        return request.state
-
-    @staticmethod
-    def apply_request_to_action(request: rules_pb2.ApplyActionRequest) -> Action:
-        return request.action
-
-    @staticmethod
-    def view_request_to_state(request: rules_pb2.ReadViewRequest) -> GameState:
-        return request.state
-
-    @staticmethod
-    def view_request_to_participant(request: rules_pb2.ReadViewRequest) -> int:
-        return request.participant
-
-    # --- what an operation answers, to a response ----------------------------
-
-    @staticmethod
-    def game_state_to_create_response(state: GameState | None) -> rules_pb2.CreateGameResponse:
-        """
-        An unset state is how the schema says the game does not take that many.
-        """
-        return rules_pb2.CreateGameResponse(state=state)
-
-    @staticmethod
-    def game_state_to_apply_response(state: GameState | None) -> rules_pb2.ApplyActionResponse:
-        """
-        An unset state is how the schema says the action was not legal.
-        """
-        return rules_pb2.ApplyActionResponse(state=state)
-
-    @staticmethod
-    def game_state_to_expire_response(
-        state: GameState | None,
-    ) -> rules_pb2.ExpireDeadlineResponse:
-        """
-        An unset state is how the schema says the state carried no deadline.
-        """
-        return rules_pb2.ExpireDeadlineResponse(state=state)
-
-    @staticmethod
-    def view_to_view_response(view: any_pb2.Any) -> rules_pb2.ReadViewResponse:
-        return rules_pb2.ReadViewResponse(view=view)
-
-    @staticmethod
-    def bounds_to_bounds_response(bounds: ParticipantBounds) -> rules_pb2.ReadBoundsResponse:
-        return rules_pb2.ReadBoundsResponse(bounds=bounds)

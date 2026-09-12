@@ -17,8 +17,8 @@ from grpc_server.products.base_hosted_product import BaseHostedProduct
 
 class UnoHostedProduct(BaseHostedProduct):
     """
-    The rules of UNO, how UNO seats its players, and the two services UNO
-    answers: RulesService and UnoService.
+    The rules of UNO, how UNO seats its players, and the service UNO
+    answers: UnoService.
     """
 
     def __init__(self) -> None:
@@ -40,7 +40,4 @@ class UnoHostedProduct(BaseHostedProduct):
         controller = UnoSessionController(
             tables=platform.tables, seats=platform.seats, sessions=platform.sessions
         )
-        return (
-            ProductUnoServicers.add_rules_service(server, self._rules),
-            ProductUnoServicers.add_uno_service(server, controller),
-        )
+        return (ProductUnoServicers.add_uno_service(server, controller),)

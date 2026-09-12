@@ -28,9 +28,10 @@ if _version_not_supported:
 class RulesServiceStub(object):
     """What a game answers, whatever game it is.
 
-    Implemented once per game and reached under the game type it was configured
-    for. Every call carries the state it acts on, so an implementation keeps
-    nothing between calls and holds no game of its own.
+    Served once, by the platform. Every request names the game whose rules it
+    asks, and a game this process does not host answers an unset response.
+    Every call carries the state it acts on, so an implementation keeps nothing
+    between calls and holds no game of its own.
 
     Nothing outside the platform asks a game for its rules, so no HTTP path is
     declared here.
@@ -77,9 +78,10 @@ class RulesServiceStub(object):
 class RulesServiceServicer(object):
     """What a game answers, whatever game it is.
 
-    Implemented once per game and reached under the game type it was configured
-    for. Every call carries the state it acts on, so an implementation keeps
-    nothing between calls and holds no game of its own.
+    Served once, by the platform. Every request names the game whose rules it
+    asks, and a game this process does not host answers an unset response.
+    Every call carries the state it acts on, so an implementation keeps nothing
+    between calls and holds no game of its own.
 
     Nothing outside the platform asks a game for its rules, so no HTTP path is
     declared here.
@@ -165,9 +167,10 @@ def add_RulesServiceServicer_to_server(servicer, server):
 class RulesService(object):
     """What a game answers, whatever game it is.
 
-    Implemented once per game and reached under the game type it was configured
-    for. Every call carries the state it acts on, so an implementation keeps
-    nothing between calls and holds no game of its own.
+    Served once, by the platform. Every request names the game whose rules it
+    asks, and a game this process does not host answers an unset response.
+    Every call carries the state it acts on, so an implementation keeps nothing
+    between calls and holds no game of its own.
 
     Nothing outside the platform asks a game for its rules, so no HTTP path is
     declared here.
