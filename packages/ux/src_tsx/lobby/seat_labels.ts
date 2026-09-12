@@ -1,7 +1,8 @@
 import { SeatOutcome } from "@board-gamez/idl/lobby/model/seat_result_pb";
 
 /**
- * What to tell the player about a seat being taken, or null when it worked.
+ * What to tell the player about a change to their place at a table, or null
+ * when it worked.
  */
 export const SEAT_OUTCOME_PROBLEMS: Record<SeatOutcome, string | null> = {
   [SeatOutcome.UNSPECIFIED]: "The lobby did not say what happened to that seat.",
@@ -13,4 +14,10 @@ export const SEAT_OUTCOME_PROBLEMS: Record<SeatOutcome, string | null> = {
   [SeatOutcome.LEFT]: null,
   [SeatOutcome.NOT_SEATED]: "You are not seated at this table.",
   [SeatOutcome.NOT_AT_TABLE]: "You are not at this table.",
+  [SeatOutcome.CREATED]: null,
+  [SeatOutcome.JOINED]: null,
+  [SeatOutcome.ALREADY_AT_TABLE]: "You are already at this table.",
+  [SeatOutcome.NOT_ACCEPTING_PLAYERS]: "This table is no longer taking players.",
+  [SeatOutcome.GAME_NOT_HOSTED]: "That game is not hosted here.",
+  [SeatOutcome.SEAT_COUNT_NOT_ALLOWED]: "That game cannot be played with that many seats.",
 };

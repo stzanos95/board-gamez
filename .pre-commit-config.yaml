@@ -130,3 +130,11 @@ repos:
         types: [python]
         files: ^deployables/grpc-server/
         pass_filenames: false
+
+      - id: mypy-websocket-server
+        name: mypy (deployables/websocket-server)
+        entry: uv run --directory deployables/websocket-server --quiet python -m mypy
+        language: system
+        types: [python]
+        files: ^deployables/websocket-server/
+        pass_filenames: false

@@ -1,0 +1,35 @@
+# Settings for the socket server.
+#
+# This file is the app's bringup: it is parsed into WebsocketServerConfig, and
+# nothing in the app reads the environment. To run with different settings, copy
+# this file and pass it:  websocket-server --config /path/to/your.yaml
+application:
+  name: board-gamez websocket server
+  version: "0.1.0"
+
+server:
+  # Plain HTTP. TLS is terminated ahead of this process.
+  host: "0.0.0.0"
+  port: 8082
+  # critical, error, warning, info or debug.
+  log_level: info
+  # A socket that has carried nothing for this long is closed. 0 disables the
+  # timeout. The server pings on its own to keep an idle socket open, so a
+  # browser that is still connected is never closed for silence.
+  idle_timeout_seconds: 120
+  # A browser sends nothing over this socket. A frame larger than this is
+  # refused.
+  max_payload_bytes: 1024
+
+# Where events arrive from. Every source is consumed, and every source is
+# subscribed to a channel while a socket watches it. `queue` selects, and the
+# section it names must be present.
+sources:
+  - queue: redis
+    redis_config:
+      host: "127.0.0.1"
+      port: 6379
+      database: 0
+      # Begins every channel this source subscribes on, so one instance can
+      # carry more than one deployment. Set together with the publisher's.
+      channel_prefix: "gamez"

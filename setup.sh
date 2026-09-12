@@ -26,6 +26,7 @@ GAME_DIR="$REPO_ROOT/packages/game"
 PRODUCT_CHESS_DIR="$REPO_ROOT/packages/product-chess"
 SERVER_DIR="$REPO_ROOT/deployables/grpc-server"
 GATEWAY_DIR="$REPO_ROOT/deployables/fastapi-gateway"
+SOCKET_SERVER_DIR="$REPO_ROOT/deployables/websocket-server"
 INFRA_DIR="$REPO_ROOT/infra"
 DEV_VENV_DIR="$REPO_ROOT/.dev-venv"
 DEV_VENV_PYTHON="$DEV_VENV_DIR/bin/python"
@@ -36,6 +37,11 @@ PROFILE_FILE="$HOME/.bashrc"
 PROFILE_MARKER="# >>> board-gamez setup >>>"
 MINIMUM_PYTHON_MINOR=13
 DOCKER_PACKAGES=(docker.io docker-compose-v2 docker-buildx)
+# socketify's native library is linked against libuv, which its wheel does not
+# carry. Without it the socket server, and its tests, cannot import the library
+# on this machine. The container image installs it itself.
+SOCKET_LIBRARY="libuv.so.1"
+SOCKET_LIBRARY_PACKAGE="libuv1t64"
 # Kept in step with default_install_hook_types in .pre-commit-config.yaml.
 HOOK_TYPES=(pre-commit pre-push)
 
@@ -238,6 +244,7 @@ ensure_project_environments() {
     ensure_project_environment "$PRODUCT_CHESS_DIR" "packages/product-chess"
     ensure_project_environment "$SERVER_DIR" "deployables/grpc-server"
     ensure_project_environment "$GATEWAY_DIR" "deployables/fastapi-gateway"
+    ensure_project_environment "$SOCKET_SERVER_DIR" "deployables/websocket-server"
 }
 
 # --- one environment for the editor -----------------------------------------
@@ -261,6 +268,7 @@ DEV_VENV_PROJECTS=(
     "$PRODUCT_CHESS_DIR"
     "$SERVER_DIR"
     "$GATEWAY_DIR"
+    "$SOCKET_SERVER_DIR"
 )
 # ruff is pinned to the rev in .pre-commit-config.yaml, so the editor and the
 # hook format identically.
@@ -437,6 +445,16 @@ install_docker_packages() {
     changed "installed ${missing[*]}"
 }
 
+ensure_socket_library() {
+    step "Socket library"
+    if ldconfig -p 2>/dev/null | grep -q "$SOCKET_LIBRARY"; then
+        already "$SOCKET_LIBRARY"
+        return 0
+    fi
+    warn "$SOCKET_LIBRARY is not installed; deployables/websocket-server cannot run outside a container"
+    note "sudo apt-get install $SOCKET_LIBRARY_PACKAGE"
+}
+
 ensure_docker() {
     step "Docker"
     if command -v docker >/dev/null 2>&1; then
@@ -554,6 +572,7 @@ main() {
     ensure_project_environments || true
     ensure_dev_venv || true
     ensure_git_hooks || true
+    ensure_socket_library || true
     ensure_docker
     ensure_docker_image || true
     run_test_suites

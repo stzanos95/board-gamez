@@ -1,15 +1,22 @@
 """
-What is done to a seat.
+What is done to a player's place at a table.
 
-The one place the lobby decides who may sit where, and what giving a seat up
-does. The rules every game shares are here: a seat is taken only while the
+The one place the lobby decides how a table is opened and come to, who may sit
+where, and what giving a seat up does. The rules every game shares are here: a
+table is opened for a hosted game with a seat count the game allows, a table
+that is finished or abandoned takes nobody, a seat is taken only while the
 table waits for players, a player holds one seat at a time, a seat is taken
 only as one of the choices its game offered, and a player who gives up a seat
 in a game being played is withdrawn from that game first. Which choices a game
-offers, and what a withdrawal does to it, is the game's.
+offers, how many seats it takes, and what a withdrawal does to it, is the
+game's.
 """
 
+import uuid
+
+from game.controller.rules_registry import RulesRegistry
 from game.controller.session_controller import SessionController
+from idl.game.model.game_type_pb2 import GameType
 from idl.game.model.withdrawal_result_pb2 import WithdrawalOutcome
 from idl.lobby.model.seat_pb2 import SeatChoice, SeatChoiceCollection, SeatStatus
 from idl.lobby.model.seat_result_pb2 import SeatOutcome, SeatResult
@@ -20,6 +27,8 @@ from lobby.controller.seating_registry import SeatingRegistry
 from lobby.controller.table_controller import TableController
 
 NO_CHOICES: tuple[SeatChoice, ...] = ()
+# The statuses under which a table takes players.
+ACCEPTING_STATUSES = (TableStatus.TABLE_STATUS_WAITING, TableStatus.TABLE_STATUS_IN_PROGRESS)
 
 
 class SeatController:
@@ -33,11 +42,59 @@ class SeatController:
     """
 
     def __init__(
-        self, tables: TableController, seating: SeatingRegistry, sessions: SessionController
+        self,
+        tables: TableController,
+        seating: SeatingRegistry,
+        sessions: SessionController,
+        rules: RulesRegistry,
     ) -> None:
         self._tables = tables
         self._seating = seating
         self._sessions = sessions
+        self._rules = rules
+
+    async def create_table(
+        self, game_type: GameType, seat_count: int, player_id: str
+    ) -> SeatResult:
+        """
+        Open a table for this game with this many seats, the opener at it and
+        every seat empty, and say how it went.
+
+        The id is minted here. The game must be one this process hosts, and
+        the seat count must lie within the bounds its rules answer.
+        """
+        if game_type not in self._rules.get_game_types():
+            return SeatResult(outcome=SeatOutcome.SEAT_OUTCOME_GAME_NOT_HOSTED)
+        bounds = await self._rules.get_rules(game_type).read_bounds()
+        if not bounds.minimum <= seat_count <= bounds.maximum:
+            return SeatResult(outcome=SeatOutcome.SEAT_OUTCOME_SEAT_COUNT_NOT_ALLOWED)
+        stored = await self._tables.upsert_table(
+            SeatAdapters.creation_to_table(str(uuid.uuid4()), game_type, seat_count, player_id)
+        )
+        if stored is None:
+            return SeatResult(outcome=SeatOutcome.SEAT_OUTCOME_VERSION_MOVED)
+        return SeatResult(outcome=SeatOutcome.SEAT_OUTCOME_CREATED, table=stored)
+
+    async def join_table(self, table_id: str, player_id: str) -> SeatResult:
+        """
+        Come to the table without taking a seat, and say how it went.
+
+        A finished or abandoned table takes nobody. A player already at the
+        table is answered the table as it stands.
+        """
+        table = await self._tables.read_table(table_id)
+        if table is None:
+            return SeatResult(outcome=SeatOutcome.SEAT_OUTCOME_TABLE_NOT_FOUND)
+        if table.status not in ACCEPTING_STATUSES:
+            return SeatResult(outcome=SeatOutcome.SEAT_OUTCOME_NOT_ACCEPTING_PLAYERS, table=table)
+        if player_id in table.player_ids:
+            return SeatResult(outcome=SeatOutcome.SEAT_OUTCOME_ALREADY_AT_TABLE, table=table)
+        stored = await self._tables.upsert_table(
+            SeatAdapters.table_to_table_with_player_joined(table, player_id)
+        )
+        if stored is None:
+            return SeatResult(outcome=SeatOutcome.SEAT_OUTCOME_VERSION_MOVED, table=table)
+        return SeatResult(outcome=SeatOutcome.SEAT_OUTCOME_JOINED, table=stored)
 
     async def list_seat_choices(self, table_id: str, player_id: str) -> SeatChoiceCollection:
         """

@@ -5,7 +5,7 @@ The operations any consumer of messages must answer.
 from abc import ABC, abstractmethod
 from collections.abc import AsyncIterator
 
-from idl.core.dto.queue_pb2 import QueueMessageEnvelope
+from core.queue.received_message import ReceivedMessage
 
 
 class BaseQueueConsumer(ABC):
@@ -30,10 +30,13 @@ class BaseQueueConsumer(ABC):
         """
 
     @abstractmethod
-    def messages(self) -> AsyncIterator[QueueMessageEnvelope]:
+    def messages(self) -> AsyncIterator[ReceivedMessage]:
         """
-        Every envelope published on a subscribed channel, as it arrives. Ends
-        when the consumer is closed.
+        Every message published on a subscribed channel, as it arrives, with
+        the channel it arrived on.
+
+        Runs while there is nothing subscribed and resumes when there is. Ends
+        only when the consumer is closed.
         """
 
     @abstractmethod

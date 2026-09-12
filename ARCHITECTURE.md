@@ -185,6 +185,13 @@ action only its sender may see. A browser is never sent one. It is sent
 it renders through the typed service it already uses, which projects it for
 that viewer. Projection therefore happens in one place, on the read path.
 
+`deployables/websocket-server` is the process between the two. It holds a
+`BaseQueueConsumer` per configured source and the open sockets by the channel
+each watches, subscribes a channel while a socket watches it, and turns each
+event into the `*Changed` frame for the watchers of the channel it arrived on.
+It holds no gRPC client and reads nothing from an event but an id and a
+version.
+
 ## SOLID applied to system design
 
 These principles are usually stated about classes. They also determine the

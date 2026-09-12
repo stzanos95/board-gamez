@@ -8,8 +8,10 @@ named once, here, and nowhere else.
 from idl.core.dto.queue_pb2 import QueueMessageEnvelope
 
 TYPE_KEY = "type"
+CHANNEL_KEY = "channel"
 DATA_KEY = "data"
 MESSAGE_TYPE = "message"
+CHANNEL_ENCODING = "utf-8"
 
 
 class RedisPubsubMessages:
@@ -33,3 +35,16 @@ class RedisPubsubMessages:
         envelope = QueueMessageEnvelope()
         envelope.ParseFromString(data)
         return envelope
+
+    @staticmethod
+    def get_channel(raw: dict[str, object]) -> str | None:
+        """
+        The full channel name this entry arrived on, prefix included, or None
+        when the entry names no channel.
+        """
+        channel = raw.get(CHANNEL_KEY)
+        if isinstance(channel, bytes):
+            return channel.decode(CHANNEL_ENCODING)
+        if isinstance(channel, str):
+            return channel
+        return None

@@ -50,6 +50,22 @@ services:
       - redis
     command: ["serve"]
 
+  websocket-server:
+    build:
+      # The repository root, so the root .dockerignore applies.
+      context: ../..
+      dockerfile: deployables/websocket-server/docker/Dockerfile
+    image: board-gamez/websocket-server:latest
+    # The published port matches the one in the config file the image ships
+    # with. Changing either without the other leaves nothing listening here.
+    ports:
+      - "8082:8082"
+    # Events arrive through Redis. The hostname is the service name, which is
+    # what websocket_server.container.yaml names.
+    depends_on:
+      - redis
+    command: ["serve"]
+
   redis:
     image: redis:7-alpine
     # Published so the same store answers a server run outside a container, which

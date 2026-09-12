@@ -14,6 +14,10 @@ from typing import cast
 import grpc
 from core.grpc.channel_options import ChannelOptions
 from idl.lobby.dto.seat_pb2 import (
+    CreateTableRequest,
+    CreateTableResponse,
+    JoinTableRequest,
+    JoinTableResponse,
     LeaveTableRequest,
     LeaveTableResponse,
     VacateSeatRequest,
@@ -53,6 +57,12 @@ class GrpcSeatClient:
             await self._channel.close()
             self._channel = None
             self._stub = None
+
+    async def create_table(self, request: CreateTableRequest) -> CreateTableResponse:
+        return await self._connected_stub().CreateTable(request)
+
+    async def join_table(self, request: JoinTableRequest) -> JoinTableResponse:
+        return await self._connected_stub().JoinTable(request)
 
     async def vacate_seat(self, request: VacateSeatRequest) -> VacateSeatResponse:
         return await self._connected_stub().VacateSeat(request)

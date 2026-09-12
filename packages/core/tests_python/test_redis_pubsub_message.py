@@ -40,7 +40,22 @@ class RedisPubsubMessageTest(unittest.TestCase):
     def test_an_entry_without_bytes_is_not_a_message(self) -> None:
         self.assertIsNone(RedisPubsubMessages.get_envelope({"type": "message", "data": "x"}))
 
+    def test_the_channel_is_read_as_text(self) -> None:
+        self.assertEqual(
+            RedisPubsubMessages.get_channel({"type": "message", "channel": b"gamez:table:t-1"}),
+            "gamez:table:t-1",
+        )
+        self.assertEqual(RedisPubsubMessages.get_channel({"channel": "gamez:lobby"}), "gamez:lobby")
+        self.assertIsNone(RedisPubsubMessages.get_channel({"type": "message"}))
+
 
 class RedisChannelNamesTest(unittest.TestCase):
     def test_a_channel_is_kept_under_the_prefix(self) -> None:
         self.assertEqual(RedisChannelNames.get_prefixed(PREFIX, CHANNEL), "gamez:table:t-1")
+
+    def test_a_channel_is_read_back_from_under_the_prefix(self) -> None:
+        self.assertEqual(RedisChannelNames.get_unprefixed(PREFIX, "gamez:table:t-1"), CHANNEL)
+
+    def test_a_channel_under_another_prefix_is_not_read(self) -> None:
+        self.assertIsNone(RedisChannelNames.get_unprefixed(PREFIX, "other:table:t-1"))
+        self.assertIsNone(RedisChannelNames.get_unprefixed(PREFIX, "gamez"))

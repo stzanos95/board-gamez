@@ -33,6 +33,7 @@ SECOND_SEAT = 2
 UNSTORED_VERSION = 0
 FIRST_STORED_VERSION = 1
 SECOND_STORED_VERSION = 2
+CHESS_SEAT_COUNT = 2
 COMMAND_ID = "c-1"
 OTHER_COMMAND_ID = "c-2"
 
@@ -63,14 +64,13 @@ class ChessSessionControllerTest(unittest.IsolatedAsyncioTestCase):
 
     async def asyncSetUp(self) -> None:
         self.tables = TableController(repository=InMemoryTableRepository())
-        self.sessions = SessionController(
-            repository=InMemorySessionRepository(),
-            rules=RulesRegistry({GameType.GAME_TYPE_CHESS: ChessRules()}),
-        )
+        rules = RulesRegistry({GameType.GAME_TYPE_CHESS: ChessRules()})
+        self.sessions = SessionController(repository=InMemorySessionRepository(), rules=rules)
         self.seats = SeatController(
             tables=self.tables,
             seating=SeatingRegistry({GameType.GAME_TYPE_CHESS: ChessSeating()}),
             sessions=self.sessions,
+            rules=rules,
         )
         self.controller = ChessSessionController(
             tables=self.tables, seats=self.seats, sessions=self.sessions
@@ -342,3 +342,73 @@ class ChessSessionControllerTest(unittest.IsolatedAsyncioTestCase):
     async def test_someone_not_at_the_table_cannot_leave_it(self) -> None:
         result = await self.seats.leave_table(TABLE_ID, ONLOOKER)
         self.assertEqual(result.outcome, SeatOutcome.SEAT_OUTCOME_NOT_AT_TABLE)
+
+    # --- opening and joining a table -----------------------------------------
+
+    async def test_a_chess_table_is_opened_with_two_open_seats(self) -> None:
+        result = await self.seats.create_table(GameType.GAME_TYPE_CHESS, CHESS_SEAT_COUNT, ONLOOKER)
+        self.assertEqual(result.outcome, SeatOutcome.SEAT_OUTCOME_CREATED)
+        self.assertTrue(result.table.id)
+        self.assertEqual(result.table.version, FIRST_STORED_VERSION)
+        self.assertEqual(result.table.status, TableStatus.TABLE_STATUS_WAITING)
+        self.assertEqual(list(result.table.player_ids), [ONLOOKER])
+        self.assertEqual(list(result.table.seats), [open_seat(FIRST_SEAT), open_seat(SECOND_SEAT)])
+        stored = await self.tables.read_table(result.table.id)
+        self.assertEqual(stored, result.table)
+
+    async def test_every_opened_table_has_its_own_id(self) -> None:
+        first = await self.seats.create_table(GameType.GAME_TYPE_CHESS, CHESS_SEAT_COUNT, ONLOOKER)
+        second = await self.seats.create_table(GameType.GAME_TYPE_CHESS, CHESS_SEAT_COUNT, ONLOOKER)
+        self.assertNotEqual(first.table.id, second.table.id)
+
+    async def test_a_seat_count_chess_does_not_take_is_refused(self) -> None:
+        result = await self.seats.create_table(
+            GameType.GAME_TYPE_CHESS, CHESS_SEAT_COUNT + 1, ONLOOKER
+        )
+        self.assertEqual(result.outcome, SeatOutcome.SEAT_OUTCOME_SEAT_COUNT_NOT_ALLOWED)
+        self.assertFalse(result.HasField("table"))
+
+    async def test_a_game_this_process_does_not_host_is_refused(self) -> None:
+        result = await self.seats.create_table(
+            GameType.GAME_TYPE_UNSPECIFIED, CHESS_SEAT_COUNT, ONLOOKER
+        )
+        self.assertEqual(result.outcome, SeatOutcome.SEAT_OUTCOME_GAME_NOT_HOSTED)
+
+    async def test_the_opened_table_seats_its_opener_through_the_game(self) -> None:
+        opened = await self.seats.create_table(GameType.GAME_TYPE_CHESS, CHESS_SEAT_COUNT, ONLOOKER)
+        choices = await self.controller.list_seat_choices(opened.table.id, ONLOOKER)
+        self.assertEqual(len(choices.chess_seat_choice_items), CHESS_SEAT_COUNT)
+        taken = await self.controller.take_seat(
+            opened.table.id,
+            ONLOOKER,
+            ChessSeatChoice(number=FIRST_SEAT, color=piece_pb2.COLOR_WHITE),
+            opened.table.version,
+        )
+        self.assertEqual(taken.outcome, SeatOutcome.SEAT_OUTCOME_TAKEN)
+        self.assertEqual(list(taken.table.player_ids), [ONLOOKER])
+
+    async def test_joining_puts_the_player_at_the_table_without_a_seat(self) -> None:
+        result = await self.seats.join_table(EMPTY_TABLE_ID, ONLOOKER)
+        self.assertEqual(result.outcome, SeatOutcome.SEAT_OUTCOME_JOINED)
+        self.assertEqual(result.table.version, SECOND_STORED_VERSION)
+        self.assertEqual(list(result.table.player_ids), [WHITE_PLAYER, ONLOOKER])
+        self.assertEqual(result.table.seats[SECOND_SEAT - 1], open_seat(SECOND_SEAT))
+
+    async def test_joining_twice_is_refused_with_the_table(self) -> None:
+        result = await self.seats.join_table(EMPTY_TABLE_ID, WHITE_PLAYER)
+        self.assertEqual(result.outcome, SeatOutcome.SEAT_OUTCOME_ALREADY_AT_TABLE)
+        self.assertEqual(result.table.version, FIRST_STORED_VERSION)
+
+    async def test_joining_a_missing_table_names_no_table(self) -> None:
+        result = await self.seats.join_table(MISSING_TABLE_ID, ONLOOKER)
+        self.assertEqual(result.outcome, SeatOutcome.SEAT_OUTCOME_TABLE_NOT_FOUND)
+        self.assertFalse(result.HasField("table"))
+
+    async def test_a_finished_table_takes_nobody(self) -> None:
+        table = await self.tables.read_table(EMPTY_TABLE_ID)
+        assert table is not None
+        table.status = TableStatus.TABLE_STATUS_FINISHED
+        await self.tables.upsert_table(table)
+        result = await self.seats.join_table(EMPTY_TABLE_ID, ONLOOKER)
+        self.assertEqual(result.outcome, SeatOutcome.SEAT_OUTCOME_NOT_ACCEPTING_PLAYERS)
+        self.assertNotIn(ONLOOKER, result.table.player_ids)

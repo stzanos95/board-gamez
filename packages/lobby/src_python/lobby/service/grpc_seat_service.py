@@ -12,6 +12,10 @@ what lets them.
 
 import grpc
 from idl.lobby.dto.seat_pb2 import (
+    CreateTableRequest,
+    CreateTableResponse,
+    JoinTableRequest,
+    JoinTableResponse,
     LeaveTableRequest,
     LeaveTableResponse,
     VacateSeatRequest,
@@ -30,6 +34,29 @@ class GrpcSeatService(SeatServiceServicer):
 
     def __init__(self, controller: SeatController) -> None:
         self._controller = controller
+
+    async def CreateTable(
+        self,
+        request: CreateTableRequest,
+        context: grpc.aio.ServicerContext[CreateTableRequest, CreateTableResponse],
+    ) -> CreateTableResponse:
+        result = await self._controller.create_table(
+            SeatAdapters.create_request_to_game_type(request),
+            SeatAdapters.create_request_to_seat_count(request),
+            SeatAdapters.create_request_to_player_id(request),
+        )
+        return SeatAdapters.seat_result_to_create_response(result)
+
+    async def JoinTable(
+        self,
+        request: JoinTableRequest,
+        context: grpc.aio.ServicerContext[JoinTableRequest, JoinTableResponse],
+    ) -> JoinTableResponse:
+        result = await self._controller.join_table(
+            SeatAdapters.join_request_to_table_id(request),
+            SeatAdapters.join_request_to_player_id(request),
+        )
+        return SeatAdapters.seat_result_to_join_response(result)
 
     async def VacateSeat(
         self,

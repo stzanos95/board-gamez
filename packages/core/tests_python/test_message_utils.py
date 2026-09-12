@@ -1,6 +1,8 @@
 import unittest
 
+from google.protobuf import any_pb2
 from google.protobuf.descriptor_pb2 import FieldDescriptorProto
+from google.protobuf.wrappers_pb2 import Int32Value, StringValue
 from pydantic import BaseModel, ConfigDict, Field
 
 from core.protobuf.message_utils import ProtobufMessageUtils
@@ -87,3 +89,17 @@ class CopyingTest(unittest.TestCase):
 
         self.assertEqual(message.name, "seats")
         self.assertEqual(copied.name, "tables")
+
+
+class MessageFromAnyTest(unittest.TestCase):
+    def test_a_message_of_the_packed_type_is_opened(self) -> None:
+        packed = any_pb2.Any()
+        packed.Pack(StringValue(value="hello"))
+        opened = ProtobufMessageUtils.message_from_any(packed, StringValue)
+        assert opened is not None
+        self.assertEqual(opened.value, "hello")
+
+    def test_a_message_of_another_type_is_not_opened(self) -> None:
+        packed = any_pb2.Any()
+        packed.Pack(StringValue(value="hello"))
+        self.assertIsNone(ProtobufMessageUtils.message_from_any(packed, Int32Value))

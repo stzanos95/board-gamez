@@ -120,7 +120,7 @@ class ServiceHost:
         table_controller = TableController(repository=table_repository)
         session_controller = SessionController(repository=session_repository, rules=rules)
         seat_controller = SeatController(
-            tables=table_controller, seating=seating, sessions=session_controller
+            tables=table_controller, seating=seating, sessions=session_controller, rules=rules
         )
         return (
             LobbyServicers.add_table_service(server, table_controller),

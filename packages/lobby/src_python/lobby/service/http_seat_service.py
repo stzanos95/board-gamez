@@ -3,13 +3,17 @@ SeatService, as it is answered over HTTP.
 
 Implements the service the generated router declares, and answers each operation
 by calling the lobby over gRPC. The service on the other end of that call is a
-different implementation of the same two operations.
+different implementation of the same four operations.
 
 Converting between the two shapes of a message belongs to `lobby.adapters`, so
 every method here is the same two steps: call, and hand back what came out.
 """
 
 from idl_fastapi.idl.lobby.dto import (
+    CreateTableRequest,
+    CreateTableResponse,
+    JoinTableRequest,
+    JoinTableResponse,
     LeaveTableRequest,
     LeaveTableResponse,
     VacateSeatRequest,
@@ -28,6 +32,18 @@ class HttpSeatService(BaseSeatService):
 
     def __init__(self, client: GrpcSeatClient) -> None:
         self._client = client
+
+    async def create_table(self, request: CreateTableRequest) -> CreateTableResponse:
+        response = await self._client.create_table(
+            SeatAdapters.create_request_model_to_message(request)
+        )
+        return SeatAdapters.create_response_message_to_model(response)
+
+    async def join_table(self, request: JoinTableRequest) -> JoinTableResponse:
+        response = await self._client.join_table(
+            SeatAdapters.join_request_model_to_message(request)
+        )
+        return SeatAdapters.join_response_message_to_model(response)
 
     async def vacate_seat(self, request: VacateSeatRequest) -> VacateSeatResponse:
         response = await self._client.vacate_seat(

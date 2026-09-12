@@ -4,6 +4,7 @@ Working with protobuf messages, where the work is not any one domain's.
 
 from typing import TypeVar
 
+from google.protobuf import any_pb2
 from google.protobuf.json_format import MessageToDict, ParseDict
 from google.protobuf.message import Message
 from pydantic import BaseModel
@@ -63,6 +64,17 @@ class ProtobufMessageUtils:
         """
         message = message_type()
         message.ParseFromString(data)
+        return message
+
+    @staticmethod
+    def message_from_any(packed: any_pb2.Any, message_type: type[MessageT]) -> MessageT | None:
+        """
+        The message this Any holds, when it holds one of this type; None when
+        it holds a message of another type.
+        """
+        message = message_type()
+        if not packed.Unpack(message):
+            return None
         return message
 
     @staticmethod
