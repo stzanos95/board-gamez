@@ -1,0 +1,68 @@
+// What happened at a table.
+
+syntax = "proto3";
+
+package idl.lobby.model;
+
+import "google/protobuf/any.proto";
+import "idl/game/model/game_type.proto";
+
+option go_package = "boardgamez/contracts/gen/go/idl/lobby/model;lobbymodel";
+
+// Each message here is one write to a table that succeeded, published once
+// after the write under the message's full type name. `version` is the table's
+// version after the write, so a reader holding an earlier one knows it has
+// something to read, and a reader holding a later one knows it has nothing.
+//
+// Every message but TableChanged is a record of what happened, in full, and is
+// never sent to a browser. TableChanged is what a browser is sent.
+
+message TableCreated {
+  string table_id = 1;
+  idl.game.model.GameType game_type = 2;
+  string player_id = 3;  // Who opened the table.
+  uint64 version = 4;
+}
+
+message PlayerJoined {
+  string table_id = 1;
+  string player_id = 2;
+  uint64 version = 3;
+}
+
+message SeatTaken {
+  string table_id = 1;
+  string player_id = 2;
+  uint32 seat_number = 3;
+  google.protobuf.Any role = 4;  // Unset when the game has no roles.
+  uint64 version = 5;
+}
+
+message SeatVacated {
+  string table_id = 1;
+  string player_id = 2;
+  uint32 seat_number = 3;
+  uint64 version = 4;
+}
+
+message PlayerLeft {
+  string table_id = 1;
+  string player_id = 2;
+  uint32 seat_number = 3;  // 0 when the player held no seat.
+  uint64 version = 4;
+}
+
+// The table is gone, and no version follows it.
+message TableClosed {
+  string table_id = 1;
+}
+
+// The table changed, and this is its version now.
+//
+// Carries no table. A reader holding an earlier version reads the table again
+// through the service it renders it from; one holding this version or a later
+// one does nothing.
+message TableChanged {
+  string table_id = 1;
+  uint64 version = 2;  // 0 when the table has been closed.
+}

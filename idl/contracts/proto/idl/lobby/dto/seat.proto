@@ -1,12 +1,37 @@
-// Giving up a seat, and leaving a table.
+// Opening a table, joining one, giving up a seat, and leaving.
 
 syntax = "proto3";
 
 package idl.lobby.dto;
 
+import "idl/game/model/game_type.proto";
 import "idl/lobby/model/seat_result.proto";
 
 option go_package = "boardgamez/contracts/gen/go/idl/lobby/dto;lobbydto";
+
+// Open a table for a game, with the opener at it and every seat empty.
+//
+// The table's id is minted by the lobby. `seat_count` must lie within the
+// bounds the game answers for itself.
+message CreateTableRequest {
+  idl.game.model.GameType game_type = 1;
+  uint32 seat_count = 2;
+  string player_id = 3;  // Who opens the table, and is at it once it exists.
+}
+
+message CreateTableResponse {
+  idl.lobby.model.SeatResult result = 1;
+}
+
+// Come to the table without taking a seat.
+message JoinTableRequest {
+  string table_id = 1;
+  string player_id = 2;
+}
+
+message JoinTableResponse {
+  idl.lobby.model.SeatResult result = 1;
+}
 
 // Give up the seat and stay at the table.
 //

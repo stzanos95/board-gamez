@@ -1,0 +1,55 @@
+// What happened in a game.
+
+syntax = "proto3";
+
+package idl.game.model;
+
+import "google/protobuf/any.proto";
+import "idl/game/model/game_type.proto";
+import "idl/game/model/participant.proto";
+
+option go_package = "boardgamez/contracts/gen/go/idl/game/model;gamemodel";
+
+// Each message here is one write to a game that succeeded, published once
+// after the write under the message's full type name. `version` is the game's
+// version after the write, so a reader holding an earlier one knows it has
+// something to read, and a reader holding a later one knows it has nothing.
+//
+// Every message but SessionChanged is a record of what happened, in full, and
+// is never sent to a browser: an action may carry what only its sender is
+// allowed to see. SessionChanged is what a browser is sent.
+
+message SessionStarted {
+  string session_id = 1;
+  GameType game_type = 2;
+  repeated Participant participants = 3;
+  uint64 version = 4;
+}
+
+// An action is the game's own type, packed by the client that sent it and
+// opened only by the game.
+message CommandApplied {
+  string session_id = 1;
+  uint32 participant = 2;
+  string command_id = 3;
+  google.protobuf.Any action = 4;
+  bool is_over = 5;  // True when this action gave the game its result.
+  uint64 version = 6;
+}
+
+message ParticipantWithdrawn {
+  string session_id = 1;
+  uint32 participant = 2;
+  bool is_over = 3;  // True when the withdrawal gave the game its result.
+  uint64 version = 4;
+}
+
+// The game changed, and this is its version now.
+//
+// Carries no state. A reader holding an earlier version reads the game again
+// through the service it renders it from, which answers it projected for that
+// viewer; one holding this version or a later one does nothing.
+message SessionChanged {
+  string session_id = 1;
+  uint64 version = 2;
+}

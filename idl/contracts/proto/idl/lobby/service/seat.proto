@@ -1,4 +1,4 @@
-// Giving up a seat, and leaving a table.
+// Opening a table, joining one, giving up a seat, and leaving.
 
 syntax = "proto3";
 
@@ -9,11 +9,26 @@ import "idl/lobby/dto/seat.proto";
 
 option go_package = "boardgamez/contracts/gen/go/idl/lobby/service;lobbyservice";
 
-// A player's place at a table, and the two ways to give it up.
+// A player's place at a table: how it is opened, come to, and given up.
 //
-// Both withdraw the player from a game being played at the table before the
-// table is written, so a game is never left waiting on a player who has gone.
+// Giving a seat up, by vacating it or by leaving, withdraws the player from a
+// game being played at the table before the table is written, so a game is
+// never left waiting on a player who has gone.
 service SeatService {
+  rpc CreateTable(idl.lobby.dto.CreateTableRequest) returns (idl.lobby.dto.CreateTableResponse) {
+    option (google.api.http) = {
+      post: "/internal/platform/lobby/create/table"
+      body: "*"
+    };
+  }
+
+  rpc JoinTable(idl.lobby.dto.JoinTableRequest) returns (idl.lobby.dto.JoinTableResponse) {
+    option (google.api.http) = {
+      post: "/internal/platform/lobby/join/table"
+      body: "*"
+    };
+  }
+
   rpc VacateSeat(idl.lobby.dto.VacateSeatRequest) returns (idl.lobby.dto.VacateSeatResponse) {
     option (google.api.http) = {
       post: "/internal/platform/lobby/vacate/seat"

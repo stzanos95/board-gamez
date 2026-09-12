@@ -8,13 +8,14 @@ import "idl/lobby/model/table.proto";
 
 option go_package = "boardgamez/contracts/gen/go/idl/lobby/model;lobbymodel";
 
-// Every way taking a seat, giving one up, or leaving the table ends.
+// Every way a change to a player's place at a table ends.
 //
-// TAKEN, VACATED and LEFT are the three changes made. VERSION_MOVED means the
-// table changed while the change was being written, and the table answered
-// with it is the one to act on next. NOT_OFFERED means the choice is not one
-// the game offers this player at this table now: the seat is taken, the player
-// is already seated, or the table is not waiting for players.
+// CREATED, JOINED, TAKEN, VACATED and LEFT are the changes made. VERSION_MOVED
+// means the table changed while the change was being written, and the table
+// answered with it is the one to act on next. NOT_OFFERED means the choice is
+// not one the game offers this player at this table now: the seat is taken,
+// the player is already seated, or the table is not waiting for players.
+// GAME_NOT_HOSTED and SEAT_COUNT_NOT_ALLOWED refuse a table before it exists.
 enum SeatOutcome {
   SEAT_OUTCOME_UNSPECIFIED = 0;
   SEAT_OUTCOME_TAKEN = 1;
@@ -25,6 +26,12 @@ enum SeatOutcome {
   SEAT_OUTCOME_LEFT = 6;
   SEAT_OUTCOME_NOT_SEATED = 7;
   SEAT_OUTCOME_NOT_AT_TABLE = 8;
+  SEAT_OUTCOME_CREATED = 9;
+  SEAT_OUTCOME_JOINED = 10;
+  SEAT_OUTCOME_ALREADY_AT_TABLE = 11;
+  SEAT_OUTCOME_NOT_ACCEPTING_PLAYERS = 12;
+  SEAT_OUTCOME_GAME_NOT_HOSTED = 13;
+  SEAT_OUTCOME_SEAT_COUNT_NOT_ALLOWED = 14;
 }
 
 // What happened to a player's place at a table, and the table as it now stands.
