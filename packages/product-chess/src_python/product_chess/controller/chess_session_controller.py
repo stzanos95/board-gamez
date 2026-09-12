@@ -119,9 +119,10 @@ class ChessSessionController:
         expected_version: int,
     ) -> ActionResult:
         """
-        Do one thing in the game at this table, and say how it went.
+        Do one thing in the game at this table, and say how it went. The
+        lobby finishes the table when the game ends.
         """
-        result = await self._sessions.apply_command(
+        result = await self._seats.apply_command(
             table_id,
             player_id,
             command_id,

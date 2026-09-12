@@ -50,6 +50,9 @@ OPEN_TABLE_CHANNEL = "table:t-2"
 LOBBY_CHANNEL = "lobby"
 SEAT_TAKEN_TYPE = "idl.lobby.model.SeatTaken"
 TABLE_STARTED_TYPE = "idl.lobby.model.TableStarted"
+TABLE_FINISHED_TYPE = "idl.lobby.model.TableFinished"
+TABLE_CLOSED_TYPE = "idl.lobby.model.TableClosed"
+PLAY_OUT_TURNS = 600
 COMMAND_ID = "c-1"
 PLAY_SEARCH_TURNS = 30
 PLAYERS_BY_SEAT: dict[int, str] = {
@@ -370,6 +373,74 @@ class UnoSessionControllerTest(unittest.IsolatedAsyncioTestCase):
         after = require_session(await self.controller.read_game(TABLE_ID, THIRD_PLAYER))
         self.assertEqual(after.view.result.winner, THIRD_SEAT)
         self.assertEqual(after.view.result.reason, UNO_RESULT_REASON_OTHERS_WITHDREW)
+
+    async def test_the_table_is_finished_once_the_game_has_a_result(self) -> None:
+        await self.start()
+        await self.seats.vacate_seat(TABLE_ID, FIRST_PLAYER)
+        mid_game = await self.tables.read_table(TABLE_ID)
+        assert mid_game is not None
+        self.assertEqual(mid_game.status, TableStatus.TABLE_STATUS_IN_PROGRESS)
+        result = await self.seats.vacate_seat(TABLE_ID, SECOND_PLAYER)
+        self.assertEqual(result.table.status, TableStatus.TABLE_STATUS_FINISHED)
+        self.assertEqual(self.queue_publisher.get_types_on(LOBBY_CHANNEL)[-1], TABLE_FINISHED_TYPE)
+
+    async def test_a_played_out_game_finishes_the_table(self) -> None:
+        """
+        A random deal is played by drawing and passing until a hand empties or
+        the turn budget runs out; the table is finished exactly when the game
+        has a result.
+        """
+        started = await self.start()
+        to_act = started.view.participant_to_act
+        for turn in range(PLAY_OUT_TURNS):
+            if to_act == NOT_PLAYING:
+                break
+            actor = PLAYERS_BY_SEAT[to_act]
+            session = require_session(await self.controller.read_game(TABLE_ID, actor))
+            playable = [shown.card for shown in session.view.hand if shown.is_playable]
+            if len(playable) > 0:
+                chosen = CARD_COLOR_RED if Cards.is_wild(playable[0]) else CARD_COLOR_UNSPECIFIED
+                answer = await self.controller.play_action(
+                    TABLE_ID, actor, f"c-{turn}", play(playable[0], chosen), session.version
+                )
+            else:
+                answer = await self.controller.play_action(
+                    TABLE_ID, actor, f"d-{turn}", draw(), session.version
+                )
+                if answer.session.view.may_pass:
+                    answer = await self.controller.play_action(
+                        TABLE_ID, actor, f"p-{turn}", pass_turn(), answer.session.version
+                    )
+            self.assertEqual(answer.outcome, CommandOutcome.COMMAND_OUTCOME_APPLIED)
+            to_act = answer.session.view.participant_to_act
+        final = require_session(await self.controller.read_game(TABLE_ID, FIRST_PLAYER))
+        table = await self.tables.read_table(TABLE_ID)
+        assert table is not None
+        expected = (
+            TableStatus.TABLE_STATUS_FINISHED
+            if final.view.HasField("result")
+            else TableStatus.TABLE_STATUS_IN_PROGRESS
+        )
+        self.assertEqual(table.status, expected)
+
+    async def test_the_last_player_to_leave_takes_the_table_with_them(self) -> None:
+        await self.start()
+        await self.seats.leave_table(TABLE_ID, FIRST_PLAYER)
+        await self.seats.leave_table(TABLE_ID, SECOND_PLAYER)
+        self.assertIsNotNone(await self.tables.read_table(TABLE_ID))
+        result = await self.seats.leave_table(TABLE_ID, THIRD_PLAYER)
+        self.assertEqual(result.outcome, SeatOutcome.SEAT_OUTCOME_LEFT)
+        self.assertIsNone(await self.tables.read_table(TABLE_ID))
+        self.assertEqual(self.queue_publisher.get_types_on(LOBBY_CHANNEL)[-1], TABLE_CLOSED_TYPE)
+
+    async def test_a_full_or_started_table_takes_nobody(self) -> None:
+        full = await self.seats.join_table(TABLE_ID, ONLOOKER)
+        self.assertEqual(full.outcome, SeatOutcome.SEAT_OUTCOME_TABLE_FULL)
+        await self.start()
+        started = await self.seats.join_table(TABLE_ID, ONLOOKER)
+        self.assertEqual(started.outcome, SeatOutcome.SEAT_OUTCOME_NOT_ACCEPTING_PLAYERS)
+        open_table = await self.seats.join_table(OPEN_TABLE_ID, ONLOOKER)
+        self.assertEqual(open_table.outcome, SeatOutcome.SEAT_OUTCOME_JOINED)
 
     async def test_standing_up_before_a_game_only_opens_the_seat(self) -> None:
         result = await self.seats.vacate_seat(OPEN_TABLE_ID, FIRST_PLAYER)

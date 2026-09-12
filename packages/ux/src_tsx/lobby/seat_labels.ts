@@ -20,4 +20,5 @@ export const SEAT_OUTCOME_PROBLEMS: Record<SeatOutcome, string | null> = {
   [SeatOutcome.NOT_ACCEPTING_PLAYERS]: "This table is no longer taking players.",
   [SeatOutcome.GAME_NOT_HOSTED]: "That game is not hosted here.",
   [SeatOutcome.SEAT_COUNT_NOT_ALLOWED]: "That game cannot be played with that many seats.",
+  [SeatOutcome.TABLE_FULL]: "Every seat at this table is taken.",
 };

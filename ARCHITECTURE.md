@@ -121,7 +121,11 @@ through the game's own service as one of the `SeatChoice`s the game offered;
 a seat is given up through the lobby's `SeatService`, which withdraws the
 player from the game being played before it opens the seat. What a withdrawal
 does to the game is answered by the game's rules through
-`RulesService.WithdrawParticipant`: in chess the leaver resigns.
+`RulesService.WithdrawParticipant`: in chess the leaver resigns. A table takes
+a player only while it waits for players and has a seat open. An action in a
+game goes through the lobby's `SeatController` on its way to the session
+controller, so the lobby sees every result: a table is finished once its game
+has one, and retired once its last player has left.
 
 Who may act on a state, what the game draws its chance from, and how long a
 state stands are the platform's to enforce and the game's to decide. Every

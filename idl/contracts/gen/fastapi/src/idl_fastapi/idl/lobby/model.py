@@ -49,10 +49,12 @@ class Table(BaseModel):
      starting one hands the seated roster to the game, and everything after that
      is the game's.
 
-     Joining a table and taking a seat are two different things. Anyone may join,
-     and there is no limit on how many have. A seat is taken only by someone who
-     asks for that seat, so nothing ever chooses a seat on a player's behalf. A
-     player in a seat is also in `player_ids`; leaving the table vacates the seat.
+     Joining a table and taking a seat are two different things. Anyone may join
+     while the table is waiting for players and has a seat open. A seat is taken
+     only by someone who asks for that seat, so nothing ever chooses a seat on a
+     player's behalf. A player in a seat is also in `player_ids`; leaving the
+     table vacates the seat. A table is finished once its game has a result,
+     and is gone once the last player has left it.
     """
 
     model_config = ConfigDict(
@@ -95,7 +97,7 @@ class SeatResult(BaseModel):
     model_config = ConfigDict(
         populate_by_name=True,
     )
-    outcome: Literal['SEAT_OUTCOME_UNSPECIFIED', 'SEAT_OUTCOME_TAKEN', 'SEAT_OUTCOME_TABLE_NOT_FOUND', 'SEAT_OUTCOME_NOT_OFFERED', 'SEAT_OUTCOME_VERSION_MOVED', 'SEAT_OUTCOME_VACATED', 'SEAT_OUTCOME_LEFT', 'SEAT_OUTCOME_NOT_SEATED', 'SEAT_OUTCOME_NOT_AT_TABLE', 'SEAT_OUTCOME_CREATED', 'SEAT_OUTCOME_JOINED', 'SEAT_OUTCOME_ALREADY_AT_TABLE', 'SEAT_OUTCOME_NOT_ACCEPTING_PLAYERS', 'SEAT_OUTCOME_GAME_NOT_HOSTED', 'SEAT_OUTCOME_SEAT_COUNT_NOT_ALLOWED'] | None = (
+    outcome: Literal['SEAT_OUTCOME_UNSPECIFIED', 'SEAT_OUTCOME_TAKEN', 'SEAT_OUTCOME_TABLE_NOT_FOUND', 'SEAT_OUTCOME_NOT_OFFERED', 'SEAT_OUTCOME_VERSION_MOVED', 'SEAT_OUTCOME_VACATED', 'SEAT_OUTCOME_LEFT', 'SEAT_OUTCOME_NOT_SEATED', 'SEAT_OUTCOME_NOT_AT_TABLE', 'SEAT_OUTCOME_CREATED', 'SEAT_OUTCOME_JOINED', 'SEAT_OUTCOME_ALREADY_AT_TABLE', 'SEAT_OUTCOME_NOT_ACCEPTING_PLAYERS', 'SEAT_OUTCOME_GAME_NOT_HOSTED', 'SEAT_OUTCOME_SEAT_COUNT_NOT_ALLOWED', 'SEAT_OUTCOME_TABLE_FULL'] | None = (
         None
     )
     table: Table | None = None

@@ -74,6 +74,14 @@ class TableStarted(_message.Message):
     version: int
     def __init__(self, table_id: _Optional[str] = ..., version: _Optional[int] = ...) -> None: ...
 
+class TableFinished(_message.Message):
+    __slots__ = ("table_id", "version")
+    TABLE_ID_FIELD_NUMBER: _ClassVar[int]
+    VERSION_FIELD_NUMBER: _ClassVar[int]
+    table_id: str
+    version: int
+    def __init__(self, table_id: _Optional[str] = ..., version: _Optional[int] = ...) -> None: ...
+
 class TableClosed(_message.Message):
     __slots__ = ("table_id",)
     TABLE_ID_FIELD_NUMBER: _ClassVar[int]

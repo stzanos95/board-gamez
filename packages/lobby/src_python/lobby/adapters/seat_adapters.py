@@ -186,6 +186,20 @@ class SeatAdapters:
         )
 
     @staticmethod
+    def table_to_table_finished(table: Table) -> Table:
+        """
+        The table with its game over. The table handed in is not changed.
+        """
+        return Table(
+            id=table.id,
+            game_type=table.game_type,
+            status=TableStatus.TABLE_STATUS_FINISHED,
+            seats=table.seats,
+            version=table.version,
+            player_ids=table.player_ids,
+        )
+
+    @staticmethod
     def table_to_table_in_progress(table: Table) -> Table:
         """
         The table with its game being played. The table handed in is not

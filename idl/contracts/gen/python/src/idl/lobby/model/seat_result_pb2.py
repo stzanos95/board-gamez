@@ -25,7 +25,7 @@ _sym_db = _symbol_database.Default()
 from idl.lobby.model import table_pb2 as idl_dot_lobby_dot_model_dot_table__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n!idl/lobby/model/seat_result.proto\x12\x0fidl.lobby.model\x1a\x1bidl/lobby/model/table.proto\"b\n\nSeatResult\x12-\n\x07outcome\x18\x01 \x01(\x0e\x32\x1c.idl.lobby.model.SeatOutcome\x12%\n\x05table\x18\x02 \x01(\x0b\x32\x16.idl.lobby.model.Table*\xd9\x03\n\x0bSeatOutcome\x12\x1c\n\x18SEAT_OUTCOME_UNSPECIFIED\x10\x00\x12\x16\n\x12SEAT_OUTCOME_TAKEN\x10\x01\x12 \n\x1cSEAT_OUTCOME_TABLE_NOT_FOUND\x10\x02\x12\x1c\n\x18SEAT_OUTCOME_NOT_OFFERED\x10\x03\x12\x1e\n\x1aSEAT_OUTCOME_VERSION_MOVED\x10\x04\x12\x18\n\x14SEAT_OUTCOME_VACATED\x10\x05\x12\x15\n\x11SEAT_OUTCOME_LEFT\x10\x06\x12\x1b\n\x17SEAT_OUTCOME_NOT_SEATED\x10\x07\x12\x1d\n\x19SEAT_OUTCOME_NOT_AT_TABLE\x10\x08\x12\x18\n\x14SEAT_OUTCOME_CREATED\x10\t\x12\x17\n\x13SEAT_OUTCOME_JOINED\x10\n\x12!\n\x1dSEAT_OUTCOME_ALREADY_AT_TABLE\x10\x0b\x12&\n\"SEAT_OUTCOME_NOT_ACCEPTING_PLAYERS\x10\x0c\x12 \n\x1cSEAT_OUTCOME_GAME_NOT_HOSTED\x10\r\x12\'\n#SEAT_OUTCOME_SEAT_COUNT_NOT_ALLOWED\x10\x0e\x42\x38Z6boardgamez/contracts/gen/go/idl/lobby/model;lobbymodelb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n!idl/lobby/model/seat_result.proto\x12\x0fidl.lobby.model\x1a\x1bidl/lobby/model/table.proto\"b\n\nSeatResult\x12-\n\x07outcome\x18\x01 \x01(\x0e\x32\x1c.idl.lobby.model.SeatOutcome\x12%\n\x05table\x18\x02 \x01(\x0b\x32\x16.idl.lobby.model.Table*\xf6\x03\n\x0bSeatOutcome\x12\x1c\n\x18SEAT_OUTCOME_UNSPECIFIED\x10\x00\x12\x16\n\x12SEAT_OUTCOME_TAKEN\x10\x01\x12 \n\x1cSEAT_OUTCOME_TABLE_NOT_FOUND\x10\x02\x12\x1c\n\x18SEAT_OUTCOME_NOT_OFFERED\x10\x03\x12\x1e\n\x1aSEAT_OUTCOME_VERSION_MOVED\x10\x04\x12\x18\n\x14SEAT_OUTCOME_VACATED\x10\x05\x12\x15\n\x11SEAT_OUTCOME_LEFT\x10\x06\x12\x1b\n\x17SEAT_OUTCOME_NOT_SEATED\x10\x07\x12\x1d\n\x19SEAT_OUTCOME_NOT_AT_TABLE\x10\x08\x12\x18\n\x14SEAT_OUTCOME_CREATED\x10\t\x12\x17\n\x13SEAT_OUTCOME_JOINED\x10\n\x12!\n\x1dSEAT_OUTCOME_ALREADY_AT_TABLE\x10\x0b\x12&\n\"SEAT_OUTCOME_NOT_ACCEPTING_PLAYERS\x10\x0c\x12 \n\x1cSEAT_OUTCOME_GAME_NOT_HOSTED\x10\r\x12\'\n#SEAT_OUTCOME_SEAT_COUNT_NOT_ALLOWED\x10\x0e\x12\x1b\n\x17SEAT_OUTCOME_TABLE_FULL\x10\x0f\x42\x38Z6boardgamez/contracts/gen/go/idl/lobby/model;lobbymodelb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -34,7 +34,7 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['DESCRIPTOR']._loaded_options = None
   _globals['DESCRIPTOR']._serialized_options = b'Z6boardgamez/contracts/gen/go/idl/lobby/model;lobbymodel'
   _globals['_SEATOUTCOME']._serialized_start=184
-  _globals['_SEATOUTCOME']._serialized_end=657
+  _globals['_SEATOUTCOME']._serialized_end=686
   _globals['_SEATRESULT']._serialized_start=83
   _globals['_SEATRESULT']._serialized_end=181
 # @@protoc_insertion_point(module_scope)

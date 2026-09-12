@@ -23,12 +23,13 @@ const TABLE_NAME_PREFIX = "Table";
 
 /**
  * Whether a join is offered for a table in each status. The lobby decides
- * whether a join is accepted; this only says whether to show the way in.
+ * whether a join is accepted; this only says whether to show the way in. A
+ * table takes players only while it waits for them.
  */
 const IS_JOIN_OFFERED_BY_STATUS: Record<TableStatus, boolean> = {
   [TableStatus.UNSPECIFIED]: false,
   [TableStatus.WAITING]: true,
-  [TableStatus.IN_PROGRESS]: true,
+  [TableStatus.IN_PROGRESS]: false,
   [TableStatus.FINISHED]: false,
   [TableStatus.ABANDONED]: false,
 };
@@ -89,7 +90,7 @@ export function toTableSummaryView(table: Table, viewerId: string): TableSummary
     isAtTable: atTable,
     isSeated,
     isFull,
-    canJoin: IS_JOIN_OFFERED_BY_STATUS[table.status] && !atTable,
+    canJoin: IS_JOIN_OFFERED_BY_STATUS[table.status] && !isFull && !atTable,
   };
 }
 

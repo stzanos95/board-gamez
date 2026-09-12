@@ -23,6 +23,7 @@ class SeatOutcome(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     SEAT_OUTCOME_NOT_ACCEPTING_PLAYERS: _ClassVar[SeatOutcome]
     SEAT_OUTCOME_GAME_NOT_HOSTED: _ClassVar[SeatOutcome]
     SEAT_OUTCOME_SEAT_COUNT_NOT_ALLOWED: _ClassVar[SeatOutcome]
+    SEAT_OUTCOME_TABLE_FULL: _ClassVar[SeatOutcome]
 SEAT_OUTCOME_UNSPECIFIED: SeatOutcome
 SEAT_OUTCOME_TAKEN: SeatOutcome
 SEAT_OUTCOME_TABLE_NOT_FOUND: SeatOutcome
@@ -38,6 +39,7 @@ SEAT_OUTCOME_ALREADY_AT_TABLE: SeatOutcome
 SEAT_OUTCOME_NOT_ACCEPTING_PLAYERS: SeatOutcome
 SEAT_OUTCOME_GAME_NOT_HOSTED: SeatOutcome
 SEAT_OUTCOME_SEAT_COUNT_NOT_ALLOWED: SeatOutcome
+SEAT_OUTCOME_TABLE_FULL: SeatOutcome
 
 class SeatResult(_message.Message):
     __slots__ = ("outcome", "table")

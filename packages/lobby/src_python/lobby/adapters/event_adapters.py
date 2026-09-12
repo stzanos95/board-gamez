@@ -13,6 +13,7 @@ from idl.lobby.model.event_pb2 import (
     SeatVacated,
     TableClosed,
     TableCreated,
+    TableFinished,
     TableStarted,
 )
 from idl.lobby.model.seat_pb2 import SeatChoice
@@ -67,6 +68,10 @@ class EventAdapters:
     @staticmethod
     def table_to_table_started(table: Table) -> TableStarted:
         return TableStarted(table_id=table.id, version=table.version)
+
+    @staticmethod
+    def table_to_table_finished(table: Table) -> TableFinished:
+        return TableFinished(table_id=table.id, version=table.version)
 
     @staticmethod
     def table_id_to_table_closed(table_id: str) -> TableClosed:

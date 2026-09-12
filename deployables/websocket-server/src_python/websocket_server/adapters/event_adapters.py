@@ -29,6 +29,7 @@ from idl.lobby.model.event_pb2 import (
     TableChanged,
     TableClosed,
     TableCreated,
+    TableFinished,
     TableStarted,
 )
 
@@ -133,6 +134,13 @@ class EventAdapters:
         return TableChanged(table_id=event.table_id, version=event.version)
 
     @staticmethod
+    def _table_finished_to_table_changed(envelope: QueueMessageEnvelope) -> Message | None:
+        event = ProtobufMessageUtils.message_from_any(envelope.payload, TableFinished)
+        if event is None:
+            return None
+        return TableChanged(table_id=event.table_id, version=event.version)
+
+    @staticmethod
     def _table_closed_to_table_changed(envelope: QueueMessageEnvelope) -> Message | None:
         """
         A closed table has no version after it, and version 0 is how the frame
@@ -155,5 +163,6 @@ class EventAdapters:
         SeatVacated.DESCRIPTOR.full_name: _seat_vacated_to_table_changed,
         PlayerLeft.DESCRIPTOR.full_name: _player_left_to_table_changed,
         TableStarted.DESCRIPTOR.full_name: _table_started_to_table_changed,
+        TableFinished.DESCRIPTOR.full_name: _table_finished_to_table_changed,
         TableClosed.DESCRIPTOR.full_name: _table_closed_to_table_changed,
     }

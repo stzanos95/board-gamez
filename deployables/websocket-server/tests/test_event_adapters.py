@@ -19,6 +19,7 @@ from idl.lobby.model.event_pb2 import (
     TableChanged,
     TableClosed,
     TableCreated,
+    TableFinished,
     TableStarted,
 )
 
@@ -128,6 +129,10 @@ class TableEventTest(unittest.TestCase):
         event = PlayerLeft(
             table_id=TABLE_ID, player_id=PLAYER_ID, seat_number=SEAT_NUMBER, version=VERSION
         )
+        self.assertEqual(table_changed_from(QueueMessageUtils.pack(event)).version, VERSION)
+
+    def test_table_finished(self) -> None:
+        event = TableFinished(table_id=TABLE_ID, version=VERSION)
         self.assertEqual(table_changed_from(QueueMessageUtils.pack(event)).version, VERSION)
 
     def test_table_started(self) -> None:

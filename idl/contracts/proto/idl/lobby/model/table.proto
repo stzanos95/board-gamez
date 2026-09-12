@@ -26,10 +26,12 @@ enum TableStatus {
 // starting one hands the seated roster to the game, and everything after that
 // is the game's.
 //
-// Joining a table and taking a seat are two different things. Anyone may join,
-// and there is no limit on how many have. A seat is taken only by someone who
-// asks for that seat, so nothing ever chooses a seat on a player's behalf. A
-// player in a seat is also in `player_ids`; leaving the table vacates the seat.
+// Joining a table and taking a seat are two different things. Anyone may join
+// while the table is waiting for players and has a seat open. A seat is taken
+// only by someone who asks for that seat, so nothing ever chooses a seat on a
+// player's behalf. A player in a seat is also in `player_ids`; leaving the
+// table vacates the seat. A table is finished once its game has a result,
+// and is gone once the last player has left it.
 message Table {
   string id = 1;
   idl.game.model.GameType game_type = 2;

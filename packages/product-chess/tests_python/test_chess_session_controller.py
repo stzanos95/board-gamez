@@ -49,6 +49,8 @@ TABLE_CREATED_TYPE = "idl.lobby.model.TableCreated"
 PLAYER_JOINED_TYPE = "idl.lobby.model.PlayerJoined"
 PLAYER_LEFT_TYPE = "idl.lobby.model.PlayerLeft"
 TABLE_STARTED_TYPE = "idl.lobby.model.TableStarted"
+TABLE_FINISHED_TYPE = "idl.lobby.model.TableFinished"
+TABLE_CLOSED_TYPE = "idl.lobby.model.TableClosed"
 COMMAND_ID = "c-1"
 OTHER_COMMAND_ID = "c-2"
 
@@ -238,6 +240,59 @@ class ChessSessionControllerTest(unittest.IsolatedAsyncioTestCase):
         )
         self.assertEqual(result.outcome, CommandOutcome.COMMAND_OUTCOME_SESSION_NOT_FOUND)
         self.assertFalse(result.HasField("session"))
+
+    async def test_a_result_finishes_the_table(self) -> None:
+        session = await self.start()
+        resigned = await self.controller.play_action(
+            TABLE_ID, WHITE_PLAYER, COMMAND_ID, resignation(), session.version
+        )
+        self.assertEqual(resigned.outcome, CommandOutcome.COMMAND_OUTCOME_APPLIED)
+        table = await self.tables.read_table(TABLE_ID)
+        assert table is not None
+        self.assertEqual(table.status, TableStatus.TABLE_STATUS_FINISHED)
+        self.assertEqual(self.queue_publisher.get_types_on(LOBBY_CHANNEL)[-1], TABLE_FINISHED_TYPE)
+
+    async def test_a_move_that_ends_nothing_leaves_the_table_in_progress(self) -> None:
+        session = await self.start()
+        await self.controller.play_action(
+            TABLE_ID, WHITE_PLAYER, COMMAND_ID, move("e2e4"), session.version
+        )
+        table = await self.tables.read_table(TABLE_ID)
+        assert table is not None
+        self.assertEqual(table.status, TableStatus.TABLE_STATUS_IN_PROGRESS)
+
+    async def test_standing_up_mid_game_finishes_the_table(self) -> None:
+        await self.start()
+        result = await self.seats.vacate_seat(TABLE_ID, BLACK_PLAYER)
+        self.assertEqual(result.outcome, SeatOutcome.SEAT_OUTCOME_VACATED)
+        self.assertEqual(result.table.status, TableStatus.TABLE_STATUS_FINISHED)
+        table = await self.tables.read_table(TABLE_ID)
+        assert table is not None
+        self.assertEqual(table.status, TableStatus.TABLE_STATUS_FINISHED)
+
+    async def test_the_last_player_to_leave_takes_the_table_with_them(self) -> None:
+        await self.start()
+        await self.seats.leave_table(TABLE_ID, WHITE_PLAYER)
+        self.assertIsNotNone(await self.tables.read_table(TABLE_ID))
+        result = await self.seats.leave_table(TABLE_ID, BLACK_PLAYER)
+        self.assertEqual(result.outcome, SeatOutcome.SEAT_OUTCOME_LEFT)
+        self.assertEqual(list(result.table.player_ids), [])
+        self.assertIsNone(await self.tables.read_table(TABLE_ID))
+        self.assertEqual(self.queue_publisher.get_types_on(LOBBY_CHANNEL)[-1], TABLE_CLOSED_TYPE)
+
+    async def test_a_waiting_table_everyone_left_is_gone_too(self) -> None:
+        await self.seats.leave_table(EMPTY_TABLE_ID, WHITE_PLAYER)
+        self.assertIsNone(await self.tables.read_table(EMPTY_TABLE_ID))
+
+    async def test_a_full_table_takes_nobody(self) -> None:
+        result = await self.seats.join_table(TABLE_ID, ONLOOKER)
+        self.assertEqual(result.outcome, SeatOutcome.SEAT_OUTCOME_TABLE_FULL)
+        self.assertNotIn(ONLOOKER, result.table.player_ids)
+
+    async def test_a_table_in_progress_takes_nobody(self) -> None:
+        await self.start()
+        result = await self.seats.join_table(TABLE_ID, ONLOOKER)
+        self.assertEqual(result.outcome, SeatOutcome.SEAT_OUTCOME_NOT_ACCEPTING_PLAYERS)
 
     async def test_resigning_ends_the_game(self) -> None:
         session = await self.start()
@@ -485,14 +540,17 @@ class ChessSessionControllerTest(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(
             [published.channel for published in self.queue_publisher.published],
-            [SESSION_CHANNEL, TABLE_CHANNEL, LOBBY_CHANNEL],
+            [SESSION_CHANNEL, TABLE_CHANNEL, LOBBY_CHANNEL, TABLE_CHANNEL, LOBBY_CHANNEL],
         )
         self.assertEqual(
             self.queue_publisher.get_types_on(SESSION_CHANNEL), [PARTICIPANT_WITHDRAWN_TYPE]
         )
-        self.assertEqual(self.queue_publisher.get_types_on(TABLE_CHANNEL), [SEAT_VACATED_TYPE])
+        self.assertEqual(
+            self.queue_publisher.get_types_on(TABLE_CHANNEL),
+            [SEAT_VACATED_TYPE, TABLE_FINISHED_TYPE],
+        )
         vacated = SeatVacated()
-        self.assertTrue(self.queue_publisher.published[-1].envelope.payload.Unpack(vacated))
+        self.assertTrue(self.queue_publisher.published[1].envelope.payload.Unpack(vacated))
         self.assertEqual(vacated.seat_number, SECOND_SEAT)
 
     async def test_opening_joining_and_leaving_are_published(self) -> None:
