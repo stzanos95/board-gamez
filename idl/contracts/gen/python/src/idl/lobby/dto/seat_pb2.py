@@ -22,10 +22,11 @@ _runtime_version.ValidateProtobufRuntimeVersion(
 _sym_db = _symbol_database.Default()
 
 
+from idl.game.model import game_type_pb2 as idl_dot_game_dot_model_dot_game__type__pb2
 from idl.lobby.model import seat_result_pb2 as idl_dot_lobby_dot_model_dot_seat__result__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x18idl/lobby/dto/seat.proto\x12\ridl.lobby.dto\x1a!idl/lobby/model/seat_result.proto\"8\n\x11VacateSeatRequest\x12\x10\n\x08table_id\x18\x01 \x01(\t\x12\x11\n\tplayer_id\x18\x02 \x01(\t\"A\n\x12VacateSeatResponse\x12+\n\x06result\x18\x01 \x01(\x0b\x32\x1b.idl.lobby.model.SeatResult\"8\n\x11LeaveTableRequest\x12\x10\n\x08table_id\x18\x01 \x01(\t\x12\x11\n\tplayer_id\x18\x02 \x01(\t\"A\n\x12LeaveTableResponse\x12+\n\x06result\x18\x01 \x01(\x0b\x32\x1b.idl.lobby.model.SeatResultB4Z2boardgamez/contracts/gen/go/idl/lobby/dto;lobbydtob\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x18idl/lobby/dto/seat.proto\x12\ridl.lobby.dto\x1a\x1eidl/game/model/game_type.proto\x1a!idl/lobby/model/seat_result.proto\"h\n\x12\x43reateTableRequest\x12+\n\tgame_type\x18\x01 \x01(\x0e\x32\x18.idl.game.model.GameType\x12\x12\n\nseat_count\x18\x02 \x01(\r\x12\x11\n\tplayer_id\x18\x03 \x01(\t\"B\n\x13\x43reateTableResponse\x12+\n\x06result\x18\x01 \x01(\x0b\x32\x1b.idl.lobby.model.SeatResult\"7\n\x10JoinTableRequest\x12\x10\n\x08table_id\x18\x01 \x01(\t\x12\x11\n\tplayer_id\x18\x02 \x01(\t\"@\n\x11JoinTableResponse\x12+\n\x06result\x18\x01 \x01(\x0b\x32\x1b.idl.lobby.model.SeatResult\"8\n\x11VacateSeatRequest\x12\x10\n\x08table_id\x18\x01 \x01(\t\x12\x11\n\tplayer_id\x18\x02 \x01(\t\"A\n\x12VacateSeatResponse\x12+\n\x06result\x18\x01 \x01(\x0b\x32\x1b.idl.lobby.model.SeatResult\"8\n\x11LeaveTableRequest\x12\x10\n\x08table_id\x18\x01 \x01(\t\x12\x11\n\tplayer_id\x18\x02 \x01(\t\"A\n\x12LeaveTableResponse\x12+\n\x06result\x18\x01 \x01(\x0b\x32\x1b.idl.lobby.model.SeatResultB4Z2boardgamez/contracts/gen/go/idl/lobby/dto;lobbydtob\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -33,12 +34,20 @@ _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'idl.lobby.dto.seat_pb2', _g
 if not _descriptor._USE_C_DESCRIPTORS:
   _globals['DESCRIPTOR']._loaded_options = None
   _globals['DESCRIPTOR']._serialized_options = b'Z2boardgamez/contracts/gen/go/idl/lobby/dto;lobbydto'
-  _globals['_VACATESEATREQUEST']._serialized_start=78
-  _globals['_VACATESEATREQUEST']._serialized_end=134
-  _globals['_VACATESEATRESPONSE']._serialized_start=136
-  _globals['_VACATESEATRESPONSE']._serialized_end=201
-  _globals['_LEAVETABLEREQUEST']._serialized_start=203
-  _globals['_LEAVETABLEREQUEST']._serialized_end=259
-  _globals['_LEAVETABLERESPONSE']._serialized_start=261
-  _globals['_LEAVETABLERESPONSE']._serialized_end=326
+  _globals['_CREATETABLEREQUEST']._serialized_start=110
+  _globals['_CREATETABLEREQUEST']._serialized_end=214
+  _globals['_CREATETABLERESPONSE']._serialized_start=216
+  _globals['_CREATETABLERESPONSE']._serialized_end=282
+  _globals['_JOINTABLEREQUEST']._serialized_start=284
+  _globals['_JOINTABLEREQUEST']._serialized_end=339
+  _globals['_JOINTABLERESPONSE']._serialized_start=341
+  _globals['_JOINTABLERESPONSE']._serialized_end=405
+  _globals['_VACATESEATREQUEST']._serialized_start=407
+  _globals['_VACATESEATREQUEST']._serialized_end=463
+  _globals['_VACATESEATRESPONSE']._serialized_start=465
+  _globals['_VACATESEATRESPONSE']._serialized_end=530
+  _globals['_LEAVETABLEREQUEST']._serialized_start=532
+  _globals['_LEAVETABLEREQUEST']._serialized_end=588
+  _globals['_LEAVETABLERESPONSE']._serialized_start=590
+  _globals['_LEAVETABLERESPONSE']._serialized_end=655
 # @@protoc_insertion_point(module_scope)

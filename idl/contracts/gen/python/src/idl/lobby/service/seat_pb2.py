@@ -26,7 +26,7 @@ from google.api import annotations_pb2 as google_dot_api_dot_annotations__pb2
 from idl.lobby.dto import seat_pb2 as idl_dot_lobby_dot_dto_dot_seat__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1cidl/lobby/service/seat.proto\x12\x11idl.lobby.service\x1a\x1cgoogle/api/annotations.proto\x1a\x18idl/lobby/dto/seat.proto2\x97\x02\n\x0bSeatService\x12\x82\x01\n\nVacateSeat\x12 .idl.lobby.dto.VacateSeatRequest\x1a!.idl.lobby.dto.VacateSeatResponse\"/\x82\xd3\xe4\x93\x02)\"$/internal/platform/lobby/vacate/seat:\x01*\x12\x82\x01\n\nLeaveTable\x12 .idl.lobby.dto.LeaveTableRequest\x1a!.idl.lobby.dto.LeaveTableResponse\"/\x82\xd3\xe4\x93\x02)\"$/internal/platform/lobby/leave/table:\x01*B<Z:boardgamez/contracts/gen/go/idl/lobby/service;lobbyserviceb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1cidl/lobby/service/seat.proto\x12\x11idl.lobby.service\x1a\x1cgoogle/api/annotations.proto\x1a\x18idl/lobby/dto/seat.proto2\xa0\x04\n\x0bSeatService\x12\x86\x01\n\x0b\x43reateTable\x12!.idl.lobby.dto.CreateTableRequest\x1a\".idl.lobby.dto.CreateTableResponse\"0\x82\xd3\xe4\x93\x02*\"%/internal/platform/lobby/create/table:\x01*\x12~\n\tJoinTable\x12\x1f.idl.lobby.dto.JoinTableRequest\x1a .idl.lobby.dto.JoinTableResponse\".\x82\xd3\xe4\x93\x02(\"#/internal/platform/lobby/join/table:\x01*\x12\x82\x01\n\nVacateSeat\x12 .idl.lobby.dto.VacateSeatRequest\x1a!.idl.lobby.dto.VacateSeatResponse\"/\x82\xd3\xe4\x93\x02)\"$/internal/platform/lobby/vacate/seat:\x01*\x12\x82\x01\n\nLeaveTable\x12 .idl.lobby.dto.LeaveTableRequest\x1a!.idl.lobby.dto.LeaveTableResponse\"/\x82\xd3\xe4\x93\x02)\"$/internal/platform/lobby/leave/table:\x01*B<Z:boardgamez/contracts/gen/go/idl/lobby/service;lobbyserviceb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -34,10 +34,14 @@ _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'idl.lobby.service.seat_pb2'
 if not _descriptor._USE_C_DESCRIPTORS:
   _globals['DESCRIPTOR']._loaded_options = None
   _globals['DESCRIPTOR']._serialized_options = b'Z:boardgamez/contracts/gen/go/idl/lobby/service;lobbyservice'
+  _globals['_SEATSERVICE'].methods_by_name['CreateTable']._loaded_options = None
+  _globals['_SEATSERVICE'].methods_by_name['CreateTable']._serialized_options = b'\202\323\344\223\002*\"%/internal/platform/lobby/create/table:\001*'
+  _globals['_SEATSERVICE'].methods_by_name['JoinTable']._loaded_options = None
+  _globals['_SEATSERVICE'].methods_by_name['JoinTable']._serialized_options = b'\202\323\344\223\002(\"#/internal/platform/lobby/join/table:\001*'
   _globals['_SEATSERVICE'].methods_by_name['VacateSeat']._loaded_options = None
   _globals['_SEATSERVICE'].methods_by_name['VacateSeat']._serialized_options = b'\202\323\344\223\002)\"$/internal/platform/lobby/vacate/seat:\001*'
   _globals['_SEATSERVICE'].methods_by_name['LeaveTable']._loaded_options = None
   _globals['_SEATSERVICE'].methods_by_name['LeaveTable']._serialized_options = b'\202\323\344\223\002)\"$/internal/platform/lobby/leave/table:\001*'
   _globals['_SEATSERVICE']._serialized_start=108
-  _globals['_SEATSERVICE']._serialized_end=387
+  _globals['_SEATSERVICE']._serialized_end=652
 # @@protoc_insertion_point(module_scope)

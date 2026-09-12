@@ -126,6 +126,30 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/google.rpc.Status'
+    /internal/platform/lobby/create/table:
+        post:
+            tags:
+                - SeatService
+            operationId: SeatService_CreateTable
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/idl.lobby.dto.CreateTableRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/idl.lobby.dto.CreateTableResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/google.rpc.Status'
     /internal/platform/lobby/delete/table:
         post:
             tags:
@@ -144,6 +168,30 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/idl.lobby.dto.DeleteTableResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/google.rpc.Status'
+    /internal/platform/lobby/join/table:
+        post:
+            tags:
+                - SeatService
+            operationId: SeatService_JoinTable
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/idl.lobby.dto.JoinTableRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/idl.lobby.dto.JoinTableResponse'
                 default:
                     description: Default error response
                     content:
@@ -752,6 +800,12 @@ components:
                         - SEAT_OUTCOME_LEFT
                         - SEAT_OUTCOME_NOT_SEATED
                         - SEAT_OUTCOME_NOT_AT_TABLE
+                        - SEAT_OUTCOME_CREATED
+                        - SEAT_OUTCOME_JOINED
+                        - SEAT_OUTCOME_ALREADY_AT_TABLE
+                        - SEAT_OUTCOME_NOT_ACCEPTING_PLAYERS
+                        - SEAT_OUTCOME_GAME_NOT_HOSTED
+                        - SEAT_OUTCOME_SEAT_COUNT_NOT_ALLOWED
                     type: string
                     format: enum
                 table:
@@ -1376,6 +1430,30 @@ components:
 
                  The session is carried whatever the outcome, and is unset only when no game
                  is stored under the id the withdrawal named.
+        idl.lobby.dto.CreateTableRequest:
+            type: object
+            properties:
+                gameType:
+                    enum:
+                        - GAME_TYPE_UNSPECIFIED
+                        - GAME_TYPE_CHESS
+                    type: string
+                    format: enum
+                seatCount:
+                    type: integer
+                    format: uint32
+                playerId:
+                    type: string
+            description: |-
+                Open a table for a game, with the opener at it and every seat empty.
+
+                 The table's id is minted by the lobby. `seat_count` must lie within the
+                 bounds the game answers for itself.
+        idl.lobby.dto.CreateTableResponse:
+            type: object
+            properties:
+                result:
+                    $ref: '#/components/schemas/idl.lobby.model.SeatResult'
         idl.lobby.dto.DeleteTableRequest:
             type: object
             properties:
@@ -1388,6 +1466,19 @@ components:
             properties:
                 tableId:
                     type: string
+        idl.lobby.dto.JoinTableRequest:
+            type: object
+            properties:
+                tableId:
+                    type: string
+                playerId:
+                    type: string
+            description: Come to the table without taking a seat.
+        idl.lobby.dto.JoinTableResponse:
+            type: object
+            properties:
+                result:
+                    $ref: '#/components/schemas/idl.lobby.model.SeatResult'
         idl.lobby.dto.LeaveTableRequest:
             type: object
             properties:
@@ -1500,6 +1591,12 @@ components:
                         - SEAT_OUTCOME_LEFT
                         - SEAT_OUTCOME_NOT_SEATED
                         - SEAT_OUTCOME_NOT_AT_TABLE
+                        - SEAT_OUTCOME_CREATED
+                        - SEAT_OUTCOME_JOINED
+                        - SEAT_OUTCOME_ALREADY_AT_TABLE
+                        - SEAT_OUTCOME_NOT_ACCEPTING_PLAYERS
+                        - SEAT_OUTCOME_GAME_NOT_HOSTED
+                        - SEAT_OUTCOME_SEAT_COUNT_NOT_ALLOWED
                     type: string
                     format: enum
                 table:
@@ -1574,10 +1671,11 @@ tags:
       description: The catalogue of games, assembled from what each game answers about itself.
     - name: SeatService
       description: |-
-        A player's place at a table, and the two ways to give it up.
+        A player's place at a table: how it is opened, come to, and given up.
 
-         Both withdraw the player from a game being played at the table before the
-         table is written, so a game is never left waiting on a player who has gone.
+         Giving a seat up, by vacating it or by leaving, withdraws the player from a
+         game being played at the table before the table is written, so a game is
+         never left waiting on a player who has gone.
     - name: SessionService
       description: |-
         A game being played, and the two ways to change one.

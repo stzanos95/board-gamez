@@ -12,6 +12,10 @@ from fastapi import APIRouter
 
 from idl_fastapi.google.rpc import Status
 from idl_fastapi.idl.lobby.dto import (
+    CreateTableRequest,
+    CreateTableResponse,
+    JoinTableRequest,
+    JoinTableResponse,
     LeaveTableRequest,
     LeaveTableResponse,
     VacateSeatRequest,
@@ -26,6 +30,24 @@ class BaseSeatService(ABC):
     """
     What an implementation of SeatService must answer.
     """
+
+    @abstractmethod
+    async def create_table(
+        self,
+        request: CreateTableRequest,
+    ) -> CreateTableResponse:
+        """
+        POST /internal/platform/lobby/create/table
+        """
+
+    @abstractmethod
+    async def join_table(
+        self,
+        request: JoinTableRequest,
+    ) -> JoinTableResponse:
+        """
+        POST /internal/platform/lobby/join/table
+        """
 
     @abstractmethod
     async def leave_table(
@@ -57,6 +79,34 @@ class SeatServiceRouter:
         A router answering every SeatService path through `service`.
         """
         router = APIRouter(tags=[SERVICE_TAG])
+
+        @router.post(
+            "/internal/platform/lobby/create/table",
+            operation_id="SeatService_CreateTable",
+            response_model=CreateTableResponse,
+            response_model_exclude_none=True,
+            responses={"default": {"model": Status}},
+        )
+        async def create_table(
+            request: CreateTableRequest,
+        ) -> CreateTableResponse:
+            return await service.create_table(
+                request=request,
+            )
+
+        @router.post(
+            "/internal/platform/lobby/join/table",
+            operation_id="SeatService_JoinTable",
+            response_model=JoinTableResponse,
+            response_model_exclude_none=True,
+            responses={"default": {"model": Status}},
+        )
+        async def join_table(
+            request: JoinTableRequest,
+        ) -> JoinTableResponse:
+            return await service.join_table(
+                request=request,
+            )
 
         @router.post(
             "/internal/platform/lobby/leave/table",

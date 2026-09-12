@@ -26,10 +26,11 @@ if _version_not_supported:
 
 
 class SeatServiceStub(object):
-    """A player's place at a table, and the two ways to give it up.
+    """A player's place at a table: how it is opened, come to, and given up.
 
-    Both withdraw the player from a game being played at the table before the
-    table is written, so a game is never left waiting on a player who has gone.
+    Giving a seat up, by vacating it or by leaving, withdraws the player from a
+    game being played at the table before the table is written, so a game is
+    never left waiting on a player who has gone.
     """
 
     def __init__(self, channel):
@@ -38,6 +39,16 @@ class SeatServiceStub(object):
         Args:
             channel: A grpc.Channel.
         """
+        self.CreateTable = channel.unary_unary(
+                '/idl.lobby.service.SeatService/CreateTable',
+                request_serializer=idl_dot_lobby_dot_dto_dot_seat__pb2.CreateTableRequest.SerializeToString,
+                response_deserializer=idl_dot_lobby_dot_dto_dot_seat__pb2.CreateTableResponse.FromString,
+                _registered_method=True)
+        self.JoinTable = channel.unary_unary(
+                '/idl.lobby.service.SeatService/JoinTable',
+                request_serializer=idl_dot_lobby_dot_dto_dot_seat__pb2.JoinTableRequest.SerializeToString,
+                response_deserializer=idl_dot_lobby_dot_dto_dot_seat__pb2.JoinTableResponse.FromString,
+                _registered_method=True)
         self.VacateSeat = channel.unary_unary(
                 '/idl.lobby.service.SeatService/VacateSeat',
                 request_serializer=idl_dot_lobby_dot_dto_dot_seat__pb2.VacateSeatRequest.SerializeToString,
@@ -51,11 +62,24 @@ class SeatServiceStub(object):
 
 
 class SeatServiceServicer(object):
-    """A player's place at a table, and the two ways to give it up.
+    """A player's place at a table: how it is opened, come to, and given up.
 
-    Both withdraw the player from a game being played at the table before the
-    table is written, so a game is never left waiting on a player who has gone.
+    Giving a seat up, by vacating it or by leaving, withdraws the player from a
+    game being played at the table before the table is written, so a game is
+    never left waiting on a player who has gone.
     """
+
+    def CreateTable(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def JoinTable(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
 
     def VacateSeat(self, request, context):
         """Missing associated documentation comment in .proto file."""
@@ -72,6 +96,16 @@ class SeatServiceServicer(object):
 
 def add_SeatServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
+            'CreateTable': grpc.unary_unary_rpc_method_handler(
+                    servicer.CreateTable,
+                    request_deserializer=idl_dot_lobby_dot_dto_dot_seat__pb2.CreateTableRequest.FromString,
+                    response_serializer=idl_dot_lobby_dot_dto_dot_seat__pb2.CreateTableResponse.SerializeToString,
+            ),
+            'JoinTable': grpc.unary_unary_rpc_method_handler(
+                    servicer.JoinTable,
+                    request_deserializer=idl_dot_lobby_dot_dto_dot_seat__pb2.JoinTableRequest.FromString,
+                    response_serializer=idl_dot_lobby_dot_dto_dot_seat__pb2.JoinTableResponse.SerializeToString,
+            ),
             'VacateSeat': grpc.unary_unary_rpc_method_handler(
                     servicer.VacateSeat,
                     request_deserializer=idl_dot_lobby_dot_dto_dot_seat__pb2.VacateSeatRequest.FromString,
@@ -91,11 +125,66 @@ def add_SeatServiceServicer_to_server(servicer, server):
 
  # This class is part of an EXPERIMENTAL API.
 class SeatService(object):
-    """A player's place at a table, and the two ways to give it up.
+    """A player's place at a table: how it is opened, come to, and given up.
 
-    Both withdraw the player from a game being played at the table before the
-    table is written, so a game is never left waiting on a player who has gone.
+    Giving a seat up, by vacating it or by leaving, withdraws the player from a
+    game being played at the table before the table is written, so a game is
+    never left waiting on a player who has gone.
     """
+
+    @staticmethod
+    def CreateTable(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/idl.lobby.service.SeatService/CreateTable',
+            idl_dot_lobby_dot_dto_dot_seat__pb2.CreateTableRequest.SerializeToString,
+            idl_dot_lobby_dot_dto_dot_seat__pb2.CreateTableResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def JoinTable(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/idl.lobby.service.SeatService/JoinTable',
+            idl_dot_lobby_dot_dto_dot_seat__pb2.JoinTableRequest.SerializeToString,
+            idl_dot_lobby_dot_dto_dot_seat__pb2.JoinTableResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
 
     @staticmethod
     def VacateSeat(request,

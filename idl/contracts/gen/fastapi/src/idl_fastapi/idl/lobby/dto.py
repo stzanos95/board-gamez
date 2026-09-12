@@ -3,9 +3,29 @@
 
 from __future__ import annotations
 
+from typing import Literal
+
 from pydantic import BaseModel, ConfigDict, Field
 
 from . import model
+
+
+class CreateTableRequest(BaseModel):
+    """
+    Open a table for a game, with the opener at it and every seat empty.
+
+     The table's id is minted by the lobby. `seat_count` must lie within the
+     bounds the game answers for itself.
+    """
+
+    model_config = ConfigDict(
+        populate_by_name=True,
+    )
+    game_type: Literal['GAME_TYPE_UNSPECIFIED', 'GAME_TYPE_CHESS'] | None = Field(
+        default=None, alias='gameType'
+    )
+    seat_count: int | None = Field(default=None, alias='seatCount')
+    player_id: str | None = Field(default=None, alias='playerId')
 
 
 class DeleteTableRequest(BaseModel):
@@ -21,6 +41,18 @@ class DeleteTableResponse(BaseModel):
         populate_by_name=True,
     )
     table_id: str | None = Field(default=None, alias='tableId')
+
+
+class JoinTableRequest(BaseModel):
+    """
+    Come to the table without taking a seat.
+    """
+
+    model_config = ConfigDict(
+        populate_by_name=True,
+    )
+    table_id: str | None = Field(default=None, alias='tableId')
+    player_id: str | None = Field(default=None, alias='playerId')
 
 
 class LeaveTableRequest(BaseModel):
@@ -97,6 +129,20 @@ class UpsertTableResponse(BaseModel):
         populate_by_name=True,
     )
     table: model.Table | None = None
+
+
+class CreateTableResponse(BaseModel):
+    model_config = ConfigDict(
+        populate_by_name=True,
+    )
+    result: model.SeatResult | None = None
+
+
+class JoinTableResponse(BaseModel):
+    model_config = ConfigDict(
+        populate_by_name=True,
+    )
+    result: model.SeatResult | None = None
 
 
 class LeaveTableResponse(BaseModel):

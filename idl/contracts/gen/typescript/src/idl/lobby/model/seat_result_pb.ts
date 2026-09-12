@@ -14,7 +14,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file idl/lobby/model/seat_result.proto.
  */
 export const file_idl_lobby_model_seat_result: GenFile = /*@__PURE__*/
-  fileDesc("CiFpZGwvbG9iYnkvbW9kZWwvc2VhdF9yZXN1bHQucHJvdG8SD2lkbC5sb2JieS5tb2RlbCJiCgpTZWF0UmVzdWx0Ei0KB291dGNvbWUYASABKA4yHC5pZGwubG9iYnkubW9kZWwuU2VhdE91dGNvbWUSJQoFdGFibGUYAiABKAsyFi5pZGwubG9iYnkubW9kZWwuVGFibGUqkAIKC1NlYXRPdXRjb21lEhwKGFNFQVRfT1VUQ09NRV9VTlNQRUNJRklFRBAAEhYKElNFQVRfT1VUQ09NRV9UQUtFThABEiAKHFNFQVRfT1VUQ09NRV9UQUJMRV9OT1RfRk9VTkQQAhIcChhTRUFUX09VVENPTUVfTk9UX09GRkVSRUQQAxIeChpTRUFUX09VVENPTUVfVkVSU0lPTl9NT1ZFRBAEEhgKFFNFQVRfT1VUQ09NRV9WQUNBVEVEEAUSFQoRU0VBVF9PVVRDT01FX0xFRlQQBhIbChdTRUFUX09VVENPTUVfTk9UX1NFQVRFRBAHEh0KGVNFQVRfT1VUQ09NRV9OT1RfQVRfVEFCTEUQCEI4WjZib2FyZGdhbWV6L2NvbnRyYWN0cy9nZW4vZ28vaWRsL2xvYmJ5L21vZGVsO2xvYmJ5bW9kZWxiBnByb3RvMw", [file_idl_lobby_model_table]);
+  fileDesc("CiFpZGwvbG9iYnkvbW9kZWwvc2VhdF9yZXN1bHQucHJvdG8SD2lkbC5sb2JieS5tb2RlbCJiCgpTZWF0UmVzdWx0Ei0KB291dGNvbWUYASABKA4yHC5pZGwubG9iYnkubW9kZWwuU2VhdE91dGNvbWUSJQoFdGFibGUYAiABKAsyFi5pZGwubG9iYnkubW9kZWwuVGFibGUq2QMKC1NlYXRPdXRjb21lEhwKGFNFQVRfT1VUQ09NRV9VTlNQRUNJRklFRBAAEhYKElNFQVRfT1VUQ09NRV9UQUtFThABEiAKHFNFQVRfT1VUQ09NRV9UQUJMRV9OT1RfRk9VTkQQAhIcChhTRUFUX09VVENPTUVfTk9UX09GRkVSRUQQAxIeChpTRUFUX09VVENPTUVfVkVSU0lPTl9NT1ZFRBAEEhgKFFNFQVRfT1VUQ09NRV9WQUNBVEVEEAUSFQoRU0VBVF9PVVRDT01FX0xFRlQQBhIbChdTRUFUX09VVENPTUVfTk9UX1NFQVRFRBAHEh0KGVNFQVRfT1VUQ09NRV9OT1RfQVRfVEFCTEUQCBIYChRTRUFUX09VVENPTUVfQ1JFQVRFRBAJEhcKE1NFQVRfT1VUQ09NRV9KT0lORUQQChIhCh1TRUFUX09VVENPTUVfQUxSRUFEWV9BVF9UQUJMRRALEiYKIlNFQVRfT1VUQ09NRV9OT1RfQUNDRVBUSU5HX1BMQVlFUlMQDBIgChxTRUFUX09VVENPTUVfR0FNRV9OT1RfSE9TVEVEEA0SJwojU0VBVF9PVVRDT01FX1NFQVRfQ09VTlRfTk9UX0FMTE9XRUQQDkI4WjZib2FyZGdhbWV6L2NvbnRyYWN0cy9nZW4vZ28vaWRsL2xvYmJ5L21vZGVsO2xvYmJ5bW9kZWxiBnByb3RvMw", [file_idl_lobby_model_table]);
 
 /**
  * What happened to a player's place at a table, and the table as it now stands.
@@ -44,13 +44,14 @@ export const SeatResultSchema: GenMessage<SeatResult> = /*@__PURE__*/
   messageDesc(file_idl_lobby_model_seat_result, 0);
 
 /**
- * Every way taking a seat, giving one up, or leaving the table ends.
+ * Every way a change to a player's place at a table ends.
  *
- * TAKEN, VACATED and LEFT are the three changes made. VERSION_MOVED means the
- * table changed while the change was being written, and the table answered
- * with it is the one to act on next. NOT_OFFERED means the choice is not one
- * the game offers this player at this table now: the seat is taken, the player
- * is already seated, or the table is not waiting for players.
+ * CREATED, JOINED, TAKEN, VACATED and LEFT are the changes made. VERSION_MOVED
+ * means the table changed while the change was being written, and the table
+ * answered with it is the one to act on next. NOT_OFFERED means the choice is
+ * not one the game offers this player at this table now: the seat is taken,
+ * the player is already seated, or the table is not waiting for players.
+ * GAME_NOT_HOSTED and SEAT_COUNT_NOT_ALLOWED refuse a table before it exists.
  *
  * @generated from enum idl.lobby.model.SeatOutcome
  */
@@ -99,6 +100,36 @@ export enum SeatOutcome {
    * @generated from enum value: SEAT_OUTCOME_NOT_AT_TABLE = 8;
    */
   NOT_AT_TABLE = 8,
+
+  /**
+   * @generated from enum value: SEAT_OUTCOME_CREATED = 9;
+   */
+  CREATED = 9,
+
+  /**
+   * @generated from enum value: SEAT_OUTCOME_JOINED = 10;
+   */
+  JOINED = 10,
+
+  /**
+   * @generated from enum value: SEAT_OUTCOME_ALREADY_AT_TABLE = 11;
+   */
+  ALREADY_AT_TABLE = 11,
+
+  /**
+   * @generated from enum value: SEAT_OUTCOME_NOT_ACCEPTING_PLAYERS = 12;
+   */
+  NOT_ACCEPTING_PLAYERS = 12,
+
+  /**
+   * @generated from enum value: SEAT_OUTCOME_GAME_NOT_HOSTED = 13;
+   */
+  GAME_NOT_HOSTED = 13,
+
+  /**
+   * @generated from enum value: SEAT_OUTCOME_SEAT_COUNT_NOT_ALLOWED = 14;
+   */
+  SEAT_COUNT_NOT_ALLOWED = 14,
 }
 
 /**
