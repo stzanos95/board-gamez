@@ -8,7 +8,17 @@ dependencies = [
     # Neither a schema nor a domain: any message and any model will do.
     "protobuf>=5.28.3,<6",
     "pydantic>=2.13",
+    # The envelope every message on a queue travels in.
+    "board-gamez-idl",
+    # The broker messages pass through, spoken to from the event loop that serves.
+    "redis>=5.2",
+    # A queue's settings are a dataclass parsed from the app's YAML file.
+    "mashumaro[yaml]>=3.22",
 ]
+
+# Relative path sources rather than a workspace: each project here stands alone.
+[tool.uv.sources]
+board-gamez-idl = { path = "../../idl/contracts/gen/python", editable = true }
 
 [build-system]
 requires = ["hatchling"]
